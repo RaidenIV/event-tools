@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.01">
+    <title>DJ Event Budget App</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Global body styling: Full width base, but content will be centered via wrapper; white background for clean look */
+        body {
+            font-family: Arial, sans-serif;
+            width: 75%; /* Full width to span almost the entire webpage */
+            margin: 0;
+            padding: 10px 20px 20px 20px; /* Consistent padding on sides/bottom; top reduced */
+            background-color: #FFFFFF; /* White background for the entire page */
+            color: #000000; /* Black text for all body content */
+            box-sizing: border-box; /* Ensures padding doesn't add extra width */
+        }
+       
+        /* Page wrapper: Centers all content horizontally with max-width for balance on wide screens */
+        .page-wrapper {
+            max-width: 1200px; /* Caps width at 1200px to prevent over-stretching on ultra-wide screens */
+            margin: 0 auto; /* Centers the wrapper horizontally */
+        }
+       
+        /* Header text: Black text, no top margin, centered within wrapper */
+        h1 {
+            color: #000000; /* Black text for the main title */
+            text-align: center; /* Centers title text horizontally */
+            margin-top: 0; /* Zero top margin to reduce space above the title */
+            margin-bottom: 20px; /* Added bottom margin for space below title */
+        }
+       
+        /* Section headers: Bold black text for main sections */
+        .section-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #000000; /* Black text for section titles */
+        }
+       
+        /* Subsection headers: Slightly smaller bold text for nested categories */
+        .subsection-header {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            color: #000000; /* Black text for subsection titles */
+        }
+       
+        /* Quantity selector styling */
+        .quantity-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .quantity-row label {
+            flex: 1;
+            font-weight: bold;
+        }
+        .quantity-row input[type="number"] {
+            flex: 0 0 80px;
+            width: auto;
+        }
+        .dynamic-inputs {
+            margin-top: 5px;
+        }
+        .dynamic-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .dynamic-input-group input {
+            flex: 1;
+        }
+        .dynamic-input-group input[type="number"] {
+            width: auto;
+        }
+       
+        /* Main container: Flexbox to place form/summary on left and chart on right */
+        .main-container {
+            display: flex; /* Flexbox layout for side-by-side panels */
+            gap: 20px; /* 20px gap between left and right panels */
+            width: 100%; /* Full width within page wrapper */
+            margin-top: 0; /* No extra top margin; relies on h1's bottom margin */
+        }
+       
+        /* Left panel: Holds form and summary, takes more width for inputs in full layout */
+        .left-panel {
+            flex: 2; /* ~70% width for form and summary in full-width setup */
+        }
+       
+        /* Right panel: Holds charts, adjusted for full-width balance */
+        .chart-panel {
+            flex: 1; /* ~30% width for charts in full-width setup */
+            position: fixed; /* Pin to viewport */
+            top: 100px; /* Offset from top—adjust if your header needs more/less space */
+            right: 75px; /* Stick to right edge with padding */
+            width: 30vw; /* Responsive width: 30% of viewport */
+            max-width: 400px; /* Cap for ultra-wide screens */
+            display: flex; /* Stack sub-charts vertically */
+            flex-direction: column;
+            gap: 20px; /* Space between show title, expenses chart, and sales chart */
+            z-index: 10; /* Ensure it layers above form */
+        }
+
+        /* Show title display above first chart */
+        #showTitleDisplay {
+            font-size: 24px; /* Larger font as requested */
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+
+        /* Sub-chart containers */
+        .sub-chart {
+            height: 350px; /* Height for each pie chart */
+            width: 100%;
+            position: relative;
+            background: #FFFFFF; /* White background for contrast */
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Subtle shadow */
+        }
+       
+        @media (max-width: 768px) {
+            .chart-panel {
+                position: relative; /* Revert to normal flow on mobile */
+                width: 100%; /* Full width when stacked */
+                right: auto;
+                top: auto;
+                flex-direction: column; /* Ensure vertical stack */
+            }
+            .sub-chart {
+                height: 350px; /* Slightly smaller on mobile */
+            }
+            #showTitleDisplay {
+                font-size: 20px; /* Adjust font on mobile */
+            }
+        }
+       
+        /* Form container: White background, kept for structure */
+        form {
+            background: #FFFFFF; /* White background for the form container */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Subtle gray shadow for depth, not a background color */
+        }
+       
+        /* Labels for form fields: Bold black text */
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #000000; /* Black text for all labels */
+        }
+       
+        /* Input fields: Border is light gray for subtle outline */
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #DDDDDD; /* Light gray border for input fields */
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #FFFFFF; /* White background for input fields */
+            color: #000000; /* Black text in input fields */
+        }
+       
+        /* Buttons: Blue background for visibility and interaction */
+        button {
+            background: #007BFF; /* Blue background for primary buttons */
+            color: #FFFFFF; /* White text on buttons for contrast */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056B3; /* Darker blue background on button hover */
+        }
+       
+        /* Summary section: White background, black text; full width in left panel */
+        #summary {
+            background: #FFFFFF; /* White background for summary box */
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px; /* Space above summary within left panel */
+            text-align: center;
+            color: #000000; /* Black text for summary content */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Subtle gray shadow for depth */
+        }
+       
+        /* Summary paragraphs: Slightly larger and bolder for easy reading */
+        #summary p {
+            font-size: 1.1em; /* Slightly larger text for calculations */
+            font-weight: bold; /* Bolder weight for emphasis */
+            margin: 10px 0; /* Spacing between lines */
+        }
+       
+        /* Canvas for charts: Full width/height within sub-panel */
+        #expensesChart, #salesChart {
+            width: 100% !important; /* Full width within sub-chart */
+            height: 100% !important; /* Full height within sub-chart */
+        }
+       
+        /* Profit class: Black text for positive profit indicators */
+        .profit {
+            font-size: 1.1em; /* Matches summary p styling */
+            font-weight: bold;
+            color: #000000; /* Black text for positive profit indicators */
+        }
+       
+        /* Loss class: Red text for negative loss indicators */
+        .loss {
+            font-size: 1.1em; /* Matches summary p styling */
+            font-weight: bold;
+            color: #FF0000; /* Red text for negative loss indicators */
+        }
+        /* Responsive: Stack vertically on small screens to avoid cramped full-width */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column; /* Stack left/right panels vertically on mobile */
+            }
+            .left-panel {
+                flex: none; /* Reset to full width on mobile */
+            }
+            body {
+                padding: 10px; /* Reduce side padding on mobile for more content space */
+            }
+            .page-wrapper {
+                max-width: none; /* Full width on mobile for better use of space */
+            }
+            .dynamic-input-group {
+                flex-direction: column; /* Stack on mobile for better readability */
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <h1>Event Budget Tracker</h1>
+       
+        <div class="main-container">
+            <div class="left-panel">
+                <form id="budgetForm">
+                    <!-- Basic Info -->
+                    <label for="showTitle">Show Title:</label>
+                    <input type="text" id="showTitle" placeholder="e.g., SPACE CAMP" oninput="updateBudget()">
+                    <label for="showDate">Show Date:</label>
+                    <input type="date" id="showDate" oninput="updateBudget()">
+                    <!-- Expenses Section -->
+                    <div class="section-header">Expenses</div>
+                    <!-- Headliner(s) -->
+                    <div class="subsection-header">Headliner(s)</div>
+                    <div class="quantity-row">
+                        <label for="numHeadliners">Number of Headliners:</label>
+                        <input type="number" id="numHeadliners" min="0" max="10" value="1" onchange="generateDynamicInputs('headliner', this.value, ['fee', 'hotel', 'rider'])">
+                    </div>
+                    <div id="headlinerInputs" class="dynamic-inputs"></div>
+                    <!-- Support -->
+                    <div class="subsection-header">Support</div>
+                    <label for="directSupport">Direct Support:</label>
+                    <input type="number" id="directSupport" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <div class="quantity-row">
+                        <label for="numLocalDJs">Number of Local DJs:</label>
+                        <input type="number" id="numLocalDJs" min="0" max="20" value="0" onchange="generateDynamicInputs('localDJ', this.value, ['fee', 'name'])">
+                    </div>
+                    <div id="localDJInputs" class="dynamic-inputs"></div>
+                    <!-- Venue -->
+                    <label for="venue">Venue:</label>
+                    <input type="number" id="venue" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <!-- Production -->
+                    <div class="subsection-header">Production</div>
+                    <label for="ledWall">LED Wall:</label>
+                    <input type="number" id="ledWall" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="lights">Lights:</label>
+                    <input type="number" id="lights" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="lasers">Lasers:</label>
+                    <input type="number" id="lasers" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="sound">Sound:</label>
+                    <input type="number" id="sound" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <!-- Gear Rentals -->
+                    <div class="subsection-header">Gear Rentals</div>
+                    <div class="quantity-row">
+                        <label for="numCDJs">Number of CDJs:</label>
+                        <input type="number" id="numCDJs" min="0" max="10" value="0" onchange="generateDynamicInputs('cdj', this.value, ['fee'])">
+                    </div>
+                    <div id="cdjInputs" class="dynamic-inputs"></div>
+                    <label for="mixer">Mixer:</label>
+                    <input type="number" id="mixer" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="table">Table:</label>
+                    <input type="number" id="table" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <!-- Marketing -->
+                    <div class="subsection-header">Marketing</div>
+                    <label for="facebookAds">Facebook Ads:</label>
+                    <input type="number" id="facebookAds" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="instagramAds">Instagram Ads:</label>
+                    <input type="number" id="instagramAds" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="eventbriteAds">Eventbrite Ads:</label>
+                    <input type="number" id="eventbriteAds" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <!-- Staff -->
+                    <div class="subsection-header">Staff</div>
+                    <label for="doorStaff">Door:</label>
+                    <input type="number" id="doorStaff" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="merchTable">Merch Table:</label>
+                    <input type="number" id="merchTable" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="transportation">Transportation:</label>
+                    <input type="number" id="transportation" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <div class="quantity-row">
+                        <label for="numShowRunners">Number of Show Runners:</label>
+                        <input type="number" id="numShowRunners" min="0" max="10" value="0" onchange="generateDynamicInputs('showRunner', this.value, ['fee'])">
+                    </div>
+                    <div id="showRunnerInputs" class="dynamic-inputs"></div>
+                    <!-- Other -->
+                    <div class="subsection-header">Other</div>
+                    <label for="otherName">Custom Category Name:</label>
+                    <input type="text" id="otherName" placeholder="e.g., Face Painters" onchange="updateOtherLabels()">
+                    <div class="quantity-row">
+                        <label for="numOther">Number of Items:</label>
+                        <input type="number" id="numOther" min="0" max="20" value="0" onchange="generateDynamicInputs('otherItem', this.value, ['fee'])">
+                    </div>
+                    <div id="otherInputs" class="dynamic-inputs"></div>
+                    <!-- Incoming Sales Section -->
+                    <div class="section-header">Incoming Sales</div>
+                    <label for="eventbriteSales">Eventbrite Sales:</label>
+                    <input type="number" id="eventbriteSales" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="djPresales">DJ Presales:</label>
+                    <input type="number" id="djPresales" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="promoTeam">Promo Team:</label>
+                    <input type="number" id="promoTeam" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <label for="doorSales">Door:</label>
+                    <input type="number" id="doorSales" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <div class="quantity-row">
+                        <label for="numMerchVendors">Number of Merch Vendors:</label>
+                        <input type="number" id="numMerchVendors" min="0" max="10" value="0" onchange="generateDynamicInputs('merchVendor', this.value, ['fee'])">
+                    </div>
+                    <div id="merchVendorInputs" class="dynamic-inputs"></div>
+                    <label for="merchSold">Merch Sold:</label>
+                    <input type="number" id="merchSold" placeholder="$0" step="0.01" oninput="updateBudget()">
+                    <div style="text-align: center;">
+                        <button type="button" onclick="updateBudget()">Update Chart</button>
+                        <button type="button" onclick="resetForm()">Reset</button>
+                    </div>
+                </form>
+                <div id="summary">
+                    <p>Total Expenses: $<span id="totalExpenses">0</span></p>
+                    <p>Total Incoming Sales: $<span id="totalRevenue">0</span></p>
+                    <p id="profitLine">Net Profit: $<span id="netProfit">0</span></p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button type="button" onclick="downloadCSV()">Download Budget CSV</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-panel">
+                <div id="showTitleDisplay">UNTITLED EVENT</div>
+                <div class="sub-chart">
+                    <canvas id="expensesChart"></canvas>
+                </div>
+                <div class="sub-chart">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let chartExpenses = null;
+        let chartSales = null;
+        let dynamicFields = {}; // Track dynamic inputs for CSV
+        // Helper to capitalize show title (full uppercase)
+        function capitalizeTitle(title) {
+            if (!title) return 'UNTITLED EVENT';
+            return title.toUpperCase();
+        }
+        // Dynamic input generator (FIX: Added special container handling for 'otherItem')
+        function generateDynamicInputs(prefix, quantity, fields) {
+            quantity = parseInt(quantity) || 0;
+            // Special case for Other category container ID
+            let container;
+            if (prefix === 'otherItem') {
+                container = document.getElementById('otherInputs');
+            } else {
+                container = document.getElementById(prefix + 'Inputs');
+            }
+            if (!container) {
+                console.error('Container not found for prefix:', prefix);
+                return;
+            }
+            container.innerHTML = '';
+            dynamicFields[prefix] = [];
+            const otherName = document.getElementById('otherName')?.value || 'Other';
+            const labelPrefix = prefix === 'otherItem' ? otherName : prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            for (let i = 1; i <= quantity; i++) {
+                const group = document.createElement('div');
+                group.className = 'dynamic-input-group';
+                fields.forEach(field => {
+                    const labelText = `${labelPrefix} ${field.toUpperCase()} #${i}`;
+                    const label = document.createElement('label');
+                    label.textContent = labelText + ':';
+                    const input = document.createElement('input');
+                    input.type = field === 'name' ? 'text' : 'number';
+                    input.id = `${prefix}_${field}_${i}`;
+                    input.step = '0.01';
+                    input.oninput = updateBudget;
+                    input.placeholder = field === 'name' ? 'Name' : '$0';
+                    group.appendChild(label);
+                    group.appendChild(input);
+                });
+                container.appendChild(group);
+                dynamicFields[prefix].push({ fields, quantity });
+            }
+            updateBudget();
+        }
+        // Update labels for Other when name changes
+        function updateOtherLabels() {
+            const numOther = parseInt(document.getElementById('numOther')?.value) || 0;
+            if (numOther > 0) {
+                generateDynamicInputs('otherItem', numOther, ['fee']);
+            }
+        }
+        function updateBudget() {
+            // Get basics
+            const rawTitle = document.getElementById('showTitle').value || 'Untitled Event';
+            const showTitle = capitalizeTitle(rawTitle);
+            const showDate = document.getElementById('showDate').value || new Date().toISOString().split('T')[0];
+            // Update show title display
+            document.getElementById('showTitleDisplay').textContent = showTitle;
+            // Get static expenses
+            const directSupport = parseFloat(document.getElementById('directSupport')?.value) || 0;
+            const venue = parseFloat(document.getElementById('venue')?.value) || 0;
+            const ledWall = parseFloat(document.getElementById('ledWall')?.value) || 0;
+            const lights = parseFloat(document.getElementById('lights')?.value) || 0;
+            const lasers = parseFloat(document.getElementById('lasers')?.value) || 0;
+            const sound = parseFloat(document.getElementById('sound')?.value) || 0;
+            const mixer = parseFloat(document.getElementById('mixer')?.value) || 0;
+            const table = parseFloat(document.getElementById('table')?.value) || 0;
+            const facebookAds = parseFloat(document.getElementById('facebookAds')?.value) || 0;
+            const instagramAds = parseFloat(document.getElementById('instagramAds')?.value) || 0;
+            const eventbriteAds = parseFloat(document.getElementById('eventbriteAds')?.value) || 0;
+            const doorStaff = parseFloat(document.getElementById('doorStaff')?.value) || 0;
+            const merchTable = parseFloat(document.getElementById('merchTable')?.value) || 0;
+            const transportation = parseFloat(document.getElementById('transportation')?.value) || 0;
+            const eventbriteSales = parseFloat(document.getElementById('eventbriteSales')?.value) || 0;
+            const djPresales = parseFloat(document.getElementById('djPresales')?.value) || 0;
+            const promoTeam = parseFloat(document.getElementById('promoTeam')?.value) || 0;
+            const doorSales = parseFloat(document.getElementById('doorSales')?.value) || 0;
+            const merchSold = parseFloat(document.getElementById('merchSold')?.value) || 0;
+            // Get dynamic expenses
+            let headlinerTotal = 0;
+            const numHeadliners = parseInt(document.getElementById('numHeadliners')?.value) || 0;
+            for (let i = 1; i <= numHeadliners; i++) {
+                headlinerTotal += (parseFloat(document.getElementById(`headliner_fee_${i}`)?.value) || 0) + (parseFloat(document.getElementById(`headliner_hotel_${i}`)?.value) || 0) + (parseFloat(document.getElementById(`headliner_rider_${i}`)?.value) || 0);
+            }
+            let localDJTotal = 0;
+            const numLocalDJs = parseInt(document.getElementById('numLocalDJs')?.value) || 0;
+            for (let i = 1; i <= numLocalDJs; i++) {
+                localDJTotal += parseFloat(document.getElementById(`localDJ_fee_${i}`)?.value) || 0;
+            }
+            let cdjTotal = 0;
+            const numCDJs = parseInt(document.getElementById('numCDJs')?.value) || 0;
+            for (let i = 1; i <= numCDJs; i++) {
+                cdjTotal += parseFloat(document.getElementById(`cdj_fee_${i}`)?.value) || 0;
+            }
+            let showRunnerTotal = 0;
+            const numShowRunners = parseInt(document.getElementById('numShowRunners')?.value) || 0;
+            for (let i = 1; i <= numShowRunners; i++) {
+                showRunnerTotal += parseFloat(document.getElementById(`showRunner_fee_${i}`)?.value) || 0;
+            }
+            let otherTotal = 0;
+            const numOther = parseInt(document.getElementById('numOther')?.value) || 0;
+            for (let i = 1; i <= numOther; i++) {
+                otherTotal += parseFloat(document.getElementById(`otherItem_fee_${i}`)?.value) || 0;
+            }
+            let merchVendorTotal = 0;
+            const numMerchVendors = parseInt(document.getElementById('numMerchVendors')?.value) || 0;
+            for (let i = 1; i <= numMerchVendors; i++) {
+                merchVendorTotal += parseFloat(document.getElementById(`merchVendor_fee_${i}`)?.value) || 0;
+            }
+            // Calculate totals
+            const totalExpenses = headlinerTotal + directSupport + localDJTotal + venue + ledWall + lights + lasers + sound + cdjTotal + mixer + table + facebookAds + instagramAds + eventbriteAds + doorStaff + merchTable + transportation + showRunnerTotal + otherTotal;
+            const totalRevenue = eventbriteSales + djPresales + promoTeam + doorSales + merchVendorTotal + merchSold;
+            const netProfit = totalRevenue - totalExpenses;
+            // Update summary
+            document.getElementById('totalExpenses').textContent = totalExpenses.toFixed(2);
+            document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
+            const profitSpan = document.getElementById('netProfit');
+            const sign = netProfit >= 0 ? '+' : '-';
+            const absValue = Math.abs(netProfit).toFixed(2);
+            profitSpan.textContent = absValue;
+            const profitLine = document.getElementById('profitLine');
+            profitLine.className = netProfit >= 0 ? 'profit' : 'loss';
+            profitLine.innerHTML = `Net Profit: ${sign}$<span id="netProfit">${absValue}</span>`;
+            // Expenses pie chart (unchanged, only expenses)
+            const expensesCtx = document.getElementById('expensesChart').getContext('2d');
+            const pieDataExpenses = [
+                { label: 'Headliners', value: headlinerTotal },
+                { label: 'Support', value: directSupport + localDJTotal },
+                { label: 'Venue', value: venue },
+                { label: 'Production', value: ledWall + lights + lasers + sound },
+                { label: 'Gear', value: cdjTotal + mixer + table },
+                { label: 'Marketing', value: facebookAds + instagramAds + eventbriteAds },
+                { label: 'Staff', value: doorStaff + merchTable + transportation + showRunnerTotal },
+                { label: 'Other', value: otherTotal }
+            ].filter(item => item.value > 0).sort((a, b) => b.value - a.value);
+            if (chartExpenses) chartExpenses.destroy();
+            if (pieDataExpenses.length > 0) {
+                chartExpenses = new Chart(expensesCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: pieDataExpenses.map(d => d.label),
+                        datasets: [{
+                            data: pieDataExpenses.map(d => d.value),
+                            backgroundColor: [
+                                '#FF6384', // Pink for Headliners
+                                '#36A2EB', // Blue for Support
+                                '#FFCE56', // Yellow for Venue
+                                '#4BC0C0', // Teal for Production
+                                '#9966FF', // Purple for Gear
+                                '#FF9F40', // Orange for Marketing
+                                '#C9CBCF', // Gray for Staff
+                                '#E7E9ED' // Light gray for Other
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Expenses',
+                                font: { size: 16, weight: 'bold' },
+                                color: '#000000'
+                            },
+                            legend: { position: 'bottom', labels: { color: '#000000' } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        return `${context.label}: $${context.parsed} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            // NEW: Sales pie chart (only incoming sales/revenue)
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const pieDataSales = [
+                { label: 'Eventbrite Sales', value: eventbriteSales },
+                { label: 'DJ Presales', value: djPresales },
+                { label: 'Promo Team', value: promoTeam },
+                { label: 'Door Sales', value: doorSales },
+                { label: 'Merch Vendors', value: merchVendorTotal },
+                { label: 'Merch Sold', value: merchSold }
+            ].filter(item => item.value > 0).sort((a, b) => b.value - a.value);
+            if (chartSales) chartSales.destroy();
+            if (pieDataSales.length > 0) {
+                chartSales = new Chart(salesCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: pieDataSales.map(d => d.label),
+                        datasets: [{
+                            data: pieDataSales.map(d => d.value),
+                            backgroundColor: [
+                                '#4BC0C0', // Teal for Eventbrite
+                                '#FF6384', // Pink for DJ Presales
+                                '#36A2EB', // Blue for Promo Team
+                                '#FFCE56', // Yellow for Door
+                                '#9966FF', // Purple for Merch Vendors
+                                '#FF9F40'  // Orange for Merch Sold
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Sales',
+                                font: { size: 16, weight: 'bold' },
+                                color: '#000000'
+                            },
+                            legend: { position: 'bottom', labels: { color: '#000000' } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        return `${context.label}: $${context.parsed} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        // Reset function (FIX: Explicitly clear all dynamic containers to ensure "Other" resets)
+        function resetForm() {
+            document.getElementById('budgetForm').reset();
+            // Explicitly reset quantity inputs and clear dynamic fields
+            ['numHeadliners', 'numLocalDJs', 'numCDJs', 'numShowRunners', 'numOther', 'numMerchVendors'].forEach(id => {
+                document.getElementById(id).value = '0';
+            });
+            // Clear all known dynamic containers
+            generateDynamicInputs('headliner', 0, ['fee', 'hotel', 'rider']);
+            generateDynamicInputs('localDJ', 0, ['fee', 'name']);
+            generateDynamicInputs('cdj', 0, ['fee']);
+            generateDynamicInputs('showRunner', 0, ['fee']);
+            generateDynamicInputs('otherItem', 0, ['fee']);
+            generateDynamicInputs('merchVendor', 0, ['fee']);
+            document.getElementById('totalExpenses').textContent = '0';
+            document.getElementById('totalRevenue').textContent = '0';
+            document.getElementById('netProfit').textContent = '0';
+            document.getElementById('profitLine').className = '';
+            if (chartExpenses) chartExpenses.destroy();
+            if (chartSales) chartSales.destroy();
+            document.getElementById('showTitleDisplay').textContent = 'UNTITLED EVENT';
+            updateBudget();
+        }
+        function downloadCSV() {
+            const rawTitle = document.getElementById('showTitle').value || 'Untitled Event';
+            const showTitle = capitalizeTitle(rawTitle);
+            const showDate = document.getElementById('showDate').value || new Date().toISOString().split('T')[0];
+            // Static values
+            const directSupport = parseFloat(document.getElementById('directSupport')?.value) || 0;
+            const venue = parseFloat(document.getElementById('venue')?.value) || 0;
+            const ledWall = parseFloat(document.getElementById('ledWall')?.value) || 0;
+            const lights = parseFloat(document.getElementById('lights')?.value) || 0;
+            const lasers = parseFloat(document.getElementById('lasers')?.value) || 0;
+            const sound = parseFloat(document.getElementById('sound')?.value) || 0;
+            const mixer = parseFloat(document.getElementById('mixer')?.value) || 0;
+            const table = parseFloat(document.getElementById('table')?.value) || 0;
+            const facebookAds = parseFloat(document.getElementById('facebookAds')?.value) || 0;
+            const instagramAds = parseFloat(document.getElementById('instagramAds')?.value) || 0;
+            const eventbriteAds = parseFloat(document.getElementById('eventbriteAds')?.value) || 0;
+            const doorStaff = parseFloat(document.getElementById('doorStaff')?.value) || 0;
+            const merchTable = parseFloat(document.getElementById('merchTable')?.value) || 0;
+            const transportation = parseFloat(document.getElementById('transportation')?.value) || 0;
+            const otherName = document.getElementById('otherName')?.value || 'Other';
+            const eventbriteSales = parseFloat(document.getElementById('eventbriteSales')?.value) || 0;
+            const djPresales = parseFloat(document.getElementById('djPresales')?.value) || 0;
+            const promoTeam = parseFloat(document.getElementById('promoTeam')?.value) || 0;
+            const doorSales = parseFloat(document.getElementById('doorSales')?.value) || 0;
+            const merchSold = parseFloat(document.getElementById('merchSold')?.value) || 0;
+            // Dynamic
+            const headlinerData = [];
+            const numHeadliners = parseInt(document.getElementById('numHeadliners')?.value) || 0;
+            for (let i = 1; i <= numHeadliners; i++) {
+                headlinerData.push({
+                    fee: parseFloat(document.getElementById(`headliner_fee_${i}`)?.value) || 0,
+                    hotel: parseFloat(document.getElementById(`headliner_hotel_${i}`)?.value) || 0,
+                    rider: parseFloat(document.getElementById(`headliner_rider_${i}`)?.value) || 0
+                });
+            }
+            const localDJData = [];
+            const numLocalDJs = parseInt(document.getElementById('numLocalDJs')?.value) || 0;
+            for (let i = 1; i <= numLocalDJs; i++) {
+                localDJData.push({
+                    fee: parseFloat(document.getElementById(`localDJ_fee_${i}`)?.value) || 0,
+                    name: document.getElementById(`localDJ_name_${i}`)?.value || ''
+                });
+            }
+            const cdjData = [];
+            const numCDJs = parseInt(document.getElementById('numCDJs')?.value) || 0;
+            for (let i = 1; i <= numCDJs; i++) {
+                cdjData.push({
+                    fee: parseFloat(document.getElementById(`cdj_fee_${i}`)?.value) || 0
+                });
+            }
+            const showRunnerData = [];
+            const numShowRunners = parseInt(document.getElementById('numShowRunners')?.value) || 0;
+            for (let i = 1; i <= numShowRunners; i++) {
+                showRunnerData.push({
+                    fee: parseFloat(document.getElementById(`showRunner_fee_${i}`)?.value) || 0
+                });
+            }
+            const otherData = [];
+            const numOther = parseInt(document.getElementById('numOther')?.value) || 0;
+            for (let i = 1; i <= numOther; i++) {
+                otherData.push({
+                    fee: parseFloat(document.getElementById(`otherItem_fee_${i}`)?.value) || 0
+                });
+            }
+            const merchVendorData = [];
+            const numMerchVendors = parseInt(document.getElementById('numMerchVendors')?.value) || 0;
+            for (let i = 1; i <= numMerchVendors; i++) {
+                merchVendorData.push({
+                    fee: parseFloat(document.getElementById(`merchVendor_fee_${i}`)?.value) || 0
+                });
+            }
+            // Calculate totals for CSV
+            const totalExpenses = headlinerData.reduce((sum, h) => sum + h.fee + h.hotel + h.rider, 0) + directSupport + localDJData.reduce((sum, l) => sum + l.fee, 0) + venue + ledWall + lights + lasers + sound + cdjData.reduce((sum, c) => sum + c.fee, 0) + mixer + table + facebookAds + instagramAds + eventbriteAds + doorStaff + merchTable + transportation + showRunnerData.reduce((sum, s) => sum + s.fee, 0) + otherData.reduce((sum, o) => sum + o.fee, 0);
+            const totalRevenue = eventbriteSales + djPresales + promoTeam + doorSales + merchVendorData.reduce((sum, m) => sum + m.fee, 0) + merchSold;
+            const netProfit = totalRevenue - totalExpenses;
+            // Build CSV
+            let csvContent = `Show Title,${showTitle}\nShow Date,${showDate}\nCategory,Amount,Name\n`; // Added Name column for dynamic
+            // Headliners
+            headlinerData.forEach((h, i) => {
+                csvContent += `Headliner Fee #${i+1},${h.fee},\n`;
+                csvContent += `Headliner Hotel #${i+1},${h.hotel},\n`;
+                csvContent += `Headliner Rider #${i+1},${h.rider},\n`;
+            });
+            // Support
+            csvContent += `Direct Support,${directSupport},\n`;
+            localDJData.forEach((l, i) => {
+                csvContent += `Local DJ Fee #${i+1},${l.fee},${l.name}\n`;
+            });
+            // Venue
+            csvContent += `Venue,${venue},\n`;
+            // Production
+            csvContent += `LED Wall,${ledWall},\n`;
+            csvContent += `Lights,${lights},\n`;
+            csvContent += `Lasers,${lasers},\n`;
+            csvContent += `Sound,${sound},\n`;
+            // Gear
+            cdjData.forEach((c, i) => {
+                csvContent += `CDJ #${i+1},${c.fee},\n`;
+            });
+            csvContent += `Mixer,${mixer},\n`;
+            csvContent += `Table,${table},\n`;
+            // Marketing
+            csvContent += `Facebook Ads,${facebookAds},\n`;
+            csvContent += `Instagram Ads,${instagramAds},\n`;
+            csvContent += `Eventbrite Ads,${eventbriteAds},\n`;
+            // Staff
+            csvContent += `Door Staff,${doorStaff},\n`;
+            csvContent += `Merch Table,${merchTable},\n`;
+            csvContent += `Transportation,${transportation},\n`;
+            showRunnerData.forEach((s, i) => {
+                csvContent += `Show Runner #${i+1},${s.fee},\n`;
+            });
+            // Other
+            otherData.forEach((o, i) => {
+                csvContent += `${otherName} #${i+1},${o.fee},\n`;
+            });
+            csvContent += `Total Expenses,${totalExpenses},\n\n`;
+            // Incoming Sales
+            csvContent += `Eventbrite Sales,${eventbriteSales},\n`;
+            csvContent += `DJ Presales,${djPresales},\n`;
+            csvContent += `Promo Team,${promoTeam},\n`;
+            csvContent += `Door Sales,${doorSales},\n`;
+            merchVendorData.forEach((m, i) => {
+                csvContent += `Merch Vendor #${i+1},${m.fee},\n`;
+            });
+            csvContent += `Merch Sold,${merchSold},\n`;
+            csvContent += `Total Incoming Sales,${totalRevenue},\n\n`;
+            csvContent += `Net Profit,${netProfit},\n`;
+            // Download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            link.href = URL.createObjectURL(blob);
+            link.download = `budget-${showTitle}-${showDate}-${timestamp}.csv`;
+            link.click();
+        }
+        // Initial load
+        updateBudget();
+    </script>
+</body>
+</html>
