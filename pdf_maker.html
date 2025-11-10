@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OFFER PDF Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             font-family: 'Rajdhani', sans-serif;
             width: 75%;
             margin: 0 auto;
             padding: 20px 5%;
-            background: white;  /* Updated: Black background for space around form */
-            max-width: none; /* Full-width for webpage feel */
+            background: white;
+            max-width: none;
         }
-        h1 { text-align: center; color: #030303; }  /* Keep h1 dark for form contrast, or change to white if needed */
-        p { text-align: center; max-width: 800px; margin: 0 auto 20px; color: #000000; }  /* White for body text */
+        h1 { text-align: center; color: #030303; }
+        p { text-align: center; max-width: 800px; margin: 0 auto 20px; color: #000000; }
         form {
             background: white;
             padding: 30px;
@@ -35,6 +35,8 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
+            font-weight: normal;  /* NEW: Makes typed text bold */
+            color: #333;  /* NEW: Matches label/form text color */
         }
         .checkbox {
             display: flex;
@@ -85,11 +87,11 @@
         <button type="submit">Generate PDF</button>
     </form>
     <script>
-        // Set min date to today (prevents past dates)
-        const today = new Date().toISOString().split('T')[0];
+        // Set min date to today (11/10/2025) to prevent past dates
+        const today = '2025-11-10'; // Hardcoded for consistency; update as needed
         document.getElementById('date').min = today;
 
-        // Helper function to format YYYY-MM-DD to MM/DD/YYYY
+        // Helper: Convert YYYY-MM-DD to MM/DD/YYYY for PDF/filename
         function formatDate(isoDate) {
             if (!isoDate) return '';
             const [year, month, day] = isoDate.split('-');
@@ -110,7 +112,7 @@
         const promoterData = {
             name: "XODIA Media Group",
             address: "5897 Shadow Lake Circle, Columbus, Ohio 43235",
-            website: "https://xodiamediagroup.com",  // Full URL for linking; display shortened below
+            website: "https://xodiamediagroup.com",
             phone: "(614) 204-5395",
             email: "xodia.mg@gmail.com",
             signatory: "Dante Evans - XODIA Media Group (@xodiamg)"
@@ -126,7 +128,7 @@
             // Gather inputs
             const headliner = document.getElementById('headliner').value.trim().toUpperCase();
             const rawDate = document.getElementById('date').value.trim();
-            const formattedDate = formatDate(rawDate);  // Convert to MM/DD/YYYY for PDF/filename
+            const formattedDate = formatDate(rawDate); // MM/DD/YYYY for PDF/filename
             let ticketPrice = document.getElementById('ticketPrice').value.trim();
             const setTime = document.getElementById('setTime').value.trim();
             let offerAmount = document.getElementById('offerAmount').value.trim();
@@ -154,10 +156,10 @@
             doc.setFontSize(16);
             doc.text('TALENT OFFER SHEET', 105, 35, { align: 'center' });
             // Spacing controls (tweak these numbers as needed)
-            const START_Y_AFTER_TITLE = 50;  // Space after title
-            const LINE_HEIGHT_WITHIN_SECTION = 5;  // Space between label & value
-            const SPACE_BETWEEN_SECTIONS = 6;  // Gap after each full section (increased for more space)
-            const LEGAL_TERM_SPACING = 5;  // Vertical space per legal date
+            const START_Y_AFTER_TITLE = 50;
+            const LINE_HEIGHT_WITHIN_SECTION = 5;
+            const SPACE_BETWEEN_SECTIONS = 6;
+            const LEGAL_TERM_SPACING = 5;
             let yPos = START_Y_AFTER_TITLE;
             // Updated sectionY function with variables
             const sectionY = (text, value, y) => {
@@ -166,12 +168,12 @@
                 doc.text(`${text}`, 10, y);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
-                doc.text(value, 10, y + LINE_HEIGHT_WITHIN_SECTION);  // Uses variable for intra-section space
-                return y + (LINE_HEIGHT_WITHIN_SECTION + SPACE_BETWEEN_SECTIONS);  // Total advance per section
+                doc.text(value, 10, y + LINE_HEIGHT_WITHIN_SECTION);
+                return y + (LINE_HEIGHT_WITHIN_SECTION + SPACE_BETWEEN_SECTIONS);
             };
             // Artist/Date/Hold
             yPos = sectionY('Artist: ', headliner, yPos);
-            yPos = sectionY('Date: ', formattedDate, yPos);  // Use formatted date
+            yPos = sectionY('Date: ', formattedDate, yPos); // Use formatted date
             yPos = sectionY('Hold: ', 'H1', yPos);
             // Venue sections
             yPos = sectionY('Venue Name: ', venueData.name, yPos);
@@ -194,15 +196,15 @@
             doc.text('Promoter Website: ', 10, websiteY);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(10);
-            const fullWebsiteUrl = promoterData.website;  // Full URL for linking
-            const displayWebsiteText = fullWebsiteUrl.replace('https://', '').replace('http://', '').replace('www.', '');  // Short display: "xodiamediagroup.com"
+            const fullWebsiteUrl = promoterData.website;
+            const displayWebsiteText = fullWebsiteUrl.replace('https://', '').replace('http://', '').replace('www.', '');
             const websiteX = 10;
             const websiteTextY = websiteY + LINE_HEIGHT_WITHIN_SECTION;
             doc.text(displayWebsiteText, websiteX, websiteTextY);
             // Add clickable link over the displayed website text
             const websiteWidth = doc.getTextWidth(displayWebsiteText);
-            const linkHeight = 4;  // Padding for easy clicking
-            const linkY = websiteTextY - 2;  // Center vertically over text
+            const linkHeight = 4;
+            const linkY = websiteTextY - 2;
             doc.link(websiteX, linkY, websiteWidth, linkHeight, { url: fullWebsiteUrl });
             yPos = websiteY + (LINE_HEIGHT_WITHIN_SECTION + SPACE_BETWEEN_SECTIONS);
             // Rest of Promoter sections
@@ -214,25 +216,16 @@
             doc.setFontSize(10);
             doc.text('Standard Terms: ', 10, yPos);
             doc.setFont('arial', 'normal');
-            yPos += LINE_HEIGHT_WITHIN_SECTION;  // Consistent with section spacing
+            yPos += LINE_HEIGHT_WITHIN_SECTION;
             legalTerms.forEach(term => {
                 doc.text(term, 10, yPos);
-                yPos += LEGAL_TERM_SPACING;  // Uses variable for term gaps
+                yPos += LEGAL_TERM_SPACING;
             });
-            // Full-width save with local file choice (Blob + temp link for save dialog)
-            const filename = `${headliner}_offer_${formattedDate.replace(/\//g, '-')}.pdf`;  // Use formatted date
-            const pdfBlob = doc.output('blob');
-            const url = URL.createObjectURL(pdfBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            alert(`Success! PDF saved to your local computer: ${filename}`); // Confirmation
+            // FIXED: Use built-in save (reliable download)
+            const filename = `${headliner}_offer_${formattedDate.replace(/\//g, '-')}.pdf`;
+            doc.save(filename);
+            //alert(`Success! PDF saved to your local computer: ${filename}`);
         });
     </script>
 </body>
 </html>
-
