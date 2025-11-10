@@ -1,119 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Tools Dashboard - Xodia Media Group</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); /* Subtle space/DJ gradient */
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .header h1 {
-            font-size: 2.5em;
-            margin: 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.8;
-        }
-        .tool-selector {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-        .tool-button {
-            background: #228B22; /* Green for "go" energy */
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.2s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-        .tool-button:hover {
-            background: #1e7a1e;
-            transform: translateY(-2px);
-        }
-        .tool-frame {
-            width: 100%;
-            max-width: 1200px;
-            height: 80vh; /* Adjustable height for tools */
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-            display: none; /* Hidden until selected */
-        }
-        .no-tool-selected {
-            text-align: center;
-            font-size: 1.1em;
-            opacity: 0.7;
-            margin-top: 20px;
-        }
-        @media (max-width: 768px) {
-            .tool-selector {
-                flex-direction: column;
-                align-items: center;
-            }
-            .tool-button {
-                width: 100%;
-                max-width: 300px;
-            }
-            .header h1 {
-                font-size: 2em;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Event Tools Dashboard</h1>
-        <p>Automate your DJ events with Xodia Media Group</p>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+<div style="font-family: 'Rajdhani', sans-serif; background: #ffffff; color: #000000; padding: 40px; text-align: center; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <h1 style="font-size: 2.5em; margin: 0 0 20px 0; text-shadow: none;">Event Tools Dashboard</h1>
+    <p style="font-size: 1.2em; opacity: 0.8; margin: 0 0 30px 0;">Automate budgeting & offers for your next DJ lineup</p>
+    
+    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px;">
+        <button onclick="loadTool('budget')" style="background: #228B22; color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; cursor: pointer; transition: background 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">Budget Calculator</button>
+        <button onclick="loadTool('pdf')" style="background: #228B22; color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; cursor: pointer; transition: background 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">Offer PDF Generator</button>
     </div>
     
-    <div class="tool-selector">
-        <button class="tool-button" onclick="loadTool('budget')">Budget Calculator</button>
-        <button class="tool-button" onclick="loadTool('pdf')">Offer PDF Generator</button>
-    </div>
+    <iframe id="toolFrame" style="width: 100%; max-width: 1400px; height: 85vh; margin: 0 auto; border: none; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); display: none; background: #f9f9f9;"></iframe>
+    <div id="noToolMessage" style="font-size: 1.1em; opacity: 0.7; margin-top: 20px;">Select a tool above to get started!</div>
+</div>
+
+<script>
+function loadTool(toolType) {
+    const frame = document.getElementById('toolFrame');
+    const message = document.getElementById('noToolMessage');
+    const baseUrl = 'https://raideniv.github.io/event-tools/';
     
-    <iframe id="toolFrame" class="tool-frame" src=""></iframe>
-    <div id="noToolMessage" class="no-tool-selected">Select a tool above to get started!</div>
+    message.style.display = 'none';
+    frame.style.display = 'block';
     
-    <script>
-        function loadTool(toolType) {
-            const frame = document.getElementById('toolFrame');
-            const message = document.getElementById('noToolMessage');
-            
-            // Hide message and show frame
-            message.style.display = 'none';
-            frame.style.display = 'block';
-            
-            // Load the appropriate HTML file into the iframe
-            if (toolType === 'budget') {
-                frame.src = 'budget_app.html';
-            } else if (toolType === 'pdf') {
-                frame.src = 'pdf_maker.html';
-            }
-            
-            // Optional: Scroll to top for better UX
-            window.scrollTo(0, 0);
-        }
-    </script>
-</body>
-</html>
+    if (toolType === 'budget') {
+        frame.src = baseUrl + 'budget_app.html';
+    } else if (toolType === 'pdf') {
+        frame.src = baseUrl + 'pdf_maker.html';
+    }
+    
+    // Scroll to frame for better UX
+    frame.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
