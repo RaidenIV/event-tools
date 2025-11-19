@@ -35,7 +35,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
-            font-weight: normal; /* NEW: Makes typed text bold */
+            font-weight: bold; /* NEW: Makes typed text bold */
             color: #333; /* NEW: Matches label/form text color */
         }
         .checkbox {
@@ -71,15 +71,15 @@
     <h1>Offer PDF Generator</h1>
     <p>Fill in the details below to generate a talent offer PDF sheet.</p>
     <form id="offerForm">
-        <label for="headliner">Headliner Name (e.g., AKIRAH):</label>
+        <label for="headliner">Headliner Name (e.g., SKRILLEX):</label>
         <input type="text" id="headliner" required>
-        <label for="date">Date (MM/DD/YYYY, e.g., 08/01/2026):</label>
+        <label for="date">Date (MM/DD/YYYY, e.g., 01/01/2030):</label>
         <input type="date" id="date" required>
         <label for="venueSelect">Venue:</label>
         <select id="venueSelect">
             <option value="skullys">Skully's Music Diner</option>
             <option value="thecave">The Cave</option>
-            <option value="manual">Manual Input</option>
+            <option value="manual">Custom</option>
         </select>
         <div id="manualVenueFields">
             <label for="venueName">Venue Name:</label>
@@ -226,7 +226,7 @@
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(10);
                 doc.text(`${text}`, 10, y);
-                doc.setFont('helvetica', 'normal');
+                doc.setFont('helvetica', 'bold');
                 doc.setFontSize(10);
                 doc.text(value, 10, y + LINE_HEIGHT_WITHIN_SECTION);
                 return y + (LINE_HEIGHT_WITHIN_SECTION + SPACE_BETWEEN_SECTIONS);
