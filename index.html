@@ -18,27 +18,17 @@ function loadTool(toolType) {
     const frame = document.getElementById('toolFrame');
     const message = document.getElementById('noToolMessage');
     const baseUrl = 'https://raideniv.github.io/event-tools/';
-
+    
     message.style.display = 'none';
     frame.style.display = 'block';
-
+    
     if (toolType === 'budget') {
         frame.src = baseUrl + 'budget_app.html';
     } else if (toolType === 'pdf') {
         frame.src = baseUrl + 'pdf_maker.html';
     }
-
+    
     // Scroll to frame for better UX
     frame.scrollIntoView({ behavior: 'smooth' });
 }
-
-// Listen for postMessage from iframe to resize height
-window.addEventListener('message', function(event) {
-    if (event.data.type === 'resizeIframe') {
-        const frame = document.getElementById('toolFrame');
-        if (frame) {
-            frame.style.height = event.data.height + 'px';
-        }
-    }
-});
 </script>
