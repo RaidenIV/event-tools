@@ -1,34 +1,24 @@
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  header, footer { display: none !important; }
+  .sqs-announcement-bar { display: none !important; }
 
-<div style="font-family: 'Rajdhani', sans-serif; background: #ffffff; color: #000000; padding: 40px; text-align: center; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-    <h1 style="font-size: 2.5em; margin: 0 0 20px 0; text-shadow: none;">Event Tools Dashboard</h1>
-    <p style="font-size: 1.2em; opacity: 0.8; margin: 0 0 30px 0;">Automate budgeting & offers for your next DJ lineup</p>
-    
-    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px;">
-        <button onclick="loadTool('budget')" style="background: #228B22; color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; cursor: pointer; transition: background 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">Budget Calculator</button>
-        <button onclick="loadTool('pdf')" style="background: #228B22; color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 8px; cursor: pointer; transition: background 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">Offer PDF Generator</button>
-    </div>
-    
-    <iframe id="toolFrame" style="width: 100%; max-width: 1400px; height: 85vh; margin: 0 auto; border: none; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); display: none; background: #f9f9f9;"></iframe>
-    <div id="noToolMessage" style="font-size: 1.1em; opacity: 0.7; margin-top: 20px;">Select a tool above to get started!</div>
-</div>
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+</style>
 
-<script>
-function loadTool(toolType) {
-    const frame = document.getElementById('toolFrame');
-    const message = document.getElementById('noToolMessage');
-    const baseUrl = 'https://raideniv.github.io/event-tools/';
-    
-    message.style.display = 'none';
-    frame.style.display = 'block';
-    
-    if (toolType === 'budget') {
-        frame.src = baseUrl + 'budget_app.html';
-    } else if (toolType === 'pdf') {
-        frame.src = baseUrl + 'pdf_maker.html';
-    }
-    
-    // Scroll to frame for better UX
-    frame.scrollIntoView({ behavior: 'smooth' });
-}
-</script>
+<iframe 
+  src="https://raideniv.github.io/event-tools/index.html"
+  style="
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    border: none;
+    margin: 0; padding: 0;
+    overflow: hidden;
+    z-index: 999999;
+  ">
+</iframe>
