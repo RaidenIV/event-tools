@@ -61,6 +61,7 @@
         <button onclick="goToTool('budget')">Budget Calculator</button>
         <button onclick="goToTool('pdf')">Offer PDF Generator</button>
         <button onclick="goToTool('invoice')">Invoice Generator</button>
+        <button onclick="goToTool('sheet')">To-Do List</button>
     </div>
 
     <script>
@@ -69,10 +70,15 @@
 
             if (tool === "budget") {
                 window.location.href = base + "budget_app.html";
-            } else if (tool === "pdf") {
+            } 
+            else if (tool === "pdf") {
                 window.location.href = base + "pdf_maker.html";
-            } else if (tool === "invoice") {
-                window.location.href =base + "invoice_generator.html";
+            } 
+            else if (tool === "invoice") {
+                window.location.href = base + "invoice_generator.html";
+            }
+            else if (tool === "sheet") {
+                window.location.href = base + "google_sheet.html";
             }
         }
     </script>
