@@ -1,24 +1,81 @@
-<style>
-  header, footer { display: none !important; }
-  .sqs-announcement-bar { display: none !important; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Tools Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
 
-  html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden;
-  }
-</style>
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 40px;
+            text-align: center;
+        }
 
-<iframe 
-  src="https://raideniv.github.io/event-tools/index.html"
-  style="
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    border: none;
-    margin: 0; padding: 0;
-    overflow: hidden;
-    z-index: 999999;
-  ">
-</iframe>
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.2em;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #228B22;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        button:hover {
+            background: #1e7a1e;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Event Tools Dashboard</h1>
+    <p>Select a tool below and it will open full-page.</p>
+
+    <div class="button-container">
+        <button onclick="goToTool('budget')">Budget Calculator</button>
+        <button onclick="goToTool('pdf')">Offer PDF Generator</button>
+        <button onclick="goToTool('invoice')">Invoice Generator</button>
+    </div>
+
+    <script>
+        function goToTool(tool) {
+            const base = "https://raideniv.github.io/event-tools/";
+
+            if (tool === "budget") {
+                window.location.href = base + "budget_app.html";
+            } else if (tool === "pdf") {
+                window.location.href = base + "pdf_maker.html";
+            } else if (tool === "invoice") {
+                window.location.href =base + "invoice_generator.html";
+            }
+        }
+    </script>
+
+</body>
+</html>
