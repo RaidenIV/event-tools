@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Tools Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.2em;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #691ae7;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        button:hover {
+            background: #5728a1;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <p>Select a tool below and it will open full-page.</p>
+
+    <div class="button-container">
+        <button onclick="goToTool('dj')">To Do List</button>
+    </div>
+    <div class="button-container">
+        <button onclick="goToTool('vendor')">Master Sheet</button>
+    </div>
+    <div class="button-container">
+        <button onclick="goToTool('sponsor')">Offer PDF Generator</button>
+    </div>
+
+    <script>
+        function goToTool(tool) {
+            const base = "https://raideniv.github.io/event-tools/";
+
+            if (tool === "dj") {
+                window.location.href = base + "dj_form.html";
+            }
+            else if (tool === "vendor") {
+                window.location.href = base + "vendor_form.html";
+            } 
+            else if (tool === "sponsor") {
+                window.location.href = base + "sponsor_form.html";
+            }
+        }
+    </script>
+
+</body>
+</html>
