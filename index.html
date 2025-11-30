@@ -58,7 +58,8 @@
     <p>Select a tool below and it will open full-page.</p>
 
     <div class="button-container">
-        <button onclick="goToTool('sheet')">To-Do List</button>
+        <button onclick="goToTool('sheet')">To Do List</button>
+        <button onclick="goToTool('master')">Master Sheet</button>
         <button onclick="goToTool('pdf')">Offer PDF Generator</button>
         <button onclick="goToTool('budget')">Budget Calculator</button>
         <button onclick="goToTool('invoice')">Invoice Generator</button>
@@ -70,6 +71,9 @@
 
             if (tool === "sheet") {
                 window.location.href = base + "google_sheet.html";
+            }
+            else if (tool === "master") {
+                window.location.href = base + "master_sheet.html";
             } 
             else if (tool === "pdf") {
                 window.location.href = base + "pdf_maker.html";
