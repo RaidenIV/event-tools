@@ -1,86 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Tools Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Selector</title>
 
-    <style>
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background: #ffffff;
-            color: #000000;
-            margin: 0;
-            padding: 0px;
-            text-align: center;
-        }
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+        overflow-x: hidden;
+    }
 
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
+    .button-row {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
 
-        p {
-            font-size: 1.2em;
-            opacity: 0.8;
-            margin-bottom: 30px;
-        }
+    button {
+        padding: 12px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        background: #222;
+        color: white;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
 
-        button {
-            background: #691ae7;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 10px;
-            transition: background 0.3s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
+    button:hover { background: #444; }
+    button.active { background: #007bff; }
 
-        button:hover {
-            background: #5728a1;
-        }
+    .form-container {
+        display: none;
+        justify-content: center;
+        margin-top: 10px;
+    }
 
-        .button-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-    </style>
+    iframe {
+        width: 100%;
+        max-width: 640px;
+        height: 2600px;  /* ← VERY IMPORTANT: prevents inner scrolling */
+        border: none;
+    }
+</style>
 </head>
 <body>
-    <p>Select a form.</p>
 
-    <div class="button-container">
-        <button onclick="goToTool('dj')">DJs</button>
-    </div>
-    <div class="button-container">
-        <button onclick="goToTool('vendor')">Vendors</button>
-    </div>
-    <div class="button-container">
-        <button onclick="goToTool('sponsor')">Sponsors</button>
-    </div>
+<h2>Select a Form</h2>
 
-    <script>
-        function goToTool(tool) {
-            const base = "https://raideniv.github.io/event-tools/";
+<div class="button-row">
+    <button data-target="vendor">Vendor</button>
+    <button data-target="sponsors">Sponsors</button>
+    <button data-target="djs">DJs</button>
+</div>
 
-            if (tool === "dj") {
-                window.location.href = base + "dj_form.html";
-            }
-            else if (tool === "vendor") {
-                window.location.href = base + "vendor_form.html";
-            } 
-            else if (tool === "sponsor") {
-                window.location.href = base + "sponsor_form.html";
-            }
-        }
-    </script>
+<div id="vendor" class="form-container">
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScwARI03cod7mWjN-rSY6HTRniyOBDxr4obi3io5t5_I5NkRQ/viewform?embedded=true"></iframe>
+</div>
+
+<div id="sponsors" class="form-container">
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc_DbKE0a4w0lnPIyRsjHQJ7bzR7fQVdqbDfq2Gah6ZHiUqzQ/viewform?embedded=true"></iframe>
+</div>
+
+<div id="djs" class="form-container">
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSf8m124fy-gFO6D63g1miNC6yErh_OLWUMhfchowKFdJ7IyYQ/viewform?embedded=true"></iframe>
+</div>
+
+<script>
+    const buttons = document.querySelectorAll("button");
+    const forms = document.querySelectorAll(".form-container");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            buttons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            forms.forEach(f => f.style.display = "none");
+
+            const target = btn.getAttribute("data-target");
+            document.getElementById(target).style.display = "flex";
+
+            window.scrollTo(0, 0);
+        });
+    });
+</script>
 
 </body>
 </html>
-
