@@ -15,6 +15,28 @@
             background: white;
             max-width: none;
         }
+        /* BACK TO TOOLS BUTTON */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #228B22;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 9999;
+
+            /* Prevent stretching caused by global button styles */
+            width: auto !important;
+            max-width: none !important;
+        }
+        .back-button:hover {
+            background: #1e7a1e;
+        }
         h1 { text-align: center; color: #030303; }
         p { text-align: center; max-width: 800px; margin: 0 auto 20px; color: #000000; }
         form {
@@ -104,6 +126,10 @@
     </style>
 </head>
 <body>
+    <!-- FIXED BACK BUTTON -->
+    <button class="back-button" onclick="window.location.href='index.html'">
+        ⬅ Back to Tools
+    </button>
     <h1>Offer PDF Generator</h1>
     <p>Fill in the details below to generate a talent offer PDF sheet.</p>
     <form id="offerForm">
@@ -337,23 +363,5 @@
             alert(`Success! PDF saved to your local computer: ${filename}`);
         });
     </script>
-</body>    <!-- Back to Tools Button -->
-    <button onclick="window.location.href='index.html'" 
-            style="
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                background: #228B22;
-                color: white;
-                padding: 10px 18px;
-                border: none;
-                border-radius: 6px;
-                font-size: 16px;
-                cursor: pointer;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-                z-index: 9999;
-            ">
-        ⬅ Back to Tools
-    </button>
+</body>
 </html>
-
