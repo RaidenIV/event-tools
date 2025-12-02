@@ -7,10 +7,31 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
         h1 { font-family: 'Rajdhani', sans-serif; text-align: center; }
+                /* BACK BUTTON (added) */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #228B22;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 9999;
+            width: auto !important;
+            max-width: none !important;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .back-button:hover {
+            background: #1e7a1e;
+        }
         .container { display: flex; justify-content: center; align-items: flex-start; max-width: 1200px; margin: 0 auto; gap: 40px; flex-wrap: wrap; }
         .form-container { max-width: 600px; font-family: 'Rajdhani', sans-serif; text-align: left; flex: 1; min-width: 300px; font-weight: bold;}
         label { display: block; margin-top: 10px; }
-        input, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; font-weight: bold}
         button { margin-top: 20px; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; font-family: 'Rajdhani', sans-serif; }
         .invoice-preview { margin-top: 0; padding: 20px; border: 1px solid #ddd; max-width: 600px; background: white; flex: 1; min-width: 300px; text-align: left; }
         .invoice-preview * { box-sizing: border-box; }
@@ -49,6 +70,9 @@
     </style>
 </head>
 <body>
+    <!-- BACK TOOLS BUTTON (added) -->
+    <button class="back-button" onclick="window.location.href='index.html'">⬅ Back to Tools</button>
+
     <h1>Invoice Generator</h1>
     <div class="container">
         <div class="form-container">
