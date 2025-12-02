@@ -4,6 +4,28 @@
 <meta charset="UTF-8">
 <title>Google Sheet Tool</title>
 <style>
+    .back-button {
+        position: fixed;
+        top: 10px;
+        left: 50%; /* Set left to 50% of the viewport width */
+        transform: translateX(-50%); /* Move it back by half its own width */
+        background: #228B22;
+        color: white;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        z-index: 9999;
+        width: auto !important;
+        max-width: none !important;
+        font-family: 'Arial', sans-serif;
+    }
+    .back-button:hover {
+        background: #1e7a1e;
+    }
     body, html {
         margin: 0;
         padding: 0;
@@ -18,5 +40,7 @@
 </head>
 <body>
     <iframe src="https://docs.google.com/spreadsheets/d/1H-Th4I9uiZ1xj5Z9AKu6FxTlQASo8NejDl5l-EO2DfU/edit?usp=sharing&single=true&widget=true&headers=false"></iframe>
+    <!-- BACK TOOLS BUTTON (added) -->
+    <button class="back-button" onclick="window.location.href='index.html'">⬅ Back to Tools</button>
 </body>
 </html>
