@@ -65,6 +65,9 @@
         <button onclick="goToTool('master')">Master Sheet</button>
     </div>
     <div class="button-container">
+        <button onclick="goToTool('set_times')">Set Times Generator</button>
+    </div>
+    <div class="button-container">
         <button onclick="goToTool('pdf')">Offer PDF Generator</button>
     </div>
     <div class="button-container">
@@ -93,8 +96,12 @@
             else if (tool === "invoice") {
                 window.location.href = base + "invoice_generator.html";
             }
+            else if (tool === "set_times") {
+                window.location.href = base + "set_times.html";
+            }            
         }
     </script>
 
 </body>
 </html>
+
