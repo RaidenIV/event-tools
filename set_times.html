@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Set Time Calculator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+<!-- SortableJS for drag-to-reorder -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+<style>
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background: #fff;
+        color: #111;
+        margin: 0;
+        padding: 28px;
+    }
+
+    .back-button {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        background: #228B22;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        z-index: 9999;
+        font-weight: 700;
+    }
+
+    h1 {
+        text-align: center;
+        margin-top: 6px;
+        margin-bottom: 14px;
+        font-size: 22px;
+    }
+
+    .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        align-items: start;
+    }
+
+    .panel {
+        background: #fafafa;
+        padding: 18px;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+
+    label { display:block; font-weight:700; margin-top:8px; font-size:13px; color:#111; }
+    input[type="text"], input[type="time"], input[type="number"], select, textarea {
+        width:100%;
+        padding:10px;
+        margin-top:6px;
+        border:1px solid #ddd;
+        border-radius:8px;
+        font-size:14px;
+        box-sizing:border-box;
+        font-family: 'Rajdhani', sans-serif;
+    }
+
+    .row { display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .row .col { flex:1; }
+
+    .dj-list { margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+    .dj-item {
+        display:flex;
+        gap:8px;
+        align-items:center;
+        padding:8px;
+        border-radius:8px;
+        background:#fff;
+        border:1px solid #eee;
+        cursor:grab;
+    }
+    .drag-handle { background:#f2f2f2; padding:6px 8px; border-radius:6px; color:#666; font-weight:700; }
+    .dj-item input.name { flex:1; border:none; outline:none; font-weight:700; font-size:14px; padding:8px; }
+    .dj-item input.name:focus { box-shadow: 0 0 0 3px rgba(34,139,34,0.08); border-radius:6px; }
+
+    .actions { display:flex; gap:10px; align-items:center; margin-top:12px; }
+    button.primary {
+        background: #228B22;
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius:8px;
+        font-weight:700;
+        cursor:pointer;
+    }
+    button.ghost {
+        background: white;
+        color: #228B22;
+        border:1px solid #ddd;
+        padding:10px 12px;
+        border-radius:8px;
+        cursor:pointer;
+        font-weight:700;
+    }
+
+    .notes { margin-top:12px; font-size:13px; color:#444; }
+
+    .results { min-height:40px; margin-top:12px; }
+    .result-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px; background:#fff; border-radius:8px; border:1px solid #eee; margin-bottom:8px; }
+    .result-row .label { font-weight:700; }
+    .result-row input.inline { width:140px; padding:8px; border-radius:6px; border:1px solid #ddd; }
+
+    .controls-row { display:flex; gap:8px; align-items:center; margin-top:10px; }
+    .controls-row .fill-right { margin-left:auto; color:#666; font-size:12px; }
+
+    @media (max-width:860px) {
+        .wrap { grid-template-columns: 1fr; padding:10px; }
+    }
+</style>
+</head>
+<body>
+
+<button class="back-button" onclick="window.location.href='https://www.xodiamediagroup.com/tools'">⬅ Back to Tools</button>
+
+<h1>Set Time Calculator</h1>
+
+<div class="wrap">
+
+    <!-- LEFT: Inputs -->
+    <div class="panel" id="leftPanel">
+        <label>How many DJs?</label>
+        <select id="djCount">
+            <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option>
+            <option>7</option><option>8</option>
+        </select>
+
+        <label style="margin-top:12px">DJ Lineup (drag to reorder)</label>
+        <div id="djNamesContainer" class="dj-list" aria-label="DJ lineup"></div>
+
+        <div class="row">
+            <div class="col">
+                <label>Show Start Time</label>
+                <input id="startTime" type="time" value="20:00" />
+            </div>
+            <div class="col">
+                <label>Show End Time</label>
+                <input id="endTime" type="time" value="02:00" />
+            </div>
+        </div>
+
+        <label style="margin-top:12px">B2B Block Name</label>
+        <input id="b2bName" type="text" placeholder="B2B" value="B2B" />
+
+        <div class="actions">
+            <button id="calcBtn" class="primary">Calculate Schedule</button>
+            <button id="copyBtn" class="ghost">Copy Result</button>
+            <button id="resetBtn" class="ghost">Reset Results</button>
+            <div class="fill-right">Results update live as you type</div>
+        </div>
+
+        <div class="notes">
+            • Times are divided evenly by default. Any leftover minutes after the division are appended as a B2B block at the end (rename above).<br>
+            • Drag DJs to reorder — order determines the schedule.
+        </div>
+    </div>
+
+    <!-- RIGHT: Results -->
+    <div class="panel" id="rightPanel">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-weight:700; font-size:16px;">Calculated Schedule</div>
+            <div style="margin-left:auto; color:#666; font-size:13px;">Editable — adjust times inline</div>
+        </div>
+
+        <div id="results" class="results"></div>
+
+        <div class="controls-row">
+            <button id="editAll" class="ghost">Edit All Times</button>
+            <button id="doneEditing" class="ghost" style="display:none">Done Editing</button>
+            <div style="margin-left:auto; color:#666; font-size:13px;">Drag to reorder DJs on the left to change schedule</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+/* -------------------------
+   Utilities
+--------------------------*/
+function hhmmToMinutes(hhmm) {
+    if (!hhmm) return null;
+    const [hh, mm] = hhmm.split(':').map(Number);
+    return hh*60 + mm;
+}
+function minutesToDisplay(totalMinutes) {
+    let mins = totalMinutes % 1440;
+    if (mins < 0) mins += 1440;
+    let h = Math.floor(mins/60);
+    let m = mins % 60;
+    const suffix = (h >= 12) ? 'PM' : 'AM';
+    h = (h % 12) || 12;
+    return `${h}:${String(m).padStart(2,'0')} ${suffix}`;
+}
+function parseDisplayToMinutes(s){
+    if(!s || typeof s !== 'string') return null;
+    s = s.trim();
+    const m = s.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/i);
+    if(!m) return null;
+    let hh = Number(m[1]);
+    const mm = Number(m[2]);
+    const ampm = (m[3]||'').toUpperCase();
+    if(ampm === 'AM'){ if(hh === 12) hh = 0; }
+    else if(ampm === 'PM'){ if(hh !== 12) hh = hh + 12; }
+    return hh*60 + mm;
+}
+
+/* -------------------------
+   DOM refs
+--------------------------*/
+const djCountEl = document.getElementById('djCount');
+const djNamesContainer = document.getElementById('djNamesContainer');
+const startEl = document.getElementById('startTime');
+const endEl = document.getElementById('endTime');
+const b2bNameEl = document.getElementById('b2bName');
+const calcBtn = document.getElementById('calcBtn');
+const copyBtn = document.getElementById('copyBtn');
+const resetBtn = document.getElementById('resetBtn');
+const resultsEl = document.getElementById('results');
+const editAllBtn = document.getElementById('editAll');
+const doneEditingBtn = document.getElementById('doneEditing');
+
+let sortable; // Sortable instance
+
+/* -------------------------
+   Build DJ inputs preserving existing values
+--------------------------*/
+function buildDJInputs(){
+    const count = Number(djCountEl.value);
+    // read existing names in DOM order
+    const existing = Array.from(djNamesContainer.querySelectorAll('.dj-item input.name')).map(i => i.value);
+    // rebuild with preserving
+    djNamesContainer.innerHTML = '';
+    for(let i=0;i<count;i++){
+        const name = existing[i] ?? `DJ ${i+1}`;
+        const item = document.createElement('div');
+        item.className = 'dj-item';
+        item.innerHTML = `
+            <div class="drag-handle" title="Drag to reorder">☰</div>
+            <input class="name" type="text" value="${escapeHtml(name)}" />
+        `;
+        djNamesContainer.appendChild(item);
+    }
+
+    // init or refresh Sortable
+    if(sortable) sortable.destroy();
+    sortable = Sortable.create(djNamesContainer, {
+        handle: '.drag-handle',
+        animation: 150,
+        onEnd: () => {
+            // when reorder happens, keep DOM order and recalc
+            calculateLive();
+        }
+    });
+
+    attachListenersToDJInputs();
+}
+
+/* Escape for value injection */
+function escapeHtml(str){
+    if(!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* -------------------------
+   Attach listeners
+--------------------------*/
+function attachListenersToDJInputs(){
+    const nameInputs = djNamesContainer.querySelectorAll('input.name');
+    nameInputs.forEach(inp => inp.oninput = calculateLive);
+    djCountEl.onchange = () => { buildDJInputs(); calculateLive(); };
+    startEl.oninput = calculateLive;
+    endEl.oninput = calculateLive;
+    b2bNameEl.oninput = calculateLive;
+    calcBtn.onclick = calculateLive;
+    copyBtn.onclick = copyResult;
+    resetBtn.onclick = resetResults;
+    editAllBtn.onclick = enableEditing;
+    doneEditingBtn.onclick = disableEditing;
+}
+
+/* -------------------------
+   Core: live calculation
+   Behavior:
+     - totalMinutes = end - start (rollover next day if end <= start)
+     - perDJ = Math.floor(totalMinutes / count)
+     - leftover = totalMinutes - (perDJ * count)
+     - schedule DJs with perDJ, then if leftover>0 append B2B with leftover minutes (label from input)
+--------------------------*/
+function calculateLive(){
+    const nameEls = Array.from(djNamesContainer.querySelectorAll('input.name'));
+    const names = nameEls.map((n,i) => n.value.trim() || `DJ ${i+1}`);
+    const startVal = startEl.value;
+    const endVal = endEl.value;
+    if(!startVal || !endVal){
+        // show placeholders
+        resultsEl.innerHTML = names.map(n=> `<div class="result-row"><div class="label">${escapeHtml(n)}</div><div style="color:#666">--:--</div></div>`).join('');
+        resultsEl._rows = [];
+        return;
+    }
+
+    const startM = hhmmToMinutes(startVal);
+    const endM = hhmmToMinutes(endVal);
+    let totalMins = (endM <= startM) ? (endM + 1440) - startM : endM - startM;
+    const count = names.length;
+    const perDJ = Math.floor(totalMins / count);
+    const leftover = totalMins - (perDJ * count);
+
+    // Build rows
+    let cur = startM;
+    const rows = [];
+    for(let i=0;i<count;i++){
+        const dur = perDJ;
+        rows.push({ label: names[i], startMin: cur, endMin: cur + dur, dur });
+        cur += dur;
+    }
+    if(leftover > 0){
+        rows.push({ label: b2bNameEl.value.trim() || 'B2B', startMin: cur, endMin: cur + leftover, dur: leftover });
+        cur += leftover;
+    }
+
+    // Render
+    renderRows(rows);
+}
+
+/* -------------------------
+   Render rows (editable)
+--------------------------*/
+function renderRows(rows){
+    resultsEl.innerHTML = '';
+    rows.forEach((r, idx) => {
+        const div = document.createElement('div');
+        div.className = 'result-row';
+
+        const left = document.createElement('div');
+        left.className = 'label';
+        left.innerText = r.label;
+
+        const right = document.createElement('div');
+        right.style.display = 'flex';
+        right.style.gap = '8px';
+        right.style.alignItems = 'center';
+
+        const startInput = document.createElement('input');
+        startInput.className = 'inline';
+        startInput.value = minutesToDisplay(r.startMin);
+        startInput.oninput = () => {
+            const parsed = parseDisplayToMinutes(startInput.value);
+            if(parsed !== null){
+                r.startMin = parsed;
+                r.endMin = parsed + r.dur;
+                synchronizeAndRerender(rows, idx);
+            }
+        };
+
+        const arrow = document.createElement('span'); arrow.innerText = '→'; arrow.style.color = '#666';
+
+        const endInput = document.createElement('input');
+        endInput.className = 'inline';
+        endInput.value = minutesToDisplay(r.endMin);
+        endInput.oninput = () => {
+            const parsed = parseDisplayToMinutes(endInput.value);
+            if(parsed !== null){
+                const newDur = parsed - r.startMin;
+                r.dur = newDur;
+                r.endMin = parsed;
+                synchronizeAndRerender(rows, idx);
+            }
+        };
+
+        right.appendChild(startInput);
+        right.appendChild(arrow);
+        right.appendChild(endInput);
+
+        div.appendChild(left);
+        div.appendChild(right);
+        resultsEl.appendChild(div);
+    });
+
+    resultsEl._rows = rows;
+}
+
+/* -------------------------
+   After manual edit on row idx, propagate times to following rows and update UI
+--------------------------*/
+function synchronizeAndRerender(rows, startIdx){
+    for(let i = startIdx + 1; i < rows.length; i++){
+        rows[i].startMin = rows[i-1].endMin;
+        rows[i].endMin = rows[i].startMin + rows[i].dur;
+    }
+    renderRows(rows);
+}
+
+/* -------------------------
+   Copy results
+--------------------------*/
+function copyResult(){
+    const rows = resultsEl._rows || [];
+    if(!rows.length){ alert('No results'); return; }
+    let text = rows.map(r => `${r.label}: ${minutesToDisplay(r.startMin)} → ${minutesToDisplay(r.endMin)} (${r.dur} min)`).join('\n');
+    navigator.clipboard.writeText(text).then(()=> alert('Copied to clipboard'), ()=> alert('Copy failed'));
+}
+
+/* -------------------------
+   Reset results (right side only)
+--------------------------*/
+function resetResults(){
+    resultsEl.innerHTML = '';
+    resultsEl._rows = [];
+    disableEditing();
+}
+
+/* -------------------------
+   Editing buttons
+--------------------------*/
+function enableEditing(){
+    editAllBtn.style.display = 'none';
+    doneEditingBtn.style.display = '';
+    resultsEl.querySelectorAll('.result-row').forEach(r => r.style.background = '#fffbe6');
+}
+function disableEditing(){
+    editAllBtn.style.display = '';
+    doneEditingBtn.style.display = 'none';
+    resultsEl.querySelectorAll('.result-row').forEach(r => r.style.background = '#fff');
+}
+
+/* -------------------------
+   Init
+--------------------------*/
+buildDJInputs();
+attachListenersToDJInputs();
+calculateLive(); // initial render
+
+// live recalc as you type (already wired via input listeners)
+// also recalc on window focus
+window.addEventListener('focus', calculateLive);
+
+</script>
+</body>
+</html>
