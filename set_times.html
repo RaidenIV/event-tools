@@ -6,17 +6,15 @@
 <title>Set Time Calculator</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
-
-<!-- SortableJS for drag-to-reorder -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
 <style>
     body {
         font-family: 'Rajdhani', sans-serif;
-        background: #fff;
+        background: #ffffff;
         color: #111;
         margin: 0;
-        padding: 28px;
+        padding: 30px;
     }
 
     .back-button {
@@ -29,24 +27,18 @@
         padding: 8px 12px;
         border-radius: 6px;
         cursor: pointer;
-        z-index: 9999;
         font-weight: 700;
+        z-index: 9999;
     }
 
-    h1 {
-        text-align: center;
-        margin-top: 6px;
-        margin-bottom: 14px;
-        font-size: 22px;
-    }
+    h1 { text-align:center; margin-bottom:16px; }
 
     .wrap {
-        max-width: 980px;
-        margin: 0 auto;
+        max-width: 780px;
+        margin: auto;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 18px;
-        align-items: start;
     }
 
     .panel {
@@ -56,395 +48,496 @@
         box-shadow: 0 6px 18px rgba(0,0,0,0.06);
     }
 
-    label { display:block; font-weight:700; margin-top:8px; font-size:13px; color:#111; }
-    input[type="text"], input[type="time"], input[type="number"], select, textarea {
-        width:100%;
+    label { display:block; font-weight:700; margin-top:10px; font-size:14px; }
+
+    input[type="text"], input[type="time"], input[type="number"] {
         padding:10px;
         margin-top:6px;
         border:1px solid #ddd;
         border-radius:8px;
-        font-size:14px;
-        box-sizing:border-box;
-        font-family: 'Rajdhani', sans-serif;
+        font-size:15px;
+        font-weight: bold;
+        font-family:'Rajdhani';
     }
 
-    .row { display:flex; gap:10px; align-items:center; margin-top:10px; }
-    .row .col { flex:1; }
+    /* Smaller time boxes */
+    .time-small {
+        width: 120px !important;
+        font-weight:700;
+    }
 
-    .dj-list { margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+    #djCount {
+        width: 60px;
+    }
+
+    .dj-list { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
     .dj-item {
         display:flex;
-        gap:8px;
         align-items:center;
         padding:8px;
+        background:#fff;
         border-radius:8px;
+        border:1px solid #eee;
+        gap:10px;
+    }
+
+    .drag-handle {
+        padding:6px 10px;
+        background:#f2f2f2;
+        border-radius:6px;
+        cursor:grab;
+        font-weight:700;
+        color:#444;
+    }
+
+    .dj-item input.name {
+        flex:1;
+        border:none;
+        background:transparent;
+        font-size:15px;
+        font-weight:700;
+    }
+
+    button.primary {
+        background:#228B22;
+        color:white;
+        border:none;
+        padding:10px 16px;
+        border-radius:8px;
+        cursor:pointer;
+        font-weight:700;
+    }
+    button.primary:hover { background:#1d701d; }
+
+    button.ghost {
+        background:white;
+        border:1px solid #ddd;
+        color:#228B22;
+        padding:10px 16px;
+        border-radius:8px;
+        font-weight:700;
+        cursor:pointer;
+    }
+
+    .result-row {
+        display:flex;
+        flex-direction: column;
+        justify-content:flex-start;
+        align-items:flex-start;
         background:#fff;
         border:1px solid #eee;
-        cursor:grab;
-    }
-    .drag-handle { background:#f2f2f2; padding:6px 8px; border-radius:6px; color:#666; font-weight:700; }
-    .dj-item input.name { flex:1; border:none; outline:none; font-weight:700; font-size:14px; padding:8px; }
-    .dj-item input.name:focus { box-shadow: 0 0 0 3px rgba(34,139,34,0.08); border-radius:6px; }
-
-    .actions { display:flex; gap:10px; align-items:center; margin-top:12px; }
-    button.primary {
-        background: #228B22;
-        color: white;
-        border: none;
-        padding: 10px 14px;
+        padding:10px;
         border-radius:8px;
-        font-weight:700;
-        cursor:pointer;
-    }
-    button.ghost {
-        background: white;
-        color: #228B22;
-        border:1px solid #ddd;
-        padding:10px 12px;
-        border-radius:8px;
-        cursor:pointer;
-        font-weight:700;
+        margin-bottom:8px;
+        gap:4px;
     }
 
-    .notes { margin-top:12px; font-size:13px; color:#444; }
-
-    .results { min-height:40px; margin-top:12px; }
-    .result-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px; background:#fff; border-radius:8px; border:1px solid #eee; margin-bottom:8px; }
     .result-row .label { font-weight:700; }
-    .result-row input.inline { width:140px; padding:8px; border-radius:6px; border:1px solid #ddd; }
 
-    .controls-row { display:flex; gap:8px; align-items:center; margin-top:10px; }
-    .controls-row .fill-right { margin-left:auto; color:#666; font-size:12px; }
-
-    @media (max-width:860px) {
-        .wrap { grid-template-columns: 1fr; padding:10px; }
+    .result-row input.inline {
+        width:130px;
+        padding:8px;
+        border-radius:6px;
+        border:1px solid #ddd;
+        font-family:'Rajdhani';
+        font-weight:bold;
     }
 </style>
 </head>
 <body>
 
-<button class="back-button" onclick="window.location.href='https://www.xodiamediagroup.com/tools'">⬅ Back to Tools</button>
+<button class="back-button" onclick="window.location.href='index.html'">⬅ Back to Tools</button>
 
 <h1>Set Time Calculator</h1>
 
 <div class="wrap">
 
-    <!-- LEFT: Inputs -->
-    <div class="panel" id="leftPanel">
+    <!-- LEFT PANEL -->
+    <div class="panel">
+
         <label>How many DJs?</label>
-        <select id="djCount">
-            <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option>
-            <option>7</option><option>8</option>
-        </select>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <input id="djCount" type="number" min="1" value="3">
+
+            <!-- PRESET DROPDOWN -->
+            <select id="presetSelect" style="padding:8px; border-radius:8px; font-family:'Rajdhani'; font-weight:700;">
+                <option value="">Preset</option>
+                <option value="newstandard">New Standard</option>
+                <option value="legacy">Legacy</option>
+                <option value="latestart">Late Start (9PM)</option>
+            </select>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:12px;">
+            <div style="flex:1;">
+                <label>Show Start Time</label>
+                <input id="startTime" type="time" value="20:00" class="time-small">
+            </div>
+            <div style="flex:1;">
+                <label>Show End Time</label>
+                <input id="endTime" type="time" value="02:00" class="time-small">
+            </div>
+        </div>
 
         <label style="margin-top:12px">DJ Lineup (drag to reorder)</label>
-        <div id="djNamesContainer" class="dj-list" aria-label="DJ lineup"></div>
+        <div id="djNamesContainer" class="dj-list"></div>
 
-        <div class="row">
-            <div class="col">
-                <label>Show Start Time</label>
-                <input id="startTime" type="time" value="20:00" />
-            </div>
-            <div class="col">
-                <label>Show End Time</label>
-                <input id="endTime" type="time" value="02:00" />
-            </div>
+        <div style="margin-top:15px; display:flex; gap:10px;">
+            <button id="calcBtn" class="primary">Recalculate</button>
+            <button id="resetBtn" class="ghost">Reset</button>
         </div>
 
-        <label style="margin-top:12px">B2B Block Name</label>
-        <input id="b2bName" type="text" placeholder="B2B" value="B2B" />
-
-        <div class="actions">
-            <button id="calcBtn" class="primary">Calculate Schedule</button>
-            <button id="copyBtn" class="ghost">Copy Result</button>
-            <button id="resetBtn" class="ghost">Reset Results</button>
-            <div class="fill-right">Results update live as you type</div>
-        </div>
-
-        <div class="notes">
-            • Times are divided evenly by default. Any leftover minutes after the division are appended as a B2B block at the end (rename above).<br>
-            • Drag DJs to reorder — order determines the schedule.
-        </div>
     </div>
 
-    <!-- RIGHT: Results -->
-    <div class="panel" id="rightPanel">
-        <div style="display:flex; align-items:center; gap:12px;">
-            <div style="font-weight:700; font-size:16px;">Calculated Schedule</div>
-            <div style="margin-left:auto; color:#666; font-size:13px;">Editable — adjust times inline</div>
+    <!-- RIGHT PANEL -->
+    <div class="panel">
+
+        <div style="font-weight:700; font-size:16px; margin-bottom:10px;">Calculated Schedule</div>
+
+        <div id="results"></div>
+
+        <div style="margin-top:15px; display:flex; gap:10px;">
+            <button id="updateBtn" class="primary">Update</button>
+            <button id="copyBtnBottom" class="primary">Copy</button>
         </div>
 
-        <div id="results" class="results"></div>
-
-        <div class="controls-row">
-            <button id="editAll" class="ghost">Edit All Times</button>
-            <button id="doneEditing" class="ghost" style="display:none">Done Editing</button>
-            <div style="margin-left:auto; color:#666; font-size:13px;">Drag to reorder DJs on the left to change schedule</div>
-        </div>
     </div>
 
 </div>
 
 <script>
-/* -------------------------
-   Utilities
---------------------------*/
-function hhmmToMinutes(hhmm) {
-    if (!hhmm) return null;
-    const [hh, mm] = hhmm.split(':').map(Number);
-    return hh*60 + mm;
+/* ---------- TIME HELPERS ---------- */
+function hhmmToMin(t){ let[p,q]=t.split(":").map(Number); return p*60+q; }
+function minToDisplay(m){
+    m=((m%1440)+1440)%1440;
+    let h=Math.floor(m/60), mm=m%60;
+    let ap=h>=12?"PM":"AM";
+    h=(h%12)||12;
+    return `${h}:${String(mm).padStart(2,'0')} ${ap}`;
 }
-function minutesToDisplay(totalMinutes) {
-    let mins = totalMinutes % 1440;
-    if (mins < 0) mins += 1440;
-    let h = Math.floor(mins/60);
-    let m = mins % 60;
-    const suffix = (h >= 12) ? 'PM' : 'AM';
-    h = (h % 12) || 12;
-    return `${h}:${String(m).padStart(2,'0')} ${suffix}`;
-}
-function parseDisplayToMinutes(s){
-    if(!s || typeof s !== 'string') return null;
-    s = s.trim();
-    const m = s.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/i);
-    if(!m) return null;
-    let hh = Number(m[1]);
-    const mm = Number(m[2]);
-    const ampm = (m[3]||'').toUpperCase();
-    if(ampm === 'AM'){ if(hh === 12) hh = 0; }
-    else if(ampm === 'PM'){ if(hh !== 12) hh = hh + 12; }
-    return hh*60 + mm;
+function parseDisplay(s){
+    let m=s.match(/(\d{1,2}):(\d{2}) ?(AM|PM)?/i);
+    if(!m)return null;
+    let h=+m[1], mm=+m[2], ap=(m[3]||"AM").toUpperCase();
+    if(ap==="AM"&&h===12)h=0;
+    if(ap==="PM"&&h!==12)h+=12;
+    return h*60+mm;
 }
 
-/* -------------------------
-   DOM refs
---------------------------*/
-const djCountEl = document.getElementById('djCount');
-const djNamesContainer = document.getElementById('djNamesContainer');
-const startEl = document.getElementById('startTime');
-const endEl = document.getElementById('endTime');
-const b2bNameEl = document.getElementById('b2bName');
-const calcBtn = document.getElementById('calcBtn');
-const copyBtn = document.getElementById('copyBtn');
-const resetBtn = document.getElementById('resetBtn');
-const resultsEl = document.getElementById('results');
-const editAllBtn = document.getElementById('editAll');
-const doneEditingBtn = document.getElementById('doneEditing');
+/* ---------- DOM REFS ---------- */
+const container=document.getElementById("djNamesContainer");
+const djCountEl=document.getElementById("djCount");
+const startEl=document.getElementById("startTime");
+const endEl=document.getElementById("endTime");
+const resultsEl=document.getElementById("results");
+const presetSelect=document.getElementById("presetSelect");
 
-let sortable; // Sortable instance
+let sortable;
+let currentPreset = null;
 
-/* -------------------------
-   Build DJ inputs preserving existing values
---------------------------*/
+/* ---------- PRESETS (exact patterns) ---------- */
+const presets = {
+    newstandard: {
+        count: 7,
+        start: "20:00",
+        end: "02:00",
+        // durations in minutes: 7 DJs + B2B
+        slotDurations: [45,45,45,45,45,60,60,15]
+    },
+    legacy: {
+        count: 7,
+        start: "20:00",
+        end: "02:00",
+        slotDurations: [45,45,45,45,45,45,60,30]
+    },
+    latestart: {
+        count: 6,
+        start: "21:00",
+        end: "02:00",
+        slotDurations: [45,45,45,45,45,60,15]
+    }
+};
+
+/* ---------- BUILD DJ INPUTS ---------- */
 function buildDJInputs(){
-    const count = Number(djCountEl.value);
-    // read existing names in DOM order
-    const existing = Array.from(djNamesContainer.querySelectorAll('.dj-item input.name')).map(i => i.value);
-    // rebuild with preserving
-    djNamesContainer.innerHTML = '';
+    let count=+djCountEl.value;
+    let existing=[...container.querySelectorAll("input.name")].map(i=>i.value);
+
+    container.innerHTML="";
+
     for(let i=0;i<count;i++){
-        const name = existing[i] ?? `DJ ${i+1}`;
-        const item = document.createElement('div');
-        item.className = 'dj-item';
-        item.innerHTML = `
-            <div class="drag-handle" title="Drag to reorder">☰</div>
-            <input class="name" type="text" value="${escapeHtml(name)}" />
+        let name=existing[i] || `DJ ${i+1}`;
+        let row=document.createElement("div");
+        row.className="dj-item";
+        row.innerHTML=`
+            <div class="drag-handle">☰</div>
+            <input class="name" type="text" value="${name}">
         `;
-        djNamesContainer.appendChild(item);
+        container.appendChild(row);
+
+        let inp=row.querySelector("input.name");
+        inp.onfocus=()=>inp.select();
+        inp.oninput=calculate;  // live update names into schedule
     }
 
-    // init or refresh Sortable
-    if(sortable) sortable.destroy();
-    sortable = Sortable.create(djNamesContainer, {
-        handle: '.drag-handle',
-        animation: 150,
-        onEnd: () => {
-            // when reorder happens, keep DOM order and recalc
-            calculateLive();
-        }
+    initSortable();
+}
+
+function initSortable(){
+    if(sortable)sortable.destroy();
+    sortable=Sortable.create(container,{
+        handle:".drag-handle",
+        animation:150,
+        onEnd(){ calculate(); }
     });
-
-    attachListenersToDJInputs();
 }
 
-/* Escape for value injection */
-function escapeHtml(str){
-    if(!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+/* ---------- CALCULATE ---------- */
+function calculate(){
+    let names=[...container.querySelectorAll("input.name")].map(i=>i.value.trim()||"DJ");
 
-/* -------------------------
-   Attach listeners
---------------------------*/
-function attachListenersToDJInputs(){
-    const nameInputs = djNamesContainer.querySelectorAll('input.name');
-    nameInputs.forEach(inp => inp.oninput = calculateLive);
-    djCountEl.onchange = () => { buildDJInputs(); calculateLive(); };
-    startEl.oninput = calculateLive;
-    endEl.oninput = calculateLive;
-    b2bNameEl.oninput = calculateLive;
-    calcBtn.onclick = calculateLive;
-    copyBtn.onclick = copyResult;
-    resetBtn.onclick = resetResults;
-    editAllBtn.onclick = enableEditing;
-    doneEditingBtn.onclick = disableEditing;
-}
+    let start=hhmmToMin(startEl.value);
+    let end=hhmmToMin(endEl.value);
+    if(end<=start)end+=1440;
 
-/* -------------------------
-   Core: live calculation
-   Behavior:
-     - totalMinutes = end - start (rollover next day if end <= start)
-     - perDJ = Math.floor(totalMinutes / count)
-     - leftover = totalMinutes - (perDJ * count)
-     - schedule DJs with perDJ, then if leftover>0 append B2B with leftover minutes (label from input)
---------------------------*/
-function calculateLive(){
-    const nameEls = Array.from(djNamesContainer.querySelectorAll('input.name'));
-    const names = nameEls.map((n,i) => n.value.trim() || `DJ ${i+1}`);
-    const startVal = startEl.value;
-    const endVal = endEl.value;
-    if(!startVal || !endVal){
-        // show placeholders
-        resultsEl.innerHTML = names.map(n=> `<div class="result-row"><div class="label">${escapeHtml(n)}</div><div style="color:#666">--:--</div></div>`).join('');
-        resultsEl._rows = [];
-        return;
+    const total=end-start;
+    let rows=[];
+
+    // If a preset is active, use its fixed slot durations
+    if(currentPreset && presets[currentPreset]){
+        const p = presets[currentPreset];
+        const durs = p.slotDurations;
+        let cur = start;
+
+        for(let i=0;i<durs.length;i++){
+            const dur = durs[i];
+            const isLast = (i === durs.length-1);
+            const isB2B = isLast;
+            const label = isB2B ? "B2B" : (names[i] || `DJ ${i+1}`);
+
+            rows.push({
+                label,
+                start: cur,
+                end: cur + dur,
+                dur: dur,
+                isB2B: isB2B
+            });
+
+            cur += dur;
+        }
+    } else {
+        // Generic mode: even division in 5-minute increments, leftover to B2B
+        const count = names.length;
+        if(count === 0){
+            resultsEl.innerHTML = "";
+            resultsEl._rows = [];
+            return;
+        }
+
+        let rawPer = total / count;
+        let per = Math.floor(rawPer / 5) * 5;
+        if(per < 5) per = 5;
+
+        let used = per * count;
+        let leftover = total - used;
+
+        let cur = start;
+        for(let n of names){
+            rows.push({
+                label:n,
+                start:cur,
+                end:cur+per,
+                dur:per,
+                isB2B:false
+            });
+            cur += per;
+        }
+
+        if(leftover > 0){
+            rows.push({
+                label:"B2B",
+                start:cur,
+                end:cur+leftover,
+                dur:leftover,
+                isB2B:true
+            });
+        }
     }
 
-    const startM = hhmmToMinutes(startVal);
-    const endM = hhmmToMinutes(endVal);
-    let totalMins = (endM <= startM) ? (endM + 1440) - startM : endM - startM;
-    const count = names.length;
-    const perDJ = Math.floor(totalMins / count);
-    const leftover = totalMins - (perDJ * count);
-
-    // Build rows
-    let cur = startM;
-    const rows = [];
-    for(let i=0;i<count;i++){
-        const dur = perDJ;
-        rows.push({ label: names[i], startMin: cur, endMin: cur + dur, dur });
-        cur += dur;
-    }
-    if(leftover > 0){
-        rows.push({ label: b2bNameEl.value.trim() || 'B2B', startMin: cur, endMin: cur + leftover, dur: leftover });
-        cur += leftover;
-    }
-
-    // Render
-    renderRows(rows);
+    render(rows);
 }
 
-/* -------------------------
-   Render rows (editable)
---------------------------*/
-function renderRows(rows){
-    resultsEl.innerHTML = '';
-    rows.forEach((r, idx) => {
-        const div = document.createElement('div');
-        div.className = 'result-row';
+/* ---------- RENDER (name above times) ---------- */
+function render(rows){
+    resultsEl.innerHTML="";
 
-        const left = document.createElement('div');
-        left.className = 'label';
-        left.innerText = r.label;
+    rows.forEach((r,i)=>{
+        let div=document.createElement("div");
+        div.className="result-row";
 
-        const right = document.createElement('div');
-        right.style.display = 'flex';
-        right.style.gap = '8px';
-        right.style.alignItems = 'center';
+        // NAME BLOCK (top)
+        const nameBlock = document.createElement("div");
+        nameBlock.style.fontWeight = "700";
 
-        const startInput = document.createElement('input');
-        startInput.className = 'inline';
-        startInput.value = minutesToDisplay(r.startMin);
-        startInput.oninput = () => {
-            const parsed = parseDisplayToMinutes(startInput.value);
-            if(parsed !== null){
-                r.startMin = parsed;
-                r.endMin = parsed + r.dur;
-                synchronizeAndRerender(rows, idx);
-            }
-        };
+        if(r.isB2B){
+            const nameInput = document.createElement("input");
+            nameInput.className = "inline";
+            nameInput.dataset.type = "name";
+            nameInput.dataset.idx = i;
+            nameInput.value = r.label;
+            nameBlock.appendChild(nameInput);
+        } else {
+            nameBlock.textContent = r.label;
+        }
 
-        const arrow = document.createElement('span'); arrow.innerText = '→'; arrow.style.color = '#666';
+        // TIME ROW
+        const timeRow = document.createElement("div");
+        timeRow.style.display = "flex";
+        timeRow.style.gap = "8px";
+        timeRow.style.alignItems = "center";
 
-        const endInput = document.createElement('input');
-        endInput.className = 'inline';
-        endInput.value = minutesToDisplay(r.endMin);
-        endInput.oninput = () => {
-            const parsed = parseDisplayToMinutes(endInput.value);
-            if(parsed !== null){
-                const newDur = parsed - r.startMin;
-                r.dur = newDur;
-                r.endMin = parsed;
-                synchronizeAndRerender(rows, idx);
-            }
-        };
+        const startInput = document.createElement("input");
+        startInput.className = "inline";
+        startInput.dataset.type = "start";
+        startInput.dataset.idx = i;
+        startInput.value = minToDisplay(r.start);
 
-        right.appendChild(startInput);
-        right.appendChild(arrow);
-        right.appendChild(endInput);
+        const arrow = document.createElement("span");
+        arrow.textContent = "→";
 
-        div.appendChild(left);
-        div.appendChild(right);
+        const endInput = document.createElement("input");
+        endInput.className = "inline";
+        endInput.dataset.type = "end";
+        endInput.dataset.idx = i;
+        endInput.value = minToDisplay(r.end);
+
+        timeRow.appendChild(startInput);
+        timeRow.appendChild(arrow);
+        timeRow.appendChild(endInput);
+
+        div.appendChild(nameBlock);
+        div.appendChild(timeRow);
+
         resultsEl.appendChild(div);
     });
 
     resultsEl._rows = rows;
 }
 
-/* -------------------------
-   After manual edit on row idx, propagate times to following rows and update UI
---------------------------*/
-function synchronizeAndRerender(rows, startIdx){
-    for(let i = startIdx + 1; i < rows.length; i++){
-        rows[i].startMin = rows[i-1].endMin;
-        rows[i].endMin = rows[i].startMin + rows[i].dur;
+/* ---------- UPDATE BUTTON (resync after manual edits) ---------- */
+function updateSchedule(){
+    let rows = resultsEl._rows;
+    if(!rows)return;
+
+    let end=hhmmToMin(endEl.value);
+
+    [...resultsEl.querySelectorAll("input.inline")].forEach(inp=>{
+        let idx=+inp.dataset.idx;
+        let type=inp.dataset.type;
+        let row=rows[idx];
+
+        if(type==="name"){ row.label = inp.value.trim(); return; }
+
+        let t=parseDisplay(inp.value);
+        if(t==null)return;
+
+        if(type==="start") { row.start=t; row.end=t+row.dur; }
+        if(type==="end")   { row.end=t;   row.dur=row.end-row.start; }
+    });
+
+    for(let i=1;i<rows.length;i++){
+        rows[i].start=rows[i-1].end;
+        rows[i].end=rows[i].start+rows[i].dur;
     }
-    renderRows(rows);
+
+    // Auto-B2B at end (only in non-preset mode)
+    if(!currentPreset){
+        let last=rows[rows.length-1];
+        if(last.end < end){
+            rows.push({
+                label:"B2B",
+                start:last.end,
+                end:end,
+                dur:end-last.end,
+                isB2B:true
+            });
+        } else if(last.isB2B && last.end >= end){
+            rows.pop();
+        }
+    }
+
+    render(rows);
 }
 
-/* -------------------------
-   Copy results
---------------------------*/
-function copyResult(){
-    const rows = resultsEl._rows || [];
-    if(!rows.length){ alert('No results'); return; }
-    let text = rows.map(r => `${r.label}: ${minutesToDisplay(r.startMin)} → ${minutesToDisplay(r.endMin)} (${r.dur} min)`).join('\n');
-    navigator.clipboard.writeText(text).then(()=> alert('Copied to clipboard'), ()=> alert('Copy failed'));
+/* ---------- COPY (times first, then name) ---------- */
+function copySchedule(){
+    let rows=resultsEl._rows||[];
+    if(!rows.length){
+        alert("No schedule to copy.");
+        return;
+    }
+
+    let text = rows.map(r =>
+        `${minToDisplay(r.start)} → ${minToDisplay(r.end)} — ${r.label}`
+    ).join("\n");
+
+    navigator.clipboard.writeText(text);
+    alert("Copied!");
 }
 
-/* -------------------------
-   Reset results (right side only)
---------------------------*/
-function resetResults(){
-    resultsEl.innerHTML = '';
+/* ---------- RESET ---------- */
+document.getElementById("resetBtn").onclick=()=>{
+    resultsEl.innerHTML="";
     resultsEl._rows = [];
-    disableEditing();
-}
+};
 
-/* -------------------------
-   Editing buttons
---------------------------*/
-function enableEditing(){
-    editAllBtn.style.display = 'none';
-    doneEditingBtn.style.display = '';
-    resultsEl.querySelectorAll('.result-row').forEach(r => r.style.background = '#fffbe6');
-}
-function disableEditing(){
-    editAllBtn.style.display = '';
-    doneEditingBtn.style.display = 'none';
-    resultsEl.querySelectorAll('.result-row').forEach(r => r.style.background = '#fff');
-}
+/* ---------- BUTTON WIRING ---------- */
+document.getElementById("calcBtn").onclick = calculate;
+document.getElementById("updateBtn").onclick = updateSchedule;
+document.getElementById("copyBtnBottom").onclick = copySchedule;
 
-/* -------------------------
-   Init
---------------------------*/
+/* ---------- INPUT REACTIONS ---------- */
+djCountEl.oninput = () => {
+    currentPreset = null;
+    presetSelect.value = "";
+    buildDJInputs();
+    calculate();
+};
+
+startEl.oninput = () => {
+    currentPreset = null;
+    presetSelect.value = "";
+    calculate();
+};
+
+endEl.oninput = () => {
+    currentPreset = null;
+    presetSelect.value = "";
+    calculate();
+};
+
+/* ---------- PRESET SELECT ---------- */
+presetSelect.onchange = () => {
+    const key = presetSelect.value;
+    currentPreset = key || null;
+
+    const p = presets[key];
+    if (!p) {
+        calculate();
+        return;
+    }
+
+    djCountEl.value = p.count;
+    startEl.value = p.start;
+    endEl.value = p.end;
+
+    buildDJInputs();
+    calculate();
+};
+
+/* ---------- INIT ---------- */
 buildDJInputs();
-attachListenersToDJInputs();
-calculateLive(); // initial render
-
-// live recalc as you type (already wired via input listeners)
-// also recalc on window focus
-window.addEventListener('focus', calculateLive);
+calculate();
 
 </script>
 </body>
