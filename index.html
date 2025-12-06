@@ -65,6 +65,9 @@
         <button onclick="goToTool('master')">Master Sheet</button>
     </div>
     <div class="button-container">
+        <button onclick="goToTool('guest_list')">Guest List Generator</button>
+    </div>
+    <div class="button-container">
         <button onclick="goToTool('set_times')">Set Times Generator</button>
     </div>
     <div class="button-container">
@@ -86,7 +89,10 @@
             }
             else if (tool === "master") {
                 window.location.href = base + "master_sheet.html";
-            } 
+            }
+            else if (tool === "guest_list") {
+                window.location.href = base + "guest_list.html";
+            }  
             else if (tool === "pdf") {
                 window.location.href = base + "pdf_maker.html";
             } 
@@ -104,4 +110,3 @@
 
 </body>
 </html>
-
