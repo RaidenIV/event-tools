@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Guest List Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background: #ffffff;
+        margin: 0;
+        padding: 30px;
+        color: #111;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 28px;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    .layout {
+        max-width: 1300px;
+        margin: auto;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .panel {
+        background: #fafafa;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    /* Narrower input panel, wider preview panel */
+    .panel-input {
+        flex: 0 0 35%;
+        max-width: 440px;
+    }
+
+    .panel-preview {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    label {
+        display: block;
+        margin-top: 12px;
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 6px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-family: 'Rajdhani';
+        font-size: 15px;
+        font-weight: 600;
+        box-sizing: border-box;
+    }
+
+    textarea { height: 90px; resize: vertical; }
+
+    /* Smaller width just for "How many DJs?" */
+    #djCount {
+        width: 120px;
+    }
+
+    .dj-block {
+        background: #fff;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-top: 12px;
+    }
+
+    .drag {
+        cursor: grab;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #555;
+    }
+
+    button {
+        padding: 10px 16px;
+        font-family: 'Rajdhani';
+        font-weight: 700;
+        border-radius: 8px;
+        cursor: pointer;
+        border: none;
+        font-size: 15px;
+    }
+
+    .primary {
+        background: #228B22;
+        color: #fff;
+    }
+    .primary:hover { background: #1d701d; }
+
+    .warning {
+        color: #c0392b;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .preview {
+        white-space: pre-wrap;
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        font-size: 15px;
+        line-height: 1.45;
+        min-height: 400px;
+        box-sizing: border-box;
+    }
+
+    .actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .col-layout {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+        width: 100%;
+    }
+
+    .col-section {
+        white-space: pre-wrap;
+    }
+
+    .section-title {
+        font-weight: 700;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        margin-bottom: 6px;
+    }
+
+    .page-block {
+        margin-bottom: 16px;
+    }
+
+    .page-number {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 13px;
+    }
+
+    /* Mobile / narrow screens: stack panels vertically */
+    @media (max-width: 900px) {
+        .layout {
+            flex-direction: column;
+        }
+        .panel-input,
+        .panel-preview {
+            flex: 1 1 auto;
+            max-width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1>Guest List Generator</h1>
+
+<div class="layout">
+
+    <!-- INPUT PANEL -->
+    <div class="panel panel-input">
+
+        <label>Show Name</label>
+        <input id="showName" type="text">
+
+        <label>Headliner</label>
+        <input id="headliner" type="text">
+
+        <label>Date</label>
+        <input id="date" type="date">
+
+        <label>Headliner Guest List</label>
+        <textarea id="headlinerGuests"></textarea>
+
+        <label>XODIA Guests</label>
+        <textarea id="xodiaGuests"></textarea>
+
+        <label>Promo Team</label>
+        <textarea id="promoTeam"></textarea>
+
+        <label>How many DJs?</label>
+        <input id="djCount" type="number" min="1" max="10" value="1">
+
+        <div id="djContainer"></div>
+
+        <label>Other Section Name</label>
+        <input id="otherName" type="text" value="Other">
+
+        <label>Other Guest List</label>
+        <textarea id="otherGuests"></textarea>
+
+        <div class="actions">
+            <button class="primary" onclick="resetAll()">Reset</button>
+            <button class="primary" onclick="copyPreview()">Copy</button>
+            <button class="primary" onclick="exportCSV()">Export CSV</button>
+            <button class="primary" onclick="importCSV()">Import CSV</button>
+            <button class="primary" onclick="exportPDF()">Export PDF</button>
+        </div>
+
+    </div>
+
+    <!-- PREVIEW PANEL -->
+    <div class="panel panel-preview">
+        <div id="pageWarning" class="warning"></div>
+        <div id="preview" class="preview"></div>
+    </div>
+
+</div>
+
+<script>
+/* -----------------------------------------------------------
+   AUTO-CAPITALIZATION (preserves ALL CAPS for names in lists)
+----------------------------------------------------------- */
+function smartCap(str) {
+    if (!str) return "";
+    if (str === str.toUpperCase()) return str;
+    return str
+        .toLowerCase()
+        .split(" ")
+        .map(w => w[0].toUpperCase() + w.slice(1))
+        .join(" ");
+}
+
+/* Helpers: ALWAYS ALL-CAPS for show name + headliner */
+function getShowNameCap() {
+    return showName.value.trim().toUpperCase();
+}
+function getHeadlinerCap() {
+    return headliner.value.trim().toUpperCase();
+}
+
+/* -----------------------------------------------------------
+   CLEAN + SORT + GLOBAL DUPLICATE DETECT
+----------------------------------------------------------- */
+function cleanList(text, globalSeen) {
+    const seen = globalSeen || new Set();
+    return text
+        .split("\n")
+        .map(n => smartCap(n.trim()))
+        .filter(n => n)
+        .sort()
+        .map(n => {
+            if (seen.has(n)) return n + " (DUPLICATE!)";
+            seen.add(n);
+            return n;
+        });
+}
+
+/* -----------------------------------------------------------
+   LAYOUT CONFIG (shared by preview & PDF)
+----------------------------------------------------------- */
+const layoutConfig = {
+    topY: 80,
+    maxY: 740,
+    headerHeight: 16,
+    lineHeight: 14,
+    sectionSpacing: 10
+};
+
+/* -----------------------------------------------------------
+   BUILD SECTION DATA IN REQUIRED ORDER
+   Order: Headliner, XODIA, Promo, DJs, Other
+   Also returns totalNames across all sections.
+----------------------------------------------------------- */
+function getSectionsForLayout() {
+    const globalSeen = new Set();
+    const headlinerName = getHeadlinerCap(); // ALL CAPS
+    const sections = [];
+    let totalNames = 0;
+
+    function addSection(title, rawText) {
+        const list = cleanList(rawText, globalSeen);
+        if (!list.length) return;
+        if (title === "Headliner") title = headlinerName;
+        sections.push({ title, list });
+        totalNames += list.length;
+    }
+
+    // Headliner, XODIA, Promo
+    addSection("Headliner", headlinerGuests.value);
+    addSection("XODIA Guests", xodiaGuests.value);
+    addSection("Promo Team", promoTeam.value);
+
+    // DJs (in order)
+    const djBlocks = [...document.querySelectorAll(".dj-block")];
+    djBlocks.forEach(block => {
+        const name = smartCap(block.querySelector(".dj-name").value.trim());
+        const guests = block.querySelector(".dj-guests").value;
+        addSection(name, guests);
+    });
+
+    // Other
+    const otherTitle = smartCap(otherName.value.trim());
+    addSection(otherTitle, otherGuests.value);
+
+    return { sections, totalNames };
+}
+
+/* -----------------------------------------------------------
+   LAYOUT SECTIONS INTO PAGES & COLUMNS
+----------------------------------------------------------- */
+function layoutSections(sections) {
+    const { topY, maxY, headerHeight, lineHeight, sectionSpacing } = layoutConfig;
+
+    const pages = [];
+    let currentPage = { columns: [[], [], []] };
+    pages.push(currentPage);
+
+    let colIndex = 0;
+    let y = topY;
+
+    function advanceColumnOrPage() {
+        colIndex++;
+        if (colIndex > 2) {
+            currentPage = { columns: [[], [], []] };
+            pages.push(currentPage);
+            colIndex = 0;
+        }
+        y = topY;
+    }
+
+    sections.forEach(sec => {
+        let remaining = sec.list.slice();
+        let isFirstChunk = true;
+
+        while (remaining.length > 0) {
+            if (y + headerHeight > maxY) {
+                advanceColumnOrPage();
+            }
+
+            let namesChunk = [];
+            let yTemp = y + headerHeight;
+
+            while (remaining.length > 0 && (yTemp + lineHeight) <= maxY) {
+                namesChunk.push(remaining.shift());
+                yTemp += lineHeight;
+            }
+
+            if (namesChunk.length === 0) {
+                advanceColumnOrPage();
+                continue;
+            }
+
+            const titleText = isFirstChunk ? sec.title : sec.title + " (cont.)";
+
+            currentPage.columns[colIndex].push({
+                title: titleText,
+                names: namesChunk
+            });
+
+            y = yTemp + sectionSpacing;
+            isFirstChunk = false;
+
+            if (remaining.length > 0) {
+                advanceColumnOrPage();
+            }
+        }
+    });
+
+    return pages;
+}
+
+/* -----------------------------------------------------------
+   DJ INPUT BUILDER
+----------------------------------------------------------- */
+function buildDJInputs(preserveExisting = true) {
+    const count = Number(djCount.value);
+    const container = djContainer;
+
+    const old = preserveExisting ? [...container.querySelectorAll(".dj-block")] : [];
+    container.innerHTML = "";
+
+    for (let i = 0; i < count; i++) {
+        let name = preserveExisting && old[i]?.querySelector(".dj-name").value || `DJ ${i+1}`;
+        let guests = preserveExisting && old[i]?.querySelector(".dj-guests").value || "";
+
+        const block = document.createElement("div");
+        block.className = "dj-block";
+        block.innerHTML = `
+            <div class="drag">☰ Drag</div>
+            <label>DJ ${i+1} Name</label>
+            <input class="dj-name" type="text" value="${name}">
+            <label>Guest List</label>
+            <textarea class="dj-guests">${guests}</textarea>
+        `;
+        container.appendChild(block);
+    }
+
+    Sortable.create(container, {
+        handle: ".drag",
+        animation: 150,
+        onEnd: updatePreview
+    });
+
+    updatePreview();
+}
+
+/* Live-update preview on input */
+document.addEventListener("input", e => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") {
+        updatePreview();
+    }
+});
+
+/* ALWAYS ALL-CAPS inputs for show name + headliner on blur */
+headliner.addEventListener("blur", () => {
+    headliner.value = getHeadlinerCap();
+    updatePreview();
+});
+showName.addEventListener("blur", () => {
+    showName.value = getShowNameCap();
+    updatePreview();
+});
+
+djCount.addEventListener("input", () => buildDJInputs());
+buildDJInputs();
+
+/* -----------------------------------------------------------
+   DATE FORMAT
+----------------------------------------------------------- */
+function dateFormat(d) {
+    if (!d) return "";
+    const [y,m,day] = d.split("-");
+    return `${m}.${day}.${y}`;
+}
+
+/* -----------------------------------------------------------
+   PREVIEW UPDATE – title & headliner ALL CAPS
+----------------------------------------------------------- */
+function updatePreview() {
+    const showCap = getShowNameCap(); // ALL CAPS
+    const dateStr = dateFormat(date.value);
+    const title = `${showCap} [${dateStr}]`;
+
+    const { sections, totalNames } = getSectionsForLayout();
+    const pages = layoutSections(sections);
+
+    let html = "";
+
+    pages.forEach((page, pIndex) => {
+        const pageNum = pIndex + 1;
+        const isOpen = pIndex === 0 ? " open" : "";
+
+        html += `<details class="page-block"${isOpen}>`;
+        html += `<summary style="font-size:13px;font-weight:700;cursor:pointer;">Page ${pageNum}</summary>`;
+        html += `<div class="page-inner" style="margin-top:8px;">`;
+
+        html += `<div style="text-align:center;font-weight:700;font-size:14px;margin-bottom:4px;">
+            GUEST LIST
+        </div>`;
+        html += `<div style="text-align:center;font-weight:400;font-size:10px;margin-bottom:4px;">
+            ${title}
+        </div>`;
+        html += `<div style="font-size:8px;font-weight:400;margin-bottom:8px;text-align:left;">
+            Total names: ${totalNames}
+        </div>`;
+
+        html += `<div class="col-layout">`;
+        page.columns.forEach(col => {
+            html += `<div class="col-section">`;
+            col.forEach(block => {
+                html += `<div class="section-title">${block.title}</div>`;
+                html += block.names.join("<br>") + "<br><br>";
+            });
+            html += `</div>`;
+        });
+        html += `</div>`;
+
+        html += `<div class="page-number">Page ${pageNum}</div>`;
+        html += `</div></details>`;
+
+        if (pIndex < pages.length - 1) {
+            html += `<hr style="margin:10px 0;border:none;border-top:1px dashed #ccc;">`;
+        }
+    });
+
+    if (!pages.length) {
+        const titleEmpty = title;
+        html = `<details class="page-block" open>
+            <summary style="font-size:13px;font-weight:700;cursor:pointer;">Page 1</summary>
+            <div class="page-inner" style="margin-top:8px;">
+                <div style="text-align:center;font-weight:700;font-size:14px;margin-bottom:4px;">
+                    GUEST LIST
+                </div>
+                <div style="text-align:center;font-weight:400;font-size:10px;margin-bottom:4px;">
+                    ${titleEmpty}
+                </div>
+                <div style="font-size:8px;font-weight:400;margin-bottom:8px;text-align:left;">
+                    Total names: 0
+                </div>
+                <div class="col-layout">
+                    <div class="col-section"></div>
+                    <div class="col-section"></div>
+                    <div class="col-section"></div>
+                </div>
+                <div class="page-number">Page 1</div>
+            </div>
+        </details>`;
+    }
+
+    preview.innerHTML = html;
+    pageWarning.textContent = pages.length > 1 ? "THIS PDF WILL BE MULTIPLE PAGES" : "";
+}
+
+/* -----------------------------------------------------------
+   COPY – list format, with ALL-CAPS show name & headliner
+----------------------------------------------------------- */
+function copyPreview() {
+    const showCap = getShowNameCap(); // ALL CAPS
+    const dateStr = dateFormat(date.value);
+    const title = `${showCap} [${dateStr}]`;
+
+    const { sections, totalNames } = getSectionsForLayout();
+
+    const lines = [];
+    lines.push("GUEST LIST");
+    lines.push(title);
+    lines.push(`Total names: ${totalNames}`);
+    lines.push("");
+
+    sections.forEach(sec => {
+        lines.push(`${sec.title}:`);
+        sec.list.forEach(name => {
+            lines.push(` - ${name}`);
+        });
+        lines.push("");
+    });
+
+    const text = lines.join("\n");
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Copied!");
+        }).catch(() => {
+            const temp = document.createElement("textarea");
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+            alert("Copied!");
+        });
+    } else {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+        alert("Copied!");
+    }
+}
+
+/* -----------------------------------------------------------
+   RESET – clear the entire form
+----------------------------------------------------------- */
+function resetAll() {
+    showName.value = "";
+    headliner.value = "";
+    date.value = "";
+    headlinerGuests.value = "";
+    xodiaGuests.value = "";
+    promoTeam.value = "";
+    djCount.value = 1;
+    otherName.value = "Other";
+    otherGuests.value = "";
+    djContainer.innerHTML = "";
+    buildDJInputs(false);
+    updatePreview();
+}
+
+/* -----------------------------------------------------------
+   CSV EXPORT / IMPORT
+----------------------------------------------------------- */
+function exportCSV() {
+    let data = {
+        showName: showName.value,
+        headliner: headliner.value,
+        date: date.value,
+        headlinerGuests: headlinerGuests.value,
+        xodiaGuests: xodiaGuests.value,
+        promoTeam: promoTeam.value,
+        otherName: otherName.value,
+        otherGuests: otherGuests.value,
+        djCount: djCount.value,
+        djs: []
+    };
+
+    document.querySelectorAll(".dj-block").forEach(b => {
+        data.djs.push({
+            name: b.querySelector(".dj-name").value,
+            guests: b.querySelector(".dj-guests").value
+        });
+    });
+
+    const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${getShowNameCap()}_${dateFormat(date.value)}.csv`;
+    a.click();
+}
+
+function importCSV() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv,.json";
+
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            const data = JSON.parse(reader.result);
+
+            showName.value = (data.showName || "").trim().toUpperCase();
+            headliner.value = (data.headliner || "").trim().toUpperCase();
+            date.value = data.date || "";
+            headlinerGuests.value = data.headlinerGuests || "";
+            xodiaGuests.value = data.xodiaGuests || "";
+            promoTeam.value = data.promoTeam || "";
+            otherName.value = data.otherName || "Other";
+            otherGuests.value = data.otherGuests || "";
+            djCount.value = data.djCount || 1;
+
+            buildDJInputs(false);
+
+            const blocks = [...document.querySelectorAll(".dj-block")];
+            (data.djs || []).forEach((dj, i) => {
+                if (blocks[i]) {
+                    blocks[i].querySelector(".dj-name").value = dj.name || `DJ ${i+1}`;
+                    blocks[i].querySelector(".dj-guests").value = dj.guests || "";
+                }
+            });
+
+            updatePreview();
+        };
+
+        reader.readAsText(file);
+    };
+
+    input.click();
+}
+
+/* -----------------------------------------------------------
+   EXPORT PDF – SAME content as preview,
+   Title + headliner ALL CAPS
+----------------------------------------------------------- */
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+    const showCap = getShowNameCap(); // ALL CAPS
+    const dateStr = dateFormat(date.value);
+    const title = `${showCap} [${dateStr}]`;
+
+    const { topY } = layoutConfig;
+    const xLeft = 50;
+    const colWidth = 175;
+    const colX = [xLeft, xLeft + colWidth, xLeft + colWidth * 2];
+
+    const { sections, totalNames } = getSectionsForLayout();
+
+    function drawMainTitle() {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("GUEST LIST", 306, 30, { align: "center" });
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(title, 306, 46, { align: "center" });
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.text(`Total names: ${totalNames}`, xLeft, 60);
+    }
+
+    function drawPageNumber(pageNumber) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Page ${pageNumber}`, 300, 770);
+    }
+
+    if (!sections.length) {
+        drawMainTitle();
+        drawPageNumber(1);
+        doc.save(`${showCap}_${dateStr}.pdf`);
+        return;
+    }
+
+    const pages = layoutSections(sections);
+
+    pages.forEach((page, pIndex) => {
+        if (pIndex > 0) {
+            doc.addPage();
+        }
+
+        drawMainTitle();
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+
+        page.columns.forEach((blocks, colIdx) => {
+            let y = topY;
+            const x = colX[colIdx];
+
+            blocks.forEach(block => {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                const w = doc.getTextWidth(block.title);
+                doc.text(block.title, x, y);
+                doc.line(x, y + 2, x + w, y + 2);
+                y += layoutConfig.headerHeight;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                block.names.forEach(name => {
+                    doc.text(name, x, y);
+                    y += layoutConfig.lineHeight;
+                });
+
+                y += layoutConfig.sectionSpacing;
+            });
+        });
+
+        drawPageNumber(pIndex + 1);
+    });
+
+    doc.save(`${showCap}_${dateStr}.pdf`);
+}
+
+/* Init */
+updatePreview();
+</script>
+</body>
+</html>
