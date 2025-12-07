@@ -392,7 +392,7 @@ const ctx = canvas.getContext('2d');
 
 // Hi-DPI / sharper rendering
 const dpr = window.devicePixelRatio || 1;
-const logicalSize = 420; // logical coordinate size
+const logicalSize = 420; // logical coordinates for drawing
 
 canvas.style.width = logicalSize + "px";
 canvas.style.height = logicalSize + "px";
@@ -470,10 +470,10 @@ async function convertWebMToMp4(webmBlob) {
         // Write the recorded WebM into ffmpeg's virtual FS
         ffmpegInstance.FS('writeFile', 'input.webm', await fetchFile(webmBlob));
 
-        // High-quality H.264 MP4
-        // - scale to 1080 wide (height auto) with good scaling filter
+        // High-quality H.264 MP4:
+        // - scale to 1080 wide (height auto, multiple of 2) using lanczos
         // - crf 18 ~= visually lossless
-        // - preset medium = better quality than veryfast
+        // - preset medium = better quality than veryfast (slower but fine for short clips)
         await ffmpegInstance.run(
             '-i', 'input.webm',
             '-vf', 'scale=1080:-2:flags=lanczos',
@@ -665,7 +665,6 @@ function drawWheel() {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        // dark translucent band in center
         const boxX = size * 0.1;
         const boxY = size * 0.42;
         const boxW = size * 0.8;
@@ -748,7 +747,7 @@ function initGifRecorderIfNeeded() {
     gifRecorder = new GIF({
         workers: 2,
         quality: 10,
-        repeat: -1,             // play once, no looping
+        repeat: -1,             // no looping
         width: canvas.width,
         height: canvas.height,
         workerScript: "gif.worker.js"   // local worker in same folder
