@@ -467,12 +467,19 @@ async function convertWebMToMp4(webmBlob) {
             await ffmpegLoading;
         }
 
+        // Write the recorded WebM into ffmpeg's virtual FS
         ffmpegInstance.FS('writeFile', 'input.webm', await fetchFile(webmBlob));
 
+        // High-quality H.264 MP4
+        // - scale to 1080 wide (height auto) with good scaling filter
+        // - crf 18 ~= visually lossless
+        // - preset medium = better quality than veryfast
         await ffmpegInstance.run(
             '-i', 'input.webm',
+            '-vf', 'scale=1080:-2:flags=lanczos',
             '-c:v', 'libx264',
-            '-preset', 'veryfast',
+            '-preset', 'medium',
+            '-crf', '18',
             '-pix_fmt', 'yuv420p',
             '-movflags', 'faststart',
             'output.mp4'
