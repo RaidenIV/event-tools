@@ -1,70 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Form Selector</title>
-
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        margin: 0;
-        padding: 20px;
-        text-align: center;
-        overflow-x: hidden;
-    }
+  /* Only affects this page, since this style is inside this page's code block */
 
-    .button-row {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-bottom: 25px;
-        flex-wrap: wrap;
-    }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* no scroll bar */
+  }
 
-    button {
-        padding: 12px 20px;
-        font-size: 16px;
-        border: none;
-        border-radius: 6px;
-        background: #00A300;
-        color: white;
-        cursor: pointer;
-        transition: 0.2s ease;
-    }
+  .form-dashboard-fullscreen {
+    position: fixed;
+    inset: 0;
+    background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;  /* anchor content toward the top */
+    text-align: center;
+    padding-top: 300px;            /* adjust this value to move it up/down */
+    z-index: 1000;
+  }
 
-    button:hover {
-        background: #008000;
-    }
+
+  .form-dashboard-title {
+    font-family: Helvetica, sans-serif;
+    font-size: 48px;
+    margin-bottom: 30px;
+    font-weight: bold;
+  }
+
+  .form-dashboard-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .form-dashboard-buttons button {
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    background: #00A300;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .form-dashboard-buttons button:hover {
+    background: #008000;
+  }
 </style>
-</head>
-<body>
 
-<h2>Select a Form</h2>
+<div class="form-dashboard-fullscreen">
+  <h2 class="form-dashboard-title">Select a Form</h2>
 
-<div class="button-row">
-    <!-- Update these URLs to match your actual Squarespace page slugs -->
+  <div class="form-dashboard-buttons">
     <button type="button"
             onclick="window.location.href='https://www.xodiamediagroup.com/updates'">
-        Updates &amp; Promo
+      Updates &amp; Promo
     </button>
 
     <button type="button"
             onclick="window.location.href='https://www.xodiamediagroup.com/djs'">
-        DJs
+      DJs
     </button>
 
     <button type="button"
             onclick="window.location.href='https://www.xodiamediagroup.com/vendors'">
-        Vendors
+      Vendors
     </button>
 
     <button type="button"
             onclick="window.location.href='https://www.xodiamediagroup.com/sponsors'">
-        Sponsors
+      Sponsors
     </button>
+  </div>
 </div>
-
-</body>
-</html>
