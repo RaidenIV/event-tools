@@ -130,7 +130,6 @@
         background-repeat: no-repeat;
     }
 
-
     button.primary {
         background: #228B22;
         color: white;
@@ -174,6 +173,24 @@
         border: 1px solid #ddd;
         font-family: 'Rajdhani';
         font-weight: bold;
+    }
+
+    /* PREVIEW BOX */
+    .preview-label {
+        margin-top: 18px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .preview-box {
+        margin-top: 6px;
+        background: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 13px;
+        white-space: pre-line;
+        min-height: 60px;
     }
 </style>
 </head>
@@ -228,6 +245,10 @@
         <button id="copyBtnBottom" class="primary">Copy</button>
     </div>
 
+    <!-- LIVE PREVIEW BOX -->
+    <div class="preview-label">Schedule Preview</div>
+    <div id="previewBox" class="preview-box">Schedule preview will appear here.</div>
+
 </div>
 
 <script>
@@ -280,8 +301,23 @@ const startEl=document.getElementById("startTime");
 const endEl=document.getElementById("endTime");
 const resultsEl=document.getElementById("results");
 const presetSelect=document.getElementById("presetSelect");
+const previewBox=document.getElementById("previewBox");
 
 let sortable;
+
+/* ---------- SCHEDULE TEXT + PREVIEW ---------- */
+function scheduleToText(rows){
+    if(!rows || !rows.length) return "";
+    return rows.map(r =>
+        `${minToDisplay(r.start)}-${minToDisplay(r.end)}: ${r.label}`
+    ).join("\n");
+}
+
+function updatePreview(){
+    const rows = resultsEl._rows || [];
+    const text = scheduleToText(rows);
+    previewBox.textContent = text || "Schedule preview will appear here.";
+}
 
 /* ---------- BUILD DJ INPUTS ---------- */
 function buildDJInputs(){
@@ -418,7 +454,7 @@ function render(rows){
         e.value=minToDisplay(r.end);
 
         timeRow.appendChild(s);
-        timeRow.appendChild(document.createTextNode("→"));
+        timeRow.appendChild(document.createTextNode("-"));
         timeRow.appendChild(e);
 
         div.appendChild(nameBlock);
@@ -428,6 +464,7 @@ function render(rows){
     });
 
     resultsEl._rows = rows;
+    updatePreview();
 }
 
 /* ---------- UPDATE BUTTON ---------- */
@@ -475,9 +512,7 @@ function updateSchedule(){
 /* ---------- COPY ---------- */
 function copySchedule(){
     let rows=resultsEl._rows||[];
-    let text = rows.map(r =>
-        `${minToDisplay(r.start)} → ${minToDisplay(r.end)} — ${r.label}`
-    ).join("\n");
+    let text = scheduleToText(rows);
 
     navigator.clipboard.writeText(text);
     alert("Copied!");
@@ -487,6 +522,7 @@ function copySchedule(){
 document.getElementById("resetBtn").onclick=()=>{
     resultsEl.innerHTML="";
     resultsEl._rows=[];
+    updatePreview();
 };
 
 /* ---------- BUTTON WIRING ---------- */
