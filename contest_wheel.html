@@ -188,7 +188,10 @@
         background: #ffffff;
         border-radius: 50%;
         box-shadow: 0 4px 18px rgba(0,0,0,0.12);
-        max-width: 100%;
+        width: 100%;          /* fill the panel width */
+        max-width: 420px;      /* don’t get bigger than your logical size */
+        height: auto;          /* let height follow width */
+        aspect-ratio: 1 / 1;   /* keep it perfectly square */
     }
 
     .spin-button {
@@ -443,8 +446,6 @@ const ctx = canvas.getContext('2d');
 const dpr = window.devicePixelRatio || 1;
 const logicalSize = 420; // logical coordinates for drawing
 
-canvas.style.width = logicalSize + "px";
-canvas.style.height = logicalSize + "px";
 canvas.width = logicalSize * dpr;
 canvas.height = logicalSize * dpr;
 ctx.scale(dpr, dpr);
@@ -863,6 +864,7 @@ drawWheel();
 </script>
 </body>
 </html>
+
 
 
 
