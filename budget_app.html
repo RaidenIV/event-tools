@@ -53,14 +53,13 @@
         }
 
         .chart-panel {
-            margin-left: 30px;     /* small gap between form & charts */
-            flex: 1;               /* charts take remaining space */
-            max-width: 400px;      /* chart column width */
-            position: sticky;    /* IMPORTANT: remove fixed/sticky */
+            margin-left: 30px;
+            flex: 1;
+            max-width: 400px;
+            position: sticky;
             top: 0;
             right: 0;
         }
-
 
         form {
             background: var(--card-bg);
@@ -75,6 +74,22 @@
             margin: 10px 0 6px;
             font-weight: 700;
             color: #111;
+            font-size: 14px;
+        }
+
+        /* Section headers */
+        .section-header {
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subsection-header {
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 24px;
+            margin-bottom: 8px;
         }
 
         input[type="text"],
@@ -94,15 +109,15 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-top: 6px;
         }
         .quantity-row label { flex: 1; }
         .quantity-row input[type="number"] { flex: 0 0 90px; }
 
-        /* Headliner card layout */
         #headlinerInputs {
             margin-top: 10px;
             display: grid;
-            grid-template-columns: 1fr; /* single column cards stacked */
+            grid-template-columns: 1fr;
             gap: 12px;
         }
 
@@ -113,7 +128,7 @@
             padding: 12px;
             box-shadow: 0 4px 12px rgba(10,20,30,0.04);
             display: grid;
-            grid-template-columns: 1fr; /* stacked inside card */
+            grid-template-columns: 1fr;
             gap: 8px;
         }
 
@@ -138,10 +153,9 @@
             flex: 0 0 120px;
         }
 
-        /* Buttons */
         .controls {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
         button {
@@ -156,7 +170,6 @@
         }
         button:hover { opacity: 0.95; }
 
-        /* Summary card */
         #summary {
             background: var(--card-bg);
             padding: 16px;
@@ -169,7 +182,6 @@
 
         #summary p { margin: 6px 0; font-weight: 700; }
 
-        /* charts */
         .sub-chart {
             height: 250px;
             width: 300px;
@@ -210,7 +222,7 @@
                     <label for="showDate">Show Date:</label>
                     <input type="date" id="showDate" oninput="updateBudget()">
 
-                    <div class="section-header" style="margin-top:16px; font-size: 16px; font-weight:700;">Expenses</div>
+                    <div class="section-header">Expenses</div>
 
                     <!-- Headliners -->
                     <div style="margin-top:8px;">
@@ -221,7 +233,6 @@
                             </div>
                             <div style="flex:0 0 160px; text-align:right;">
                                 <label for="numHeadliners" style="font-weight:700; margin-bottom:6px; display:block;">Number of Headliners</label>
-                                <!-- Keep default value 1, but allow 0 to hide fields -->
                                 <input type="number" id="numHeadliners" min="0" max="10" value="1"
                                        onchange="generateDynamicInputs('headliner', this.value, ['fee','hotel','rider'])">
                             </div>
@@ -235,18 +246,18 @@
                     <label for="directSupport">Direct Support:</label>
                     <input type="number" id="directSupport" placeholder="$0" step="0.01" oninput="updateBudget()">
 
-                    <div class="quantity-row" style="margin-top:20px;">
+                    <div class="quantity-row">
                         <label for="numLocalDJs">Number of Local DJs:</label>
                         <input type="number" id="numLocalDJs" min="0" max="20" value="0"
-                               onchange="generateDynamicInputs('localDJ', this.value, ['fee','name'])">
+                               onchange="generateDynamicInputs('localDJ', this.value, ['name','fee'])">
                     </div>
                     <div id="localDJInputs" class="dynamic-inputs"></div>
 
-                    <!-- Venue / Production / Gear / Marketing / Staff (unchanged) -->
+                    <!-- Production (Venue moved here) -->
+                    <div class="subsection-header">Production</div>
                     <label for="venue">Venue:</label>
                     <input type="number" id="venue" placeholder="$0" step="0.01" oninput="updateBudget()">
 
-                    <div class="subsection-header">Production</div>
                     <label for="ledWall">LED Wall:</label>
                     <input type="number" id="ledWall" placeholder="$0" step="0.01" oninput="updateBudget()">
                     <label for="lights">Lights:</label>
@@ -298,7 +309,7 @@
                     </div>
                     <div id="otherInputs" class="dynamic-inputs"></div>
 
-                    <div class="section-header" style="margin-top:18px;">Incoming Sales</div>
+                    <div class="section-header">Incoming Sales</div>
                     <label for="eventbriteSales">Eventbrite Sales:</label>
                     <input type="number" id="eventbriteSales" placeholder="$0" step="0.01" oninput="updateBudget()">
                     <label for="djPresales">DJ Presales:</label>
@@ -317,11 +328,15 @@
                     <label for="merchSold">Merch Sold:</label>
                     <input type="number" id="merchSold" placeholder="$0" step="0.01" oninput="updateBudget()">
 
-                    <div class="controls" style="margin-top:12px;">
+                    <div class="controls">
                         <button type="button" onclick="updateBudget()">Update Chart</button>
                         <button type="button" onclick="resetForm()">Reset</button>
-                        <button type="button" onclick="downloadCSV()">Download CSV</button>
+                        <button type="button" onclick="downloadCSV()">Export CSV</button>
+                        <button type="button" onclick="triggerImport()">Import CSV</button>
                     </div>
+
+                    <!-- Hidden file input for CSV import -->
+                    <input type="file" id="csvFileInput" accept=".csv" style="display:none" />
                 </form>
 
                 <div id="summary">
@@ -332,7 +347,6 @@
             </div>
 
             <div class="chart-panel">
-                <!-- Bold, larger, centered show title above the charts -->
                 <h2 id="showTitleDisplay" style="
                     font-size: 24px;
                     font-weight: 500;
@@ -364,13 +378,11 @@
     let chartExpenses = null, chartSales = null;
     const dynamicFields = {};
 
-    // Utility
     function capitalizeTitle(title) {
         if (!title) return 'UNTITLED EVENT';
         return title.toUpperCase();
     }
 
-    // Generate dynamic inputs. If quantity = 0, container is cleared (no inputs shown).
     function generateDynamicInputs(prefix, quantity, fields) {
         quantity = parseInt(quantity) || 0;
         let container;
@@ -386,13 +398,11 @@
         dynamicFields[prefix] = [];
 
         if (quantity <= 0) {
-            // nothing to render — ensure layout updates
             updateBudget();
             sendHeight();
             return;
         }
 
-        // For headliners we render card layout
         for (let i = 1; i <= quantity; i++) {
             if (prefix === 'headliner') {
                 const card = document.createElement('div');
@@ -420,18 +430,33 @@
                 `;
                 container.appendChild(card);
             } else {
-                // generic groups (localDJ, cdj, showRunner, merchVendor)
+                // generic groups (localDJ, cdj, showRunner, merchVendor, otherItem)
                 const group = document.createElement('div');
                 group.className = 'dynamic-input-group';
                 fields.forEach(field => {
                     const label = document.createElement('label');
-                    label.textContent = `${prefix.charAt(0).toUpperCase()+prefix.slice(1)} ${field.toUpperCase()} #${i}:`;
+
+                    // Default base label
+                    let baseLabel = `${prefix.charAt(0).toUpperCase()+prefix.slice(1)} ${field.toUpperCase()}`;
+
+                    // Custom labels
+                    if (prefix === 'localDJ' && field === 'name') {
+                        baseLabel = 'Local DJ Name';
+                    } else if (prefix === 'localDJ' && field === 'fee') {
+                        baseLabel = 'Local DJ Fee';
+                    } else if (prefix === 'cdj' && field === 'fee') {
+                        baseLabel = 'CDJ Fee';
+                    }
+
+                    label.textContent = `${baseLabel} #${i}:`;
+
                     const input = document.createElement('input');
                     input.type = field === 'name' ? 'text' : 'number';
                     input.id = `${prefix}_${field}_${i}`;
-                    input.step = '0.01';
+                    if (field !== 'name') input.step = '0.01';
                     input.placeholder = field === 'name' ? 'Name' : '$0';
                     input.oninput = updateBudget;
+
                     group.appendChild(label);
                     group.appendChild(input);
                 });
@@ -450,14 +475,12 @@
         if (numOther > 0) generateDynamicInputs('otherItem', numOther, ['fee']);
     }
 
-    // Main calculation and charts
     function updateBudget() {
         const rawTitle = document.getElementById('showTitle')?.value || 'Untitled Event';
         const showTitle = capitalizeTitle(rawTitle);
         const showDate = document.getElementById('showDate')?.value || new Date().toISOString().split('T')[0];
         document.getElementById('showTitleDisplay').textContent = showTitle;
 
-        // static fields
         const directSupport = parseFloat(document.getElementById('directSupport')?.value) || 0;
         const venue = parseFloat(document.getElementById('venue')?.value) || 0;
         const ledWall = parseFloat(document.getElementById('ledWall')?.value) || 0;
@@ -478,7 +501,6 @@
         const doorSales = parseFloat(document.getElementById('doorSales')?.value) || 0;
         const merchSold = parseFloat(document.getElementById('merchSold')?.value) || 0;
 
-        // dynamic headliner totals
         let headlinerTotal = 0;
         const numHeadliners = parseInt(document.getElementById('numHeadliners')?.value) || 0;
         for (let i = 1; i <= numHeadliners; i++) {
@@ -487,7 +509,6 @@
                            + (parseFloat(document.getElementById(`headliner_rider_${i}`)?.value) || 0);
         }
 
-        // other dynamic totals (localDJs, cdj, showRunner, otherItem, merchVendor)
         let localDJTotal = 0;
         const numLocalDJs = parseInt(document.getElementById('numLocalDJs')?.value) || 0;
         for (let i = 1; i <= numLocalDJs; i++) localDJTotal += parseFloat(document.getElementById(`localDJ_fee_${i}`)?.value) || 0;
@@ -522,7 +543,6 @@
         profitLine.className = netProfit >= 0 ? 'profit' : 'loss';
         profitLine.innerHTML = `Net Profit: ${sign}$<span id="netProfit">${absValue}</span>`;
 
-        // Build pie charts
         const expensesCtx = document.getElementById('expensesChart').getContext('2d');
         const pieDataExpenses = [
             { label: 'Headliners', value: headlinerTotal },
@@ -590,17 +610,15 @@
         }
     }
 
-    // Reset: keep headliner default 1 (as before) but respect 0 if user wants
     function resetForm() {
         document.getElementById('budgetForm').reset();
-        // restore default quantities
         document.getElementById('numHeadliners').value = '1';
         ['numLocalDJs','numCDJs','numShowRunners','numOther','numMerchVendors'].forEach(id=>{
             document.getElementById(id).value = '0';
         });
 
         generateDynamicInputs('headliner', 1, ['fee','hotel','rider']);
-        generateDynamicInputs('localDJ', 0, ['fee','name']);
+        generateDynamicInputs('localDJ', 0, ['name','fee']);
         generateDynamicInputs('cdj', 0, ['fee']);
         generateDynamicInputs('showRunner', 0, ['fee']);
         generateDynamicInputs('otherItem', 0, ['fee']);
@@ -617,7 +635,6 @@
         sendHeight();
     }
 
-    // CSV download (unchanged logic but uses headliner_* ids)
     function downloadCSV() {
         const rawTitle = document.getElementById('showTitle').value || 'Untitled Event';
         const showTitle = capitalizeTitle(rawTitle);
@@ -720,13 +737,202 @@
         link.click();
     }
 
-    // Initialize dynamic inputs on load
+    // -------- CSV IMPORT --------
+    function triggerImport() {
+        const fileInput = document.getElementById('csvFileInput');
+        if (!fileInput) return;
+        fileInput.value = '';
+        fileInput.click();
+    }
+
+    function parseCSVAndFill(text) {
+        if (!text) return;
+
+        resetForm();
+
+        const lines = text.split(/\r?\n/);
+        const headlinerMap = {};
+        const localDJMap = {};
+        const cdjMap = {};
+        const showRunnerMap = {};
+        const otherMap = {};
+        const merchVendorMap = {};
+
+        let otherBaseName = '';
+
+        lines.forEach(line => {
+            if (!line.trim()) return;
+            const parts = line.split(',');
+            const label = (parts[0] || '').trim();
+            const amountStr = (parts[1] || '').trim();
+            const nameStr = (parts[2] || '').trim();
+
+            if (label === 'Show Title') {
+                document.getElementById('showTitle').value = parts[1] || '';
+            } else if (label === 'Show Date') {
+                document.getElementById('showDate').value = parts[1] || '';
+            } else if (label.startsWith('Headliner Fee #')) {
+                const idx = parseInt(label.split('#')[1]) || 1;
+                headlinerMap[idx] = headlinerMap[idx] || {};
+                headlinerMap[idx].fee = amountStr;
+            } else if (label.startsWith('Headliner Hotel #')) {
+                const idx = parseInt(label.split('#')[1]) || 1;
+                headlinerMap[idx] = headlinerMap[idx] || {};
+                headlinerMap[idx].hotel = amountStr;
+            } else if (label.startsWith('Headliner Rider #')) {
+                const idx = parseInt(label.split('#')[1]) || 1;
+                headlinerMap[idx] = headlinerMap[idx] || {};
+                headlinerMap[idx].rider = amountStr;
+            } else if (label === 'Direct Support') {
+                document.getElementById('directSupport').value = amountStr;
+            } else if (label.startsWith('Local DJ Fee #')) {
+                const idx = parseInt(label.split('#')[1]) || 1;
+                localDJMap[idx] = { fee: amountStr, name: nameStr };
+            } else if (label === 'Venue') {
+                document.getElementById('venue').value = amountStr;
+            } else if (label === 'LED Wall') {
+                document.getElementById('ledWall').value = amountStr;
+            } else if (label === 'Lights') {
+                document.getElementById('lights').value = amountStr;
+            } else if (label === 'Lasers') {
+                document.getElementById('lasers').value = amountStr;
+            } else if (label === 'Sound') {
+                document.getElementById('sound').value = amountStr;
+            } else if (label.startsWith('CDJ #')) {
+                const idx = parseInt(label.split('#')[1]) || 1;
+                cdjMap[idx] = { fee: amountStr };
+            } else if (label === 'Mixer') {
+                document.getElementById('mixer').value = amountStr;
+            } else if (label === 'Table') {
+                document.getElementById('table').value = amountStr;
+            } else if (label === 'Facebook Ads') {
+                document.getElementById('facebookAds').value = amountStr;
+            } else if (label === 'Instagram Ads') {
+                document.getElementById('instagramAds').value = amountStr;
+            } else if (label === 'Eventbrite Ads') {
+                document.getElementById('eventbriteAds').value = amountStr;
+            } else if (label === 'Door Staff') {
+                document.getElementById('doorStaff').value = amountStr;
+            } else if (label === 'Merch Table') {
+                document.getElementById('merchTable').value = amountStr;
+            } else if (label === 'Transportation') {
+                document.getElementById('transportation').value = amountStr;
+            } else if (label.startsWith('Show Runner #')) {
+                const idx = parseInt(label.split('#')[1]) || 1;
+                showRunnerMap[idx] = { fee: amountStr };
+            } else if (label === 'Eventbrite Sales') {
+                document.getElementById('eventbriteSales').value = amountStr;
+            } else if (label === 'DJ Presales') {
+                document.getElementById('djPresales').value = amountStr;
+            } else if (label === 'Promo Team') {
+                document.getElementById('promoTeam').value = amountStr;
+            } else if (label === 'Door Sales') {
+                document.getElementById('doorSales').value = amountStr;
+            } else if (label.startsWith('Merch Vendor #')) {
+                const idx = parseInt(label.split('#')[1]) || 1;
+                merchVendorMap[idx] = { fee: amountStr };
+            } else if (label === 'Merch Sold') {
+                document.getElementById('merchSold').value = amountStr;
+            } else if (
+                label === 'Total Expenses' ||
+                label === 'Total Incoming Sales' ||
+                label === 'Net Profit' ||
+                label === 'Category'
+            ) {
+                // ignore summary/header lines
+            } else {
+                // Likely "Other" rows: "<CustomName> #N"
+                const m = label.match(/^(.*)\s+#(\d+)$/);
+                if (m) {
+                    const base = m[1].trim();
+                    const idx = parseInt(m[2]) || 1;
+                    otherBaseName = otherBaseName || base;
+                    otherMap[idx] = { fee: amountStr };
+                }
+            }
+        });
+
+        const getMaxIndex = (obj) => {
+            const keys = Object.keys(obj);
+            if (!keys.length) return 0;
+            return Math.max(...keys.map(k => parseInt(k)));
+        };
+
+        // Headliners
+        const headCount = getMaxIndex(headlinerMap);
+        document.getElementById('numHeadliners').value = headCount;
+        generateDynamicInputs('headliner', headCount, ['fee','hotel','rider']);
+        Object.keys(headlinerMap).forEach(k => {
+            const i = parseInt(k);
+            const h = headlinerMap[i];
+            if (h.fee !== undefined) document.getElementById(`headliner_fee_${i}`).value = h.fee;
+            if (h.hotel !== undefined) document.getElementById(`headliner_hotel_${i}`).value = h.hotel;
+            if (h.rider !== undefined) document.getElementById(`headliner_rider_${i}`).value = h.rider;
+        });
+
+        // Local DJs
+        const localCount = getMaxIndex(localDJMap);
+        document.getElementById('numLocalDJs').value = localCount;
+        generateDynamicInputs('localDJ', localCount, ['name','fee']);
+        Object.keys(localDJMap).forEach(k => {
+            const i = parseInt(k);
+            const dj = localDJMap[i];
+            document.getElementById(`localDJ_fee_${i}`).value = dj.fee || '';
+            document.getElementById(`localDJ_name_${i}`).value = dj.name || '';
+        });
+
+        // CDJs
+        const cdjCount = getMaxIndex(cdjMap);
+        document.getElementById('numCDJs').value = cdjCount;
+        generateDynamicInputs('cdj', cdjCount, ['fee']);
+        Object.keys(cdjMap).forEach(k => {
+            const i = parseInt(k);
+            const c = cdjMap[i];
+            document.getElementById(`cdj_fee_${i}`).value = c.fee || '';
+        });
+
+        // Show Runners
+        const srCount = getMaxIndex(showRunnerMap);
+        document.getElementById('numShowRunners').value = srCount;
+        generateDynamicInputs('showRunner', srCount, ['fee']);
+        Object.keys(showRunnerMap).forEach(k => {
+            const i = parseInt(k);
+            const s = showRunnerMap[i];
+            document.getElementById(`showRunner_fee_${i}`).value = s.fee || '';
+        });
+
+        // Other items
+        const otherCount = getMaxIndex(otherMap);
+        if (otherBaseName) document.getElementById('otherName').value = otherBaseName;
+        document.getElementById('numOther').value = otherCount;
+        generateDynamicInputs('otherItem', otherCount, ['fee']);
+        Object.keys(otherMap).forEach(k => {
+            const i = parseInt(k);
+            const o = otherMap[i];
+            document.getElementById(`otherItem_fee_${i}`).value = o.fee || '';
+        });
+
+        // Merch Vendors
+        const mvCount = getMaxIndex(merchVendorMap);
+        document.getElementById('numMerchVendors').value = mvCount;
+        generateDynamicInputs('merchVendor', mvCount, ['fee']);
+        Object.keys(merchVendorMap).forEach(k => {
+            const i = parseInt(k);
+            const m = merchVendorMap[i];
+            document.getElementById(`merchVendor_fee_${i}`).value = m.fee || '';
+        });
+
+        updateBudget();
+        sendHeight();
+    }
+
+    // Initialize dynamic inputs on load + hook file input
     window.addEventListener('load', function(){
         const numHeadliners = parseInt(document.getElementById('numHeadliners')?.value) || 0;
         generateDynamicInputs('headliner', numHeadliners, ['fee','hotel','rider']);
 
         const numLocalDJs = parseInt(document.getElementById('numLocalDJs')?.value) || 0;
-        if (numLocalDJs > 0) generateDynamicInputs('localDJ', numLocalDJs, ['fee','name']);
+        if (numLocalDJs > 0) generateDynamicInputs('localDJ', numLocalDJs, ['name','fee']);
 
         const numCDJs = parseInt(document.getElementById('numCDJs')?.value) || 0;
         if (numCDJs > 0) generateDynamicInputs('cdj', numCDJs, ['fee']);
@@ -739,6 +945,19 @@
 
         const numMerchVendors = parseInt(document.getElementById('numMerchVendors')?.value) || 0;
         if (numMerchVendors > 0) generateDynamicInputs('merchVendor', numMerchVendors, ['fee']);
+
+        const fileInput = document.getElementById('csvFileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e){
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    parseCSVAndFill(ev.target.result);
+                };
+                reader.readAsText(file);
+            });
+        }
 
         updateBudget();
         sendHeight();
@@ -765,4 +984,3 @@
     </button>
 
 </html>
-
