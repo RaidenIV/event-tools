@@ -8,6 +8,8 @@
 
 <!-- gif.js for GIF encoding -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<!-- ffmpeg.wasm for WebM -> MP4 conversion -->
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js"></script>
 
 <style>
     :root {
@@ -338,6 +340,7 @@
             </label>
 
             <label><input type="checkbox" id="chkRecordGif"> Export spin as GIF</label>
+            <label><input type="checkbox" id="chkRecordVideo"> Export spin as video</label>
         </div>
     </div>
 
@@ -403,6 +406,7 @@ const btnClear = document.getElementById('btnClear');
 const entriesInput = document.getElementById('entriesInput');
 const chkRemoveWinner = document.getElementById('chkRemoveWinner');
 const chkRecordGif = document.getElementById('chkRecordGif');
+const chkRecordVideo = document.getElementById('chkRecordVideo');
 const spinTimeSelect = document.getElementById('spinTimeSelect');
 const winnerDisplay = document.getElementById('winnerDisplay');
 const historyList = document.getElementById('historyList');
@@ -419,7 +423,12 @@ let gifFrameCount = 0;
 const GIF_FPS = 30;
 const GIF_FRAME_DELAY = Math.round(1000 / GIF_FPS); // ms between frames
 
-/* Winner overlay state (drawn on canvas so it's in the GIF) */
+/* VIDEO recorder state */
+let videoRecorder = null;
+let videoChunks = [];
+let isRecordingVideo = false;
+
+/* Winner overlay state (drawn on canvas so it's in the GIF/Video) */
 let overlayWinnerName = "";
 let overlayActive = false;
 
@@ -434,6 +443,55 @@ logoImg.onload = () => {
     logoLoaded = true;
     drawWheel();
 };
+
+/* ffmpeg.wasm instance for WebM -> MP4 */
+let ffmpegInstance = null;
+let ffmpegLoading = null;
+
+async function convertWebMToMp4(webmBlob) {
+    try {
+        if (!window.FFmpeg || !FFmpeg.createFFmpeg) {
+            console.warn("FFmpeg.wasm not available.");
+            return null;
+        }
+        const { createFFmpeg, fetchFile } = FFmpeg;
+
+        if (!ffmpegInstance) {
+            ffmpegInstance = createFFmpeg({ log: false });
+        }
+
+        if (!ffmpegInstance.isLoaded()) {
+            if (!ffmpegLoading) {
+                ffmpegLoading = ffmpegInstance.load();
+            }
+            await ffmpegLoading;
+        }
+
+        ffmpegInstance.FS('writeFile', 'input.webm', await fetchFile(webmBlob));
+
+        await ffmpegInstance.run(
+            '-i', 'input.webm',
+            '-c:v', 'libx264',
+            '-preset', 'veryfast',
+            '-pix_fmt', 'yuv420p',
+            '-movflags', 'faststart',
+            'output.mp4'
+        );
+
+        const data = ffmpegInstance.FS('readFile', 'output.mp4');
+
+        // Clean up
+        try {
+            ffmpegInstance.FS('unlink', 'input.webm');
+            ffmpegInstance.FS('unlink', 'output.mp4');
+        } catch (e) {}
+
+        return new Blob([data.buffer], { type: 'video/mp4' });
+    } catch (err) {
+        console.error("FFmpeg conversion error:", err);
+        return null;
+    }
+}
 
 /* -----------------------------------------------------------
    RANDOM HELPER (crypto if available)
@@ -594,7 +652,7 @@ function drawWheel() {
 
     ctx.restore();
 
-    // Winner overlay drawn on canvas (so it appears in GIF)
+    // Winner overlay drawn on canvas (so it appears in GIF & video)
     if (overlayActive && overlayWinnerName) {
         ctx.save();
         ctx.textAlign = "center";
@@ -663,7 +721,7 @@ function closeWinnerModal() {
 }
 
 /* -----------------------------------------------------------
-   SPINNING (+ GIF capture)
+   GIF & VIDEO SETUP
 ----------------------------------------------------------- */
 function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
@@ -683,6 +741,7 @@ function initGifRecorderIfNeeded() {
     gifRecorder = new GIF({
         workers: 2,
         quality: 10,
+        repeat: -1,             // play once, no looping
         width: canvas.width,
         height: canvas.height,
         workerScript: "gif.worker.js"   // local worker in same folder
@@ -709,6 +768,67 @@ function initGifRecorderIfNeeded() {
     });
 }
 
+function initVideoRecorderIfNeeded() {
+    if (!chkRecordVideo.checked || typeof MediaRecorder === "undefined" || !canvas.captureStream) {
+        isRecordingVideo = false;
+        videoRecorder = null;
+        videoChunks = [];
+        return;
+    }
+
+    try {
+        const stream = canvas.captureStream(30); // 30 FPS
+        videoChunks = [];
+        videoRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+
+        videoRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+                videoChunks.push(e.data);
+            }
+        };
+
+        videoRecorder.onstop = async () => {
+            if (!videoChunks.length) return;
+            const webmBlob = new Blob(videoChunks, { type: "video/webm" });
+
+            statusLine.textContent = "Converting video to MP4… (this may take a moment)";
+            const mp4Blob = await convertWebMToMp4(webmBlob);
+
+            if (mp4Blob) {
+                const url = URL.createObjectURL(mp4Blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "spin.mp4";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                statusLine.textContent = "MP4 downloaded (ready for Instagram).";
+            } else {
+                // Fallback: download WebM if MP4 failed
+                const url = URL.createObjectURL(webmBlob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "spin.webm";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                statusLine.textContent = "Video downloaded as WebM (MP4 conversion unavailable).";
+            }
+        };
+
+        videoRecorder.start();
+        isRecordingVideo = true;
+    } catch (e) {
+        console.error("Video recording error:", e);
+        isRecordingVideo = false;
+    }
+}
+
+/* -----------------------------------------------------------
+   SPINNING
+----------------------------------------------------------- */
 function spinWheel() {
     if (isSpinning) return;
     if (entries.length === 0) {
@@ -720,13 +840,17 @@ function spinWheel() {
     btnSpin.disabled = true;
     overlayActive = false;  // clear any previous overlay during spin
     overlayWinnerName = "";
-    statusLine.textContent = chkRecordGif.checked ? "Spinning + recording GIF…" : "Spinning…";
+    statusLine.textContent =
+        chkRecordGif.checked || chkRecordVideo.checked
+            ? "Spinning + recording…"
+            : "Spinning…";
 
     // Spin duration from select
     spinDuration = parseInt(spinTimeSelect.value, 10) || 4000;
 
-    // Init GIF recorder if needed
+    // Init GIF and video recorders if needed
     initGifRecorderIfNeeded();
+    initVideoRecorderIfNeeded();
 
     startRotation = currentRotation % (Math.PI * 2);
 
@@ -781,6 +905,10 @@ function finishSpin() {
             gifRecorder.render();
             isRecordingGif = false;
         }
+        if (isRecordingVideo && videoRecorder) {
+            try { videoRecorder.stop(); } catch (e) { console.error(e); }
+            isRecordingVideo = false;
+        }
         return;
     }
 
@@ -803,7 +931,7 @@ function finishSpin() {
     showWinner(winnerName);
     addWinnerToHistory(winnerName);
 
-    // Turn on overlay so it's drawn on the wheel (and in GIF)
+    // Turn on overlay so it's drawn on the wheel (and in GIF/video)
     overlayWinnerName = winnerName;
     overlayActive = true;
     drawWheel();
@@ -832,6 +960,12 @@ function finishSpin() {
         statusLine.textContent = "Rendering GIF…";
         gifRecorder.render();
         isRecordingGif = false;
+    }
+
+    // Stop video recording after overlay is shown
+    if (isRecordingVideo && videoRecorder) {
+        try { videoRecorder.stop(); } catch (e) { console.error("Error stopping video recorder:", e); }
+        isRecordingVideo = false;
     }
 }
 
