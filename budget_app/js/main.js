@@ -200,43 +200,45 @@ function restoreValues(obj, prefix, fields) {
 ============================================================ */
 
 function regenerateHeadliners() {
-    const container = document.getElementById("headlinerInputs");
-    const numHeadlinersEl = document.getElementById("numHeadliners");
-    const oldCount = parseInt(numHeadlinersEl?.dataset?.old || 1);
-    const newCount = parseInt(numHeadlinersEl?.value || 1);
+  const container = document.getElementById("headlinerInputs");
+  const numEl = document.getElementById("numHeadliners");
+  if (!container || !numEl) return;
 
+  const oldCount = parseInt(numEl.dataset.old || "1", 10) || 1;
+  const newCount = parseInt(numEl.value || "1", 10) || 1;
 
-    storeValues(headliners, "headliner", oldCount, ["name", "fee", "hotel", "rider"]);
+  storeValues(headliners, "headliner", oldCount, ["name", "fee", "hotel", "rider"]);
 
-    container.innerHTML = "";
+  container.innerHTML = "";
 
-    for (let i = 1; i <= newCount; i++) {
-        const card = document.createElement("div");
-        card.className = "headliner-card";
-        card.innerHTML = `
-            <h3>Headliner ${i}</h3>
+  for (let i = 1; i <= newCount; i++) {
+    const card = document.createElement("div");
+    card.className = "headliner-card";
+    card.innerHTML = `
+      <h3>Headliner ${i}</h3>
 
-            <label>Name</label>
-            <input id="headliner_name_${i}" type="text" oninput="updateBudget()"/>
+      <label>Name</label>
+      <input id="headliner_name_${i}" type="text" oninput="updateBudget()"/>
 
-            <label>Fee</label>
-            <input id="headliner_fee_${i}" type="number" step="0.01" oninput="updateBudget()"/>
+      <label>Fee</label>
+      <input id="headliner_fee_${i}" type="number" step="0.01" oninput="updateBudget()"/>
 
-            <label>Hotel</label>
-            <input id="headliner_hotel_${i}" type="number" step="0.01" oninput="updateBudget()"/>
+      <label>Hotel</label>
+      <input id="headliner_hotel_${i}" type="number" step="0.01" oninput="updateBudget()"/>
 
-            <label>Rider</label>
-            <input id="headliner_rider_${i}" type="number" step="0.01" oninput="updateBudget()"/>
-        `;
-        container.appendChild(card);
-    }
+      <label>Rider</label>
+      <input id="headliner_rider_${i}" type="number" step="0.01" oninput="updateBudget()"/>
+    `;
+    container.appendChild(card);
+  }
 
-    restoreValues(headliners, "headliner", ["name", "fee", "hotel", "rider"]);
-    document.getElementById("numHeadliners").dataset.old = newCount;
+  restoreValues(headliners, "headliner", ["name", "fee", "hotel", "rider"]);
+  numEl.dataset.old = String(newCount);
 
-    autoExpand("section_headliners", "header_headliners");
-    updateBudget();
+  autoExpand("section_headliners", "header_headliners");
+  updateBudget();
 }
+
 
 /* ============================================================
    LOCAL DJS
