@@ -99,7 +99,27 @@
         margin-top: 12px;
     }
 
-    .drag {
+    
+
+    .dj-member-heading {
+        margin-top: 8px;
+        font-weight: 700;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .dj-member-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .dj-member-meta > div {
+        width: 100%;
+    }
+
+.drag {
         cursor: grab;
         font-weight: 700;
         margin-bottom: 8px;
@@ -216,7 +236,12 @@
         <label>XODIA Guests</label>
         <textarea id="xodiaGuests"></textarea>
 
-        <label>Promo Team</label>
+        
+
+        <label>Free Spots</label>
+        <textarea id="freeSpots" placeholder="Names for complimentary / free entry (e.g. sponsors, comps, etc.)"></textarea>
+
+<label>Promo Team</label>
         <textarea id="promoTeam"></textarea>
 
         <label>How many DJs?</label>
@@ -353,6 +378,7 @@ function syncTopYForDayOfShowLines(lines) {
    Order: Headliner, XODIA, Promo, DJs, Other
    Also returns totalNames across all sections.
 ----------------------------------------------------------- */
+
 function getSectionsForLayout() {
     const globalSeen = new Set();
     const headlinerName = getHeadlinerCap(); // ALL CAPS
@@ -367,17 +393,18 @@ function getSectionsForLayout() {
         totalNames += list.length;
     }
 
-    // Headliner, XODIA, Promo
+    // Headliner, XODIA, Free Spots, Promo
     addSection("Headliner", headlinerGuests.value);
     addSection("XODIA Guests", xodiaGuests.value);
+    addSection("Free Spots", (typeof freeSpots !== "undefined" ? freeSpots.value : ""));
     addSection("Promo Team", promoTeam.value);
 
     // DJs (in order)
     const djBlocks = [...document.querySelectorAll(".dj-block")];
-    djBlocks.forEach(block => {
-        const name = smartCap(block.querySelector(".dj-name").value.trim());
-        const guests = block.querySelector(".dj-guests").value;
-        addSection(name, guests);
+    djBlocks.forEach((block, idx) => {
+        const djData = getDJBlockData(block, `DJ ${idx + 1}`);
+        const title = buildDJTitleFromMembers(djData.members, `DJ ${idx + 1}`);
+        addSection(title, djData.guests);
     });
 
     // Other
@@ -386,6 +413,7 @@ function getSectionsForLayout() {
 
     return { sections, totalNames };
 }
+
 
 /* -----------------------------------------------------------
    LAYOUT SECTIONS INTO PAGES & COLUMNS
@@ -454,26 +482,154 @@ function layoutSections(sections) {
 /* -----------------------------------------------------------
    DJ INPUT BUILDER
 ----------------------------------------------------------- */
+
+/* -----------------------------------------------------------
+   DJ INPUT HELPERS (Stage Name + Legal Name, Solo/Duo/Trio)
+----------------------------------------------------------- */
+function getDJMembersFromBlock(block) {
+    return [...block.querySelectorAll(".dj-member-row")].map(row => ({
+        stage: (row.querySelector(".dj-stage")?.value || "").trim(),
+        legal: (row.querySelector(".dj-legal")?.value || "").trim()
+    }));
+}
+
+function getDJBlockData(block, fallbackStage = "") {
+    const memberCountEl = block.querySelector(".dj-member-count");
+    const memberCount = Math.min(3, Math.max(1, Number(memberCountEl?.value || 1)));
+
+    const existing = getDJMembersFromBlock(block);
+    const members = [];
+    for (let i = 0; i < memberCount; i++) {
+        members.push(existing[i] || { stage: "", legal: "" });
+    }
+
+    // Backward compatibility: if an old .dj-name exists, treat as member 1 stage
+    const legacyName = block.querySelector(".dj-name")?.value?.trim() || "";
+    if (!members[0].stage && legacyName) {
+        members[0].stage = legacyName;
+    }
+    if (!members[0].stage && fallbackStage) {
+        members[0].stage = fallbackStage;
+    }
+
+    const guests = block.querySelector(".dj-guests")?.value || "";
+    return { memberCount, members, guests };
+}
+
+function buildDJTitleFromMembers(members, fallbackTitle) {
+    const cleaned = (members || [])
+        .map(m => ({ stage: (m.stage || "").trim(), legal: (m.legal || "").trim() }))
+        .filter(m => m.stage || m.legal);
+
+    if (!cleaned.length) return fallbackTitle;
+
+    const parts = cleaned.map(m => {
+        const stage = smartCap(m.stage);
+        const legal = smartCap(m.legal);
+        if (stage && legal) return `${stage} (${legal})`;
+        return stage || legal;
+    });
+
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return `${parts[0]} & ${parts[1]}`;
+    return `${parts[0]}, ${parts[1]} & ${parts[2]}`;
+}
+
+function createDJMemberRow(memberIndex, memberData) {
+    const row = document.createElement("div");
+    row.className = "dj-member-row";
+
+    const heading = document.createElement("div");
+    heading.className = "dj-member-heading";
+    heading.textContent = `Name ${memberIndex}`;
+    row.appendChild(heading);
+
+    const meta = document.createElement("div");
+    meta.className = "dj-member-meta";
+
+    const stageWrap = document.createElement("div");
+    stageWrap.innerHTML = `
+        <label>Stage Name</label>
+        <input class="dj-stage" type="text">
+    `;
+    stageWrap.querySelector("input").value = memberData?.stage || "";
+    meta.appendChild(stageWrap);
+
+    const legalWrap = document.createElement("div");
+    legalWrap.innerHTML = `
+        <label>Legal Name</label>
+        <input class="dj-legal" type="text">
+    `;
+    legalWrap.querySelector("input").value = memberData?.legal || "";
+    meta.appendChild(legalWrap);
+
+    row.appendChild(meta);
+    return row;
+}
+
+function setDJMembersInBlock(block, desiredCount, seedMembers = []) {
+    const wrap = block.querySelector(".dj-members-wrap");
+    if (!wrap) return;
+
+    const count = Math.min(3, Math.max(1, Number(desiredCount || 1)));
+    wrap.innerHTML = "";
+
+    for (let i = 0; i < count; i++) {
+        wrap.appendChild(createDJMemberRow(i + 1, seedMembers[i] || { stage: "", legal: "" }));
+    }
+}
+
+
+/* -----------------------------------------------------------
+   DJ INPUT BUILDER
+----------------------------------------------------------- */
 function buildDJInputs(preserveExisting = true) {
-    const count = Number(djCount.value);
+    const count = Math.min(10, Math.max(1, Number(djCount.value || 1)));
     const container = djContainer;
 
-    const old = preserveExisting ? [...container.querySelectorAll(".dj-block")] : [];
+    const oldBlocks = preserveExisting ? [...container.querySelectorAll(".dj-block")] : [];
+    const oldData = oldBlocks.map((b, idx) => getDJBlockData(b, `DJ ${idx + 1}`));
+
     container.innerHTML = "";
 
     for (let i = 0; i < count; i++) {
-        let name = preserveExisting && old[i]?.querySelector(".dj-name").value || `DJ ${i+1}`;
-        let guests = preserveExisting && old[i]?.querySelector(".dj-guests").value || "";
+        const existing = preserveExisting ? oldData[i] : null;
+
+        const fallbackStage = `DJ ${i + 1}`;
+        const memberCount = existing?.memberCount || Math.min(3, Math.max(1, existing?.members?.length || 1));
+        const members = existing?.members?.length ? existing.members : [{ stage: fallbackStage, legal: "" }];
+        const guests = existing?.guests || "";
 
         const block = document.createElement("div");
         block.className = "dj-block";
+
         block.innerHTML = `
             <div class="drag">☰ Drag</div>
-            <label>DJ ${i+1} Name</label>
-            <input class="dj-name" type="text" value="${name}">
+
+            <label>DJ ${i + 1} Names</label>
+            <select class="dj-member-count">
+                <option value="1">Solo (1 name)</option>
+                <option value="2">Duo (2 names)</option>
+                <option value="3">Trio (3 names)</option>
+            </select>
+
+            <div class="dj-members-wrap"></div>
+
             <label>Guest List</label>
-            <textarea class="dj-guests">${guests}</textarea>
+            <textarea class="dj-guests"></textarea>
         `;
+
+        // Set values
+        const sel = block.querySelector(".dj-member-count");
+        sel.value = String(memberCount);
+
+        block.querySelector(".dj-guests").value = guests;
+
+        // Ensure member list is at least memberCount long
+        const seed = [...members];
+        while (seed.length < memberCount) seed.push({ stage: "", legal: "" });
+        setDJMembersInBlock(block, memberCount, seed);
+
         container.appendChild(block);
     }
 
@@ -486,12 +642,31 @@ function buildDJInputs(preserveExisting = true) {
     updatePreview();
 }
 
+
 /* Live-update preview on input */
 document.addEventListener("input", e => {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") {
         updatePreview();
     }
 });
+document.addEventListener("change", e => {
+    if (e.target.tagName === "SELECT") {
+        updatePreview();
+    }
+});
+
+/* DJ Solo/Duo/Trio selector -> rebuild name fields */
+djContainer.addEventListener("change", e => {
+    if (!e.target.classList.contains("dj-member-count")) return;
+    const block = e.target.closest(".dj-block");
+    if (!block) return;
+
+    const desired = Math.min(3, Math.max(1, Number(e.target.value || 1)));
+    const existing = getDJMembersFromBlock(block);
+    setDJMembersInBlock(block, desired, existing);
+    updatePreview();
+});
+
 
 /* ALWAYS ALL-CAPS inputs for show name + headliner on blur */
 headliner.addEventListener("blur", () => {
@@ -702,6 +877,7 @@ function copyPreview() {
 /* -----------------------------------------------------------
    RESET – clear the entire form
 ----------------------------------------------------------- */
+
 function resetAll() {
     showName.value = "";
     headliner.value = "";
@@ -709,6 +885,7 @@ function resetAll() {
     dayOfShowPricing.value = "";
     headlinerGuests.value = "";
     xodiaGuests.value = "";
+    if (typeof freeSpots !== "undefined") freeSpots.value = "";
     promoTeam.value = "";
     djCount.value = 1;
     otherName.value = "Other";
@@ -718,9 +895,11 @@ function resetAll() {
     updatePreview();
 }
 
+
 /* -----------------------------------------------------------
    CSV EXPORT / IMPORT (JSON payload)
 ----------------------------------------------------------- */
+
 function exportCSV() {
     let data = {
         showName: showName.value,
@@ -729,6 +908,7 @@ function exportCSV() {
         dayOfShowPricing: dayOfShowPricing.value,
         headlinerGuests: headlinerGuests.value,
         xodiaGuests: xodiaGuests.value,
+        freeSpots: (typeof freeSpots !== "undefined" ? freeSpots.value : ""),
         promoTeam: promoTeam.value,
         otherName: otherName.value,
         otherGuests: otherGuests.value,
@@ -736,10 +916,12 @@ function exportCSV() {
         djs: []
     };
 
-    document.querySelectorAll(".dj-block").forEach(b => {
+    document.querySelectorAll(".dj-block").forEach((b, i) => {
+        const djData = getDJBlockData(b, `DJ ${i + 1}`);
         data.djs.push({
-            name: b.querySelector(".dj-name").value,
-            guests: b.querySelector(".dj-guests").value
+            memberCount: djData.memberCount,
+            members: djData.members,
+            guests: djData.guests
         });
     });
 
@@ -750,6 +932,8 @@ function exportCSV() {
     a.download = `${getShowNameCap()}_${dateFormat(date.value)}.csv`;
     a.click();
 }
+
+
 
 function importCSV() {
     const input = document.createElement("input");
@@ -769,19 +953,43 @@ function importCSV() {
             dayOfShowPricing.value = data.dayOfShowPricing || "";
             headlinerGuests.value = data.headlinerGuests || "";
             xodiaGuests.value = data.xodiaGuests || "";
+            if (typeof freeSpots !== "undefined") freeSpots.value = data.freeSpots || "";
             promoTeam.value = data.promoTeam || "";
             otherName.value = data.otherName || "Other";
             otherGuests.value = data.otherGuests || "";
-            djCount.value = data.djCount || 1;
+
+            // DJ count: prefer explicit, otherwise derive from DJ list length
+            const importedDjs = Array.isArray(data.djs) ? data.djs : [];
+            djCount.value = data.djCount || importedDjs.length || 1;
 
             buildDJInputs(false);
 
             const blocks = [...document.querySelectorAll(".dj-block")];
-            (data.djs || []).forEach((dj, i) => {
-                if (blocks[i]) {
-                    blocks[i].querySelector(".dj-name").value = dj.name || `DJ ${i+1}`;
-                    blocks[i].querySelector(".dj-guests").value = dj.guests || "";
+            importedDjs.forEach((dj, i) => {
+                if (!blocks[i]) return;
+
+                // Backward-compatible member parsing
+                let members = [];
+                if (Array.isArray(dj.members)) {
+                    members = dj.members;
+                } else if (typeof dj.name === "string" && dj.name.trim()) {
+                    members = [{ stage: dj.name.trim(), legal: "" }];
+                } else if (typeof dj.stageName === "string" && dj.stageName.trim()) {
+                    members = [{ stage: dj.stageName.trim(), legal: (dj.legalName || "").trim() }];
                 }
+
+                const desiredCountRaw = Number(dj.memberCount || members.length || 1);
+                const desiredCount = Math.min(3, Math.max(1, desiredCountRaw));
+
+                const block = blocks[i];
+                block.querySelector(".dj-member-count").value = String(desiredCount);
+
+                // Ensure seed list length
+                const seed = [...members];
+                while (seed.length < desiredCount) seed.push({ stage: "", legal: "" });
+                setDJMembersInBlock(block, desiredCount, seed);
+
+                block.querySelector(".dj-guests").value = dj.guests || "";
             });
 
             updatePreview();
@@ -792,6 +1000,7 @@ function importCSV() {
 
     input.click();
 }
+
 
 /* -----------------------------------------------------------
    EXPORT PDF – SAME layout rules as preview:
