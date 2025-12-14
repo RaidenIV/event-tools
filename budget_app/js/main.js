@@ -201,8 +201,10 @@ function restoreValues(obj, prefix, fields) {
 
 function regenerateHeadliners() {
     const container = document.getElementById("headlinerInputs");
-    const oldCount = parseInt(document.getElementById("numHeadliners").dataset.old || 1);
-    const newCount = parseInt(numHeadliners.value);
+    const numHeadlinersEl = document.getElementById("numHeadliners");
+    const oldCount = parseInt(numHeadlinersEl?.dataset?.old || 1);
+    const newCount = parseInt(numHeadlinersEl?.value || 1);
+
 
     storeValues(headliners, "headliner", oldCount, ["name", "fee", "hotel", "rider"]);
 
