@@ -1528,7 +1528,7 @@ function buildCsvFileName() {
   return `${getExportBaseName()}.csv`;
 }
 
-function buildTxtFileName() {
+function buildTxtFileNameFromBase() {
   return `${getExportBaseName()}.txt`;
 }
 
