@@ -200,45 +200,41 @@ function restoreValues(obj, prefix, fields) {
 ============================================================ */
 
 function regenerateHeadliners() {
-  const container = document.getElementById("headlinerInputs");
-  const numEl = document.getElementById("numHeadliners");
-  if (!container || !numEl) return;
+    const container = document.getElementById("headlinerInputs");
+    const oldCount = parseInt(document.getElementById("numHeadliners").dataset.old || 1);
+    const newCount = parseInt(numHeadliners.value);
 
-  const oldCount = parseInt(numEl.dataset.old || "1", 10) || 1;
-  const newCount = parseInt(numEl.value || "1", 10) || 1;
+    storeValues(headliners, "headliner", oldCount, ["name", "fee", "hotel", "rider"]);
 
-  storeValues(headliners, "headliner", oldCount, ["name", "fee", "hotel", "rider"]);
+    container.innerHTML = "";
 
-  container.innerHTML = "";
+    for (let i = 1; i <= newCount; i++) {
+        const card = document.createElement("div");
+        card.className = "headliner-card";
+        card.innerHTML = `
+            <h3>Headliner ${i}</h3>
 
-  for (let i = 1; i <= newCount; i++) {
-    const card = document.createElement("div");
-    card.className = "headliner-card";
-    card.innerHTML = `
-      <h3>Headliner ${i}</h3>
+            <label>Name</label>
+            <input id="headliner_name_${i}" type="text" oninput="updateBudget()"/>
 
-      <label>Name</label>
-      <input id="headliner_name_${i}" type="text" oninput="updateBudget()"/>
+            <label>Fee</label>
+            <input id="headliner_fee_${i}" type="number" step="0.01" oninput="updateBudget()"/>
 
-      <label>Fee</label>
-      <input id="headliner_fee_${i}" type="number" step="0.01" oninput="updateBudget()"/>
+            <label>Hotel</label>
+            <input id="headliner_hotel_${i}" type="number" step="0.01" oninput="updateBudget()"/>
 
-      <label>Hotel</label>
-      <input id="headliner_hotel_${i}" type="number" step="0.01" oninput="updateBudget()"/>
+            <label>Rider</label>
+            <input id="headliner_rider_${i}" type="number" step="0.01" oninput="updateBudget()"/>
+        `;
+        container.appendChild(card);
+    }
 
-      <label>Rider</label>
-      <input id="headliner_rider_${i}" type="number" step="0.01" oninput="updateBudget()"/>
-    `;
-    container.appendChild(card);
-  }
+    restoreValues(headliners, "headliner", ["name", "fee", "hotel", "rider"]);
+    document.getElementById("numHeadliners").dataset.old = newCount;
 
-  restoreValues(headliners, "headliner", ["name", "fee", "hotel", "rider"]);
-  numEl.dataset.old = String(newCount);
-
-  autoExpand("section_headliners", "header_headliners");
-  updateBudget();
+    autoExpand("section_headliners", "header_headliners");
+    updateBudget();
 }
-
 
 /* ============================================================
    LOCAL DJS
@@ -493,14 +489,14 @@ function updateBudget() {
   }
 
   /* -------------------------
-     SUPPORT
+     SUPPORT (Direct + Locals)
   -------------------------- */
-  const directSupport = +document.getElementById("directSupport")?.value || 0;
+  const directSupport = (+document.getElementById("directSupport")?.value || 0);
 
   let localDJTotal = 0;
   const numLocalDJs = +document.getElementById("numLocalDJs")?.value || 0;
   for (let i = 1; i <= numLocalDJs; i++) {
-    localDJTotal += +document.getElementById(`localDJ_fee_${i}`)?.value || 0;
+    localDJTotal += (+document.getElementById(`localDJ_fee_${i}`)?.value || 0);
   }
 
   /* -------------------------
@@ -514,12 +510,12 @@ function updateBudget() {
     (+document.getElementById("lasers")?.value || 0);
 
   /* -------------------------
-     GEAR RENTALS
+     GEAR
   -------------------------- */
   let cdjTotal = 0;
   const numCDJs = +document.getElementById("numCDJs")?.value || 0;
   for (let i = 1; i <= numCDJs; i++) {
-    cdjTotal += +document.getElementById(`cdj_fee_${i}`)?.value || 0;
+    cdjTotal += (+document.getElementById(`cdj_fee_${i}`)?.value || 0);
   }
 
   const gearTotal =
@@ -531,14 +527,11 @@ function updateBudget() {
   /* -------------------------
      MARKETING
   -------------------------- */
-  const fbX = +document.getElementById("facebookAdsXodia")?.value || 0;
-  const fbS = +document.getElementById("facebookAdsSpaceCampHQ")?.value || 0;
-  const igX = +document.getElementById("instagramAdsXodia")?.value || 0;
-  const igS = +document.getElementById("instagramAdsSpaceCampHQ")?.value || 0;
-
   const marketingTotal =
-    fbX + fbS +
-    igX + igS +
+    (+document.getElementById("facebookAdsXodia")?.value || 0) +
+    (+document.getElementById("facebookAdsSpaceCampHQ")?.value || 0) +
+    (+document.getElementById("instagramAdsXodia")?.value || 0) +
+    (+document.getElementById("instagramAdsSpaceCampHQ")?.value || 0) +
     (+document.getElementById("physicalFlyers")?.value || 0) +
     (+document.getElementById("eventbriteAds")?.value || 0);
 
@@ -548,7 +541,7 @@ function updateBudget() {
   let showRunnerTotal = 0;
   const numShowRunners = +document.getElementById("numShowRunners")?.value || 0;
   for (let i = 1; i <= numShowRunners; i++) {
-    showRunnerTotal += +document.getElementById(`showRunner_fee_${i}`)?.value || 0;
+    showRunnerTotal += (+document.getElementById(`showRunner_fee_${i}`)?.value || 0);
   }
 
   const staffTotal =
@@ -622,9 +615,21 @@ function updateBudget() {
 
   const profitLine = document.getElementById("profitLine");
   if (profitLine) {
+    // Keep the net profit as its own element so we can style just the number.
+    let netProfitEl = document.getElementById("netProfit");
+
+    // If a previous version overwrote the line and removed the span, rebuild it.
+    if (!netProfitEl) {
+      profitLine.innerHTML = `Net Profit: <span id="netProfit"></span>`;
+      netProfitEl = document.getElementById("netProfit");
+    }
+
     profitLine.className = netProfit >= 0 ? "profit" : "loss";
-    profitLine.innerHTML =
-      `Net Profit: ${netProfit >= 0 ? "+" : "-"}$${Math.abs(netProfit).toFixed(2)}`;
+
+    if (netProfitEl) {
+      netProfitEl.textContent = `${netProfit >= 0 ? "+" : "-"}$${Math.abs(netProfit).toFixed(2)}`;
+      netProfitEl.style.color = netProfit < 0 ? "red" : "";
+    }
   }
 
   /* -------------------------
@@ -655,6 +660,7 @@ function updateBudget() {
     }
   );
 }
+
 
 /* ============================================================
    TEXT PREVIEW
@@ -1360,10 +1366,7 @@ function loadCSV(fileOrText) {
       if (typeof regenerateShowRunners === "function") regenerateShowRunners();
     }
 
-    if (maxVendor > 0) {
-      setVal("numMerchVendors", maxVendor);
-      regenVendors(); // FIX: correct regen function
-    }
+    if (maxVendor > 0) ensureMerchVendors(maxVendor);
 
     if (maxOtherCats > 0) {
       setVal("numOtherCategories", maxOtherCats);
@@ -1383,11 +1386,14 @@ function loadCSV(fileOrText) {
         continue;
       }
 
-      // Direct Support (CSV label: "Direct Support Fee")
-      if (/^Direct Support Fee$/i.test(label)) { setVal("directSupport", value); continue; }
-
       // 2) Repeaters / special cases
       let m;
+
+      // Direct Support (exported as a labeled line; not part of FIELDS config)
+      if (/^Direct Support(\s+Fee)?$/i.test(label)) {
+        setVal("directSupport", value);
+        continue;
+      }
 
       // Headliners
       if ((m = label.match(/^Headliner\s+(\d+)\s+Fee$/i)))   { setVal(`headliner_fee_${m[1]}`, value); continue; }
@@ -1402,63 +1408,59 @@ function loadCSV(fileOrText) {
       // CDJs
       if ((m = label.match(/^CDJ\s+(\d+)\s+Fee$/i))) { setVal(`cdj_fee_${m[1]}`, value); continue; }
 
-      // Show runners
+      // Show Runners
       if ((m = label.match(/^Show Runner\s+(\d+)\s+Fee$/i))) { setVal(`showRunner_fee_${m[1]}`, value); continue; }
 
-      // ---- OTHER CATEGORIES (versioned format) ----
+      // ---- OTHER CATEGORIES ----
       if ((m = label.match(/^Category\s+(\d+)\s+Name$/i))) {
         const c = +m[1];
-        currentCategory = c;
         ensureOtherCategories(c);
+        currentCategory = c;
         setVal(`otherCategoryName_${c}`, value);
         continue;
       }
 
       if ((m = label.match(/^Category\s+(\d+)\s+Items Count$/i))) {
         const c = +m[1];
-        currentCategory = c;
         ensureOtherCategories(c);
-        setVal(`otherCategoryCount_${c}`, value);
-        regenOtherItems(c); // FIX: correct regen function
-        continue;
-      }
-
-      if ((m = label.match(/^Category\s+(\d+)\s+Item\s+(\d+)\s+Name$/i))) {
-        const c = +m[1], i = +m[2];
-        ensureOtherItemRow(c, i);
-        setVal(`otherCategory_${c}_itemName_${i}`, value);
-        continue;
-      }
-
-      if ((m = label.match(/^Category\s+(\d+)\s+Item\s+(\d+)\s+Fee$/i))) {
-        const c = +m[1], i = +m[2];
-        ensureOtherItemRow(c, i);
-        setVal(`otherCategory_${c}_itemFee_${i}`, value);
-        continue;
-      }
-
-      // ---- OTHER CATEGORIES (legacy format) ----
-      if ((m = label.match(/^Category\s+(\d+)\s+Items$/i))) {
-        // if a legacy file slips through without normalization
-        const c = +m[1];
         currentCategory = c;
-        ensureOtherCategories(c);
         setVal(`otherCategoryCount_${c}`, value);
         regenOtherItems(c);
         continue;
       }
 
-      if ((m = label.match(/^Item\s+(\d+)\s+Name$/i)) && currentCategory > 0) {
-        const i = +m[1];
-        ensureOtherItemRow(currentCategory, i);
-        setVal(`otherCategory_${currentCategory}_itemName_${i}`, value);
+      if ((m = label.match(/^Category\s+(\d+)\s+Item\s+(\d+)\s+Name$/i))) {
+        const c = +m[1];
+        const i = +m[2];
+        ensureOtherItemRow(c, i);
+        currentCategory = c;
+        setVal(`otherCategory_${c}_itemName_${i}`, value);
         continue;
       }
 
-      if ((m = label.match(/^Item\s+(\d+)\s+Fee$/i)) && currentCategory > 0) {
+      if ((m = label.match(/^Category\s+(\d+)\s+Item\s+(\d+)\s+Fee$/i))) {
+        const c = +m[1];
+        const i = +m[2];
+        ensureOtherItemRow(c, i);
+        currentCategory = c;
+        setVal(`otherCategory_${c}_itemFee_${i}`, value);
+        continue;
+      }
+
+      // Legacy (no category prefix): "Item 1 Name/Fee" after a "Category X Name" line
+      if ((m = label.match(/^Item\s+(\d+)\s+Name$/i))) {
         const i = +m[1];
-        ensureOtherItemRow(currentCategory, i);
-        setVal(`otherCategory_${currentCategory}_itemFee_${i}`, value);
+        const c = currentCategory || 1;
+        ensureOtherItemRow(c, i);
+        setVal(`otherCategory_${c}_itemName_${i}`, value);
+        continue;
+      }
+
+      if ((m = label.match(/^Item\s+(\d+)\s+Fee$/i))) {
+        const i = +m[1];
+        const c = currentCategory || 1;
+        ensureOtherItemRow(c, i);
+        setVal(`otherCategory_${c}_itemFee_${i}`, value);
         continue;
       }
 
@@ -1532,7 +1534,7 @@ function buildCsvFileName() {
   return `${getExportBaseName()}.csv`;
 }
 
-function buildTxtFileNameFromBase() {
+function buildTxtFileName() {
   return `${getExportBaseName()}.txt`;
 }
 
@@ -1649,6 +1651,15 @@ function toggleCollapse(id) {
 
     // Toggle OPEN state
     section.classList.toggle("open");
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
 }
 
 function loadImage(src) {
