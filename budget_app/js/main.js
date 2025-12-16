@@ -1534,10 +1534,6 @@ function buildCsvFileName() {
   return `${getExportBaseName()}.csv`;
 }
 
-function buildTxtFileName() {
-  return `${getExportBaseName()}.txt`;
-}
-
 function buildChartsPngFileName() {
   return `${getExportBaseName()}_charts.png`;
 }
