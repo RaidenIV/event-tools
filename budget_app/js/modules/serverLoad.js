@@ -2,29 +2,22 @@
 
 import { loadCSV } from './csv.js';
 
-/**
- * Fetch and load a CSV budget from the server
- * @param {string} budgetId - The ID or filename of the budget to load
- * @param {object} regenerators - Object with regenerator functions
- * @param {function} updateBudgetFn - Function to update the budget display
- * @returns {Promise<void>}
- */
+// Your Pi5 server address
+const API_BASE = 'http://192.168.1.217:3000';
+
 export async function loadBudgetFromServer(budgetId, regenerators, updateBudgetFn) {
   const statusEl = document.getElementById('loadStatus');
   
   try {
     if (statusEl) statusEl.textContent = 'Loading budget...';
     
-    // Replace with your actual API endpoint
-    const response = await fetch(`/api/budgets/${budgetId}`);
+    const response = await fetch(`${API_BASE}/api/budgets/${budgetId}`);
     
     if (!response.ok) {
       throw new Error(`Failed to load budget: ${response.statusText}`);
     }
     
     const csvText = await response.text();
-    
-    // Use existing loadCSV function to parse and populate the form
     loadCSV(csvText, regenerators, updateBudgetFn);
     
     if (statusEl) {
@@ -39,20 +32,15 @@ export async function loadBudgetFromServer(budgetId, regenerators, updateBudgetF
   }
 }
 
-/**
- * Fetch list of available budgets from server
- * @returns {Promise<Array>} Array of budget objects
- */
 export async function fetchBudgetList() {
   try {
-    const response = await fetch('/api/budgets');
+    const response = await fetch(`${API_BASE}/api/budgets`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch budget list: ${response.statusText}`);
     }
     
     return await response.json();
-    // Expected format: [{ id: '123', name: 'Show Name', date: '2024-01-15' }, ...]
     
   } catch (error) {
     console.error('Error fetching budget list:', error);
@@ -60,10 +48,6 @@ export async function fetchBudgetList() {
   }
 }
 
-/**
- * Populate a dropdown/select element with available budgets
- * @param {string} selectId - ID of the select element
- */
 export async function populateBudgetSelector(selectId) {
   const select = document.getElementById(selectId);
   if (!select) return;
@@ -71,12 +55,10 @@ export async function populateBudgetSelector(selectId) {
   try {
     const budgets = await fetchBudgetList();
     
-    // Clear existing options except the first (placeholder)
     while (select.options.length > 1) {
       select.remove(1);
     }
     
-    // Add budget options
     budgets.forEach(budget => {
       const option = document.createElement('option');
       option.value = budget.id;
@@ -90,15 +72,9 @@ export async function populateBudgetSelector(selectId) {
   }
 }
 
-/**
- * Save current budget to server
- * @param {string} csvData - CSV string to save
- * @param {object} metadata - Additional metadata (name, date, etc.)
- * @returns {Promise<object>} Server response with saved budget info
- */
 export async function saveBudgetToServer(csvData, metadata = {}) {
   try {
-    const response = await fetch('/api/budgets', {
+    const response = await fetch(`${API_BASE}/api/budgets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +92,6 @@ export async function saveBudgetToServer(csvData, metadata = {}) {
     }
     
     return await response.json();
-    // Expected format: { id: '123', message: 'Budget saved successfully' }
     
   } catch (error) {
     console.error('Error saving budget to server:', error);
@@ -124,15 +99,10 @@ export async function saveBudgetToServer(csvData, metadata = {}) {
   }
 }
 
-/**
- * Search budgets by criteria
- * @param {object} criteria - Search criteria (name, dateFrom, dateTo, etc.)
- * @returns {Promise<Array>} Filtered budget list
- */
 export async function searchBudgets(criteria) {
   try {
     const params = new URLSearchParams(criteria);
-    const response = await fetch(`/api/budgets/search?${params}`);
+    const response = await fetch(`${API_BASE}/api/budgets/search?${params}`);
     
     if (!response.ok) {
       throw new Error(`Search failed: ${response.statusText}`);
@@ -146,14 +116,9 @@ export async function searchBudgets(criteria) {
   }
 }
 
-/**
- * Delete a budget from the server
- * @param {string} budgetId - ID of the budget to delete
- * @returns {Promise<void>}
- */
 export async function deleteBudgetFromServer(budgetId) {
   try {
-    const response = await fetch(`/api/budgets/${budgetId}`, {
+    const response = await fetch(`${API_BASE}/api/budgets/${budgetId}`, {
       method: 'DELETE'
     });
     
