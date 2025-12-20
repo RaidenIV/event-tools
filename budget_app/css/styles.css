@@ -443,4 +443,16 @@ button:hover {
 
 .dynamic-input-group {
     margin-bottom: 12px;
+
+}
+
+/* ----------------------------------------------------------
+   RESET BUTTON (DANGER)
+---------------------------------------------------------- */
+.btn-danger {
+    background: #dc3545 !important;
+}
+
+.btn-danger:hover {
+    background: #c82333 !important;
 }
