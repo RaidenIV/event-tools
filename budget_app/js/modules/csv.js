@@ -1,3 +1,24 @@
+export function loadCSV(fileOrText, regenerators, updateBudgetFn) {
+  console.log('=== loadCSV called ===');
+  console.log('Input type:', typeof fileOrText);
+  console.log('Has regenerators:', !!regenerators);
+  console.log('Has updateBudgetFn:', !!updateBudgetFn);
+  
+  const resetForm = () => {
+    const form = document.getElementById("budgetForm");
+    if (form) form.reset();
+  };
+
+  const setVal = (id, v) => {
+    const el = document.getElementById(id);
+    if (!el) {
+      console.warn('Element not found:', id);
+      return;
+    }
+    el.value = (v == null) ? "" : v;
+    console.log(`Set ${id} = ${v}`);
+  };
+
 // csv.js - CSV import and export functionality
 
 import { FIELDS, CSV_META, CSV_FIELD_BY_LABEL, CSV_ALIASES, collectCsvFields } from './state.js';
@@ -369,4 +390,5 @@ export function triggerImport() {
   if (!input) return;
   input.value = "";
   input.click();
+
 }
