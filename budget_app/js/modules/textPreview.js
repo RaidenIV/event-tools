@@ -1,6 +1,7 @@
 // textPreview.js - Text budget preview generation
 
-import { getNum, getStr, fmtMoney } from './utils.js';
+// textPreview.js - at the TOP
+import { getNum, getStr, fmtMoney, buildTxtFileName } from './utils.js';
 
 export function updateTextPreview(data = {}) {
   const preview = document.getElementById("textPreview");
@@ -231,4 +232,5 @@ export function exportTextPreviewTxt() {
   a.remove();
 
   setTimeout(() => URL.revokeObjectURL(url), 1500);
+
 }
