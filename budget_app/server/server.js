@@ -1,33 +1,45 @@
 const express = require('express');
-const fs = require('fs').promises;
-const path = require('path');
 const cors = require('cors');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
+
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, '..'))); // Serve parent directory
 
-const BUDGETS_DIR = path.join(__dirname, 'budgets');
+// MongoDB connection
+let db;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/budgets';
 
-// Ensure budgets directory exists
-fs.mkdir(BUDGETS_DIR, { recursive: true });
+async function connectDB() {
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  db = client.db();
+  console.log('✅ Connected to MongoDB');
+}
+
+// Health check
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Budget App Server is running',
+    storage: 'MongoDB'
+  });
+});
 
 // GET all budgets
 app.get('/api/budgets', async (req, res) => {
   try {
-    const files = await fs.readdir(BUDGETS_DIR);
-    const budgets = await Promise.all(
-      files
-        .filter(f => f.endsWith('.json'))
-        .map(async (file) => {
-          const content = await fs.readFile(path.join(BUDGETS_DIR, file), 'utf8');
-          return JSON.parse(content);
-        })
-    );
+    const budgets = await db.collection('budgets')
+      .find({}, { projection: { csv: 0 } })
+      .toArray();
     res.json(budgets);
   } catch (error) {
+    console.error('Error fetching budgets:', error);
     res.status(500).json({ error: 'Failed to fetch budgets' });
   }
 });
@@ -35,12 +47,13 @@ app.get('/api/budgets', async (req, res) => {
 // GET specific budget
 app.get('/api/budgets/:id', async (req, res) => {
   try {
-    const csv = await fs.readFile(
-      path.join(BUDGETS_DIR, `${req.params.id}.csv`),
-      'utf8'
-    );
-    res.type('text/csv').send(csv);
+    const budget = await db.collection('budgets').findOne({ id: req.params.id });
+    if (!budget) {
+      return res.status(404).json({ error: 'Budget not found' });
+    }
+    res.type('text/csv').send(budget.csv);
   } catch (error) {
+    console.error('Error fetching budget:', error);
     res.status(404).json({ error: 'Budget not found' });
   }
 });
@@ -49,23 +62,26 @@ app.get('/api/budgets/:id', async (req, res) => {
 app.post('/api/budgets', async (req, res) => {
   try {
     const { csv, name, date } = req.body;
+    
+    if (!csv || !name || !date) {
+      return res.status(400).json({ error: 'Missing required fields: csv, name, date' });
+    }
+    
     const id = Date.now().toString();
-    
-    await fs.writeFile(
-      path.join(BUDGETS_DIR, `${id}.csv`),
+    const budget = {
+      id,
+      name,
+      date,
       csv,
-      'utf8'
-    );
+      createdAt: new Date().toISOString()
+    };
     
-    const metadata = { id, name, date, createdAt: new Date().toISOString() };
-    await fs.writeFile(
-      path.join(BUDGETS_DIR, `${id}.json`),
-      JSON.stringify(metadata, null, 2),
-      'utf8'
-    );
+    await db.collection('budgets').insertOne(budget);
     
+    console.log(`Budget saved: ${name} (${id})`);
     res.json({ id, message: 'Budget saved successfully' });
   } catch (error) {
+    console.error('Save error:', error);
     res.status(500).json({ error: 'Failed to save budget' });
   }
 });
@@ -73,45 +89,29 @@ app.post('/api/budgets', async (req, res) => {
 // DELETE budget
 app.delete('/api/budgets/:id', async (req, res) => {
   try {
-    await fs.unlink(path.join(BUDGETS_DIR, `${req.params.id}.csv`));
-    await fs.unlink(path.join(BUDGETS_DIR, `${req.params.id}.json`));
+    const result = await db.collection('budgets').deleteOne({ id: req.params.id });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Budget not found' });
+    }
+    console.log(`Budget deleted: ${req.params.id}`);
     res.json({ message: 'Budget deleted successfully' });
   } catch (error) {
+    console.error('Delete error:', error);
     res.status(500).json({ error: 'Failed to delete budget' });
   }
 });
 
-// SEARCH budgets
-app.get('/api/budgets/search', async (req, res) => {
-  try {
-    const { name, dateFrom, dateTo } = req.query;
-    
-    const files = await fs.readdir(BUDGETS_DIR);
-    let budgets = await Promise.all(
-      files
-        .filter(f => f.endsWith('.json'))
-        .map(async (file) => {
-          const content = await fs.readFile(path.join(BUDGETS_DIR, file), 'utf8');
-          return JSON.parse(content);
-        })
-    );
-    
-    if (name) {
-      budgets = budgets.filter(b => 
-        b.name.toLowerCase().includes(name.toLowerCase())
-      );
-    }
-    
-    if (dateFrom) budgets = budgets.filter(b => b.date >= dateFrom);
-    if (dateTo) budgets = budgets.filter(b => b.date <= dateTo);
-    
-    res.json(budgets);
-  } catch (error) {
-    res.status(500).json({ error: 'Search failed' });
-  }
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+
+// Start server after DB connection
+connectDB()
+  .then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🗄️  Using MongoDB for storage`);
+    });
+  })
+  .catch(err => {
+    console.error('Failed to connect to database:', err);
+    process.exit(1);
+  });
