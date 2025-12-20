@@ -456,3 +456,20 @@ button:hover {
 .btn-danger:hover {
     background: #c82333 !important;
 }
+
+/* ----------------------------------------------------------
+   BACK BUTTON
+---------------------------------------------------------- */
+    .back-button {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        background: #228B22;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        z-index: 9999;
+        font-weight: 700;
+    }
