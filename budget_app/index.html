@@ -303,17 +303,24 @@
     </div>
 </div>
 
-<!-- Load Modules (order matters!) -->
+<!-- 1. State and utilities first -->
 <script type="module" src="js/modules/state.js"></script>
 <script type="module" src="js/modules/utils.js"></script>
+
+<!-- 2. Feature modules -->
 <script type="module" src="js/modules/repeaters.js"></script>
 <script type="module" src="js/modules/budgetCalculator.js"></script>
 <script type="module" src="js/modules/charts.js"></script>
 <script type="module" src="js/modules/textPreview.js"></script>
 <script type="module" src="js/modules/csv.js"></script>
+
+<!-- 3. Server loading (if using) -->
 <script type="module" src="js/modules/serverLoad.js"></script>
 <script type="module" src="js/uiHandlers.js"></script>
+
+<!-- 4. Main controller LAST -->
 <script type="module" src="js/main.js"></script>
 
 </body>
+
 </html>
