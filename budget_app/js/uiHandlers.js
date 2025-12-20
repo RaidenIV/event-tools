@@ -136,9 +136,11 @@ export async function deleteBudgetById(budgetId) {
  * Generate CSV data from current form state
  */
 function generateCSVData() {
-  // Create a temporary container to capture CSV output
-  const rows = [];
+  // Just call the same export logic as downloadCSV
+  // We'll build the CSV the same way
   
+  const rows = [];
+
   const csvCell = (v) => {
     const s = (v == null) ? "" : String(v);
     if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
@@ -146,18 +148,112 @@ function generateCSVData() {
   };
 
   const pushKV = (label, value) => rows.push(`${label},${csvCell(value)}`);
-  
-  // Add CSV version
+
+  // Import FIELDS from state module - we need to access it
+  // For now, let's rebuild it manually to match downloadCSV
+
+  // CSV VERSION HEADER
   pushKV('XODIA_BUDGET_VERSION', '3');
   rows.push('');
-  
-  // Add basic info
+
+  // BASIC INFO
   pushKV('Show Title', document.getElementById('showTitle')?.value || '');
   pushKV('Show Date', document.getElementById('showDate')?.value || '');
   rows.push('');
-  
-  // Add all form data (simplified version - you can expand this)
-  // For now, just return the basic structure
+
+  // HEADLINERS
+  rows.push('Headliners:');
+  const numHeadliners = +document.getElementById('numHeadliners')?.value || 0;
+  for (let i = 1; i <= numHeadliners; i++) {
+    pushKV(`Headliner ${i} Fee`, document.getElementById(`headliner_fee_${i}`)?.value || '');
+    pushKV(`Headliner ${i} Hotel`, document.getElementById(`headliner_hotel_${i}`)?.value || '');
+    pushKV(`Headliner ${i} Rider`, document.getElementById(`headliner_rider_${i}`)?.value || '');
+    pushKV(`Headliner ${i} Name`, document.getElementById(`headliner_name_${i}`)?.value || '');
+  }
+  rows.push('');
+
+  // SUPPORT
+  rows.push('Support:');
+  pushKV('Direct Support Fee', document.getElementById('directSupport')?.value || '');
+  const numLocalDJs = +document.getElementById('numLocalDJs')?.value || 0;
+  for (let i = 1; i <= numLocalDJs; i++) {
+    pushKV(`Local DJ ${i} Name`, document.getElementById(`localDJ_name_${i}`)?.value || '');
+    pushKV(`Local DJ ${i} Fee`, document.getElementById(`localDJ_fee_${i}`)?.value || '');
+  }
+  rows.push('');
+
+  // PRODUCTION
+  rows.push('Production:');
+  pushKV('VJ Fee', document.getElementById('vjFee')?.value || '');
+  pushKV('Venue', document.getElementById('venue')?.value || '');
+  pushKV('LED Wall', document.getElementById('ledWall')?.value || '');
+  pushKV('Lights', document.getElementById('lights')?.value || '');
+  pushKV('Lasers', document.getElementById('lasers')?.value || '');
+  rows.push('');
+
+  // GEAR RENTALS
+  rows.push('Gear Rentals:');
+  const numCDJs = +document.getElementById('numCDJs')?.value || 0;
+  for (let i = 1; i <= numCDJs; i++) {
+    pushKV(`CDJ ${i} Fee`, document.getElementById(`cdj_fee_${i}`)?.value || '');
+  }
+  pushKV('Sound', document.getElementById('sound')?.value || '');
+  pushKV('Mixer', document.getElementById('mixer')?.value || '');
+  pushKV('Table', document.getElementById('table')?.value || '');
+  rows.push('');
+
+  // MARKETING
+  rows.push('Marketing:');
+  pushKV('Facebook Ads XODIA', document.getElementById('facebookAdsXodia')?.value || '');
+  pushKV('Facebook Ads SPACE CAMP HQ', document.getElementById('facebookAdsSpaceCampHQ')?.value || '');
+  pushKV('Instagram Ads XODIA', document.getElementById('instagramAdsXodia')?.value || '');
+  pushKV('Instagram Ads SPACE CAMP HQ', document.getElementById('instagramAdsSpaceCampHQ')?.value || '');
+  pushKV('Physical Flyers', document.getElementById('physicalFlyers')?.value || '');
+  pushKV('Eventbrite Ads', document.getElementById('eventbriteAds')?.value || '');
+  rows.push('');
+
+  // STAFF
+  rows.push('Staff:');
+  pushKV('Door Staff', document.getElementById('doorStaff')?.value || '');
+  pushKV('Merch Table', document.getElementById('merchTable')?.value || '');
+  pushKV('Transportation', document.getElementById('transportation')?.value || '');
+  const numShowRunners = +document.getElementById('numShowRunners')?.value || 0;
+  for (let i = 1; i <= numShowRunners; i++) {
+    pushKV(`Show Runner ${i} Fee`, document.getElementById(`showRunner_fee_${i}`)?.value || '');
+  }
+  rows.push('');
+
+  // OTHER CATEGORIES
+  rows.push('Other Categories:');
+  const numOtherCategories = +document.getElementById('numOtherCategories')?.value || 0;
+  for (let c = 1; c <= numOtherCategories; c++) {
+    const name = document.getElementById(`otherCategoryName_${c}`)?.value || '';
+    const count = document.getElementById(`otherCategoryCount_${c}`)?.value || 0;
+
+    pushKV(`Category ${c} Name`, name);
+    pushKV(`Category ${c} Items Count`, count);
+
+    for (let i = 1; i <= (+count || 0); i++) {
+      pushKV(`Category ${c} Item ${i} Name`, document.getElementById(`otherCategory_${c}_itemName_${i}`)?.value || '');
+      pushKV(`Category ${c} Item ${i} Fee`, document.getElementById(`otherCategory_${c}_itemFee_${i}`)?.value || '');
+    }
+  }
+  rows.push('');
+
+  // SALES
+  rows.push('Sales:');
+  pushKV('Eventbrite Sales', document.getElementById('eventbriteSales')?.value || '');
+  pushKV('DJ Presales', document.getElementById('djPresales')?.value || '');
+  pushKV('Promo Team', document.getElementById('promoTeam')?.value || '');
+  pushKV('Door Sales', document.getElementById('doorSales')?.value || '');
+  pushKV('Merch Sold', document.getElementById('merchSold')?.value || '');
+
+  const numMerchVendors = +document.getElementById('numMerchVendors')?.value || 0;
+  for (let i = 1; i <= numMerchVendors; i++) {
+    pushKV(`Vendor ${i} Name`, document.getElementById(`merchVendor_name_${i}`)?.value || '');
+    pushKV(`Vendor ${i} Fee`, document.getElementById(`merchVendor_fee_${i}`)?.value || '');
+  }
+
   return rows.join('\n');
 }
 
@@ -281,5 +377,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Optional: if the selector already has a value (e.g., browser restores state)
   handleBudgetSelection(selector.value);
 });
+
 
 
