@@ -315,9 +315,25 @@ Venmo: @raidenlabs (or scan QR code)</textarea>
         function printInvoice() {
             window.print();
         }
+        // Add event listeners to all form inputs for real-time updates
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('#invoiceForm input, #invoiceForm textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', generateInvoice);
+                input.addEventListener('change', generateInvoice);
+            });
+        });
+        
+        // Also trigger on any input/change event (backup in case DOM isn't fully loaded)
+        const allInputs = document.querySelectorAll('#invoiceForm input, #invoiceForm textarea');
+        allInputs.forEach(input => {
+            input.addEventListener('input', generateInvoice);
+            input.addEventListener('change', generateInvoice);
+        });
 
         // Auto-generate preview on load
         generateInvoice();
     </script>
 </body>
 </html>
+
