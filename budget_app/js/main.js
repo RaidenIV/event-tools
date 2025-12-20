@@ -143,4 +143,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize with one headliner
   regenerateHeadliners(updateBudget);
   updateBudget();
+
 });
+window.updateBudget = updateBudget;
+window.toggleCollapse = toggleCollapse;
+window.regenerateHeadliners = () => regenerateHeadliners(updateBudget);
+// etc...
