@@ -36,9 +36,11 @@
             <select id="budgetSelector" onchange="handleBudgetSelection(this.value)">
                 <option value="">-- Choose a budget --</option>
             </select>
-
-            <button type="button" onclick="handleSaveBudgetToServer()">Save</button>
-            <button type="button" class="btn-danger" onclick="resetForm()">Reset</button>
+            
+            <div class="button-row">
+                <button type="button" onclick="handleSaveBudgetToServer()">Save</button>
+                <button type="button" class="btn-danger" onclick="resetForm()">Reset</button>
+            </div>
             
             <span id="loadStatus" class="load-status"></span>
         </div>
@@ -323,6 +325,7 @@
 </body>
 
 </html>
+
 
 
 
