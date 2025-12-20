@@ -17,7 +17,7 @@ export function loadCSV(fileOrText, regenerators, updateBudgetFn) {
     }
     el.value = (v == null) ? "" : v;
     console.log(`Set ${id} = ${v}`);
-  };
+  }};
 
 // csv.js - CSV import and export functionality
 
@@ -392,3 +392,4 @@ export function triggerImport() {
   input.click();
 
 }
+
