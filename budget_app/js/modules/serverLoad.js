@@ -85,18 +85,6 @@ export async function populateBudgetSelector(selectId) {
     alert('Failed to load budget list from server');
   }
 }
-```
-
-**Result (newest at top):**
-```
-Bass Music Show - 2024-03-15 (Saved: Dec 20, 2:30 PM)
-Bass Music Show - 2024-03-15 (Saved: Dec 19, 5:45 PM)
-House Party - 2024-03-10 (Saved: Dec 18, 1:20 PM)
-
-**Result:**
-```
-Bass Music Show - 2024-03-15 (12/20/2024, 2:30:45 PM)
-Bass Music Show - 2024-03-16 (12/21/2024, 10:15:22 AM)
 
 export async function saveBudgetToServer(csvData, metadata = {}) {
   try {
@@ -159,5 +147,6 @@ export async function deleteBudgetFromServer(budgetId) {
     throw error;
   }
 }
+
 
 
