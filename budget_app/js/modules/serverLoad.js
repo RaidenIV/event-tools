@@ -7,65 +7,49 @@ const API_BASE = 'https://192.168.1.217:3000';
 
 export async function loadBudgetFromServer(budgetId, regenerators, updateBudgetFn) {
   const statusEl = document.getElementById('loadStatus');
-
+  
   try {
     if (statusEl) statusEl.textContent = 'Loading budget...';
-
-    const response = await fetch(`${API_BASE}/api/budgets/${encodeURIComponent(budgetId)}`);
-
+    
+    console.log('Fetching budget:', budgetId);
+    const response = await fetch(`${API_BASE}/api/budgets/${budgetId}`);
+    
     if (!response.ok) {
-      throw new Error(`Failed to load budget: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to load budget: ${response.statusText}`);
     }
-
-    const contentType = (response.headers.get('content-type') || '').toLowerCase();
-
-    let csvText = '';
-
-    // Preferred: backend returns JSON like { csv: "...." }
-    if (contentType.includes('application/json')) {
-      const data = await response.json();
-      csvText = data?.csv ?? data?.budget?.csv ?? data?.data?.csv ?? '';
-    } else {
-      // Backend returns raw CSV text
-      csvText = await response.text();
-
-      // Defensive fallback: sometimes servers return JSON but forget the header
-      const trimmed = csvText.trim();
-      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-        try {
-          const data = JSON.parse(trimmed);
-          csvText = data?.csv ?? data?.budget?.csv ?? data?.data?.csv ?? '';
-        } catch {
-          // leave as-is
-        }
-      }
+    
+    const csvText = await response.text();
+    
+    // DETAILED DEBUG LOGGING
+    console.log('=== Server Response ===');
+    console.log('CSV Length:', csvText.length);
+    console.log('First 200 chars:', csvText.substring(0, 200));
+    console.log('Has newlines:', csvText.includes('\n'));
+    console.log('Line count:', csvText.split('\n').length);
+    console.log('======================');
+    
+    // Check if it's actually CSV
+    if (!csvText || csvText.trim().length === 0) {
+      throw new Error('Received empty data from server');
     }
-
-    if (!csvText || typeof csvText !== 'string') {
-      throw new Error('Server response did not include CSV data (expected raw CSV or JSON with a "csv" field).');
-    }
-
-    // Optional quick debug (remove after confirmed):
-    // console.log('Loaded CSV preview:', csvText.slice(0, 120));
-
-    await loadCSV(csvText, regenerators, updateBudgetFn);
-
-    // If loadCSV does not call updateBudgetFn internally, force a refresh
-    if (typeof updateBudgetFn === 'function') {
-      requestAnimationFrame(() => updateBudgetFn());
-    }
-
+    
+    console.log('Calling loadCSV with regenerators:', Object.keys(regenerators));
+    
+    loadCSV(csvText, regenerators, updateBudgetFn);
+    
+    console.log('loadCSV completed');
+    
     if (statusEl) {
       statusEl.textContent = 'Budget loaded successfully!';
-      setTimeout(() => (statusEl.textContent = ''), 3000);
+      setTimeout(() => statusEl.textContent = '', 3000);
     }
+    
   } catch (error) {
     console.error('Error loading budget:', error);
     if (statusEl) statusEl.textContent = `Error: ${error.message}`;
     alert(`Failed to load budget: ${error.message}`);
   }
 }
-
 
 export async function fetchBudgetList() {
   try {
@@ -203,6 +187,7 @@ export async function deleteBudgetFromServer(budgetId) {
     throw error;
   }
 }
+
 
 
 
