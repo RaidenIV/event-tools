@@ -273,12 +273,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Populate the dropdown first
   await initBudgetSelector();
 
-  // Track selection changes
-  selector.addEventListener('change', (e) => {
+  selector.addEventListener('change', async (e) => {
     handleBudgetSelection(e.target.value);
+    await handleLoadSelectedBudget();
   });
 
   // Optional: if the selector already has a value (e.g., browser restores state)
   handleBudgetSelection(selector.value);
 });
+
 
