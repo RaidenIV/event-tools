@@ -36,7 +36,8 @@
                 <option value="">-- Choose a budget --</option>
             </select>
             
-            <button type="button" onclick="handleLoadSelectedBudget()">Load Budget</button>
+            <button type="button" onclick="resetForm()">Reset</button>
+            <button type="button" onclick="handleSaveBudgetToServer()">Save to Server</button>
             
             <span id="loadStatus" class="load-status"></span>
         </div>
@@ -261,12 +262,9 @@
             CONTROLS
         -------------------------- -->
         <div class="controls">
-            <button type="button" onclick="updateBudget()">Update Chart</button>
-            <button type="button" onclick="resetForm()">Reset</button>
             <button type="button" onclick="downloadCSV()">Export CSV</button>
             <button type="button" onclick="triggerImport()">Import CSV</button>
             <button type="button" onclick="downloadAll()">Download All</button>
-            <button type="button" onclick="handleSaveBudgetToServer()">Save to Server</button>
         </div>
         <!-- Hidden File Input -->
         <input id="csvFileInput" type="file" accept=".csv" style="display:none">
@@ -324,4 +322,5 @@
 </body>
 
 </html>
+
 
