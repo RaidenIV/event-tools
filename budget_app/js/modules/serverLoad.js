@@ -51,40 +51,61 @@ export async function fetchBudgetList() {
 export async function populateBudgetSelector(selectId) {
   const select = document.getElementById(selectId);
   if (!select) return;
-  
+
   try {
     const budgets = await fetchBudgetList();
-    
+
+    // Parse createdAt safely (fallbacks included)
+    const getTs = (b) => {
+      const raw = b?.createdAt ?? b?.updatedAt ?? b?.created_at ?? b?.timestamp;
+      const ts = raw ? Date.parse(raw) : NaN;
+      return Number.isFinite(ts) ? ts : 0;
+    };
+
     // Sort newest first
-    budgets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
-    while (select.options.length > 1) {
-      select.remove(1);
-    }
-    
-    budgets.forEach(budget => {
-      const option = document.createElement('option');
-      option.value = budget.id;
-      
-      // Format timestamp nicely
-      const savedDate = new Date(budget.createdAt);
-      const timeStr = savedDate.toLocaleString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        hour: 'numeric', 
-        minute: '2-digit' 
-      });
-      
-      option.textContent = `${budget.name} - ${budget.date} (Saved: ${timeStr})`;
-      
+    budgets.sort((a, b) => getTs(b) - getTs(a));
+
+    // Keep the placeholder option at index 0; clear everything else
+    select.length = 1;
+
+    budgets.forEach((budget) => {
+      const id = budget?.id ?? budget?._id ?? budget?.budgetId;
+      if (!id) return; // cannot load without a stable id
+
+      const name = budget?.name ?? "Untitled Budget";
+      const date = budget?.date ?? "";
+
+      const option = document.createElement("option");
+      option.value = String(id);
+
+      // Store raw fields for any other code that needs them (do NOT parse the label)
+      option.dataset.name = name;
+      option.dataset.date = date;
+      option.dataset.createdAt = budget?.createdAt ?? "";
+
+      const savedDate = new Date(option.dataset.createdAt);
+      const timeStr = Number.isFinite(savedDate.getTime())
+        ? savedDate.toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          })
+        : "Unknown time";
+
+      option.textContent = date
+        ? `${name} - ${date} (Saved: ${timeStr})`
+        : `${name} (Saved: ${timeStr})`;
+
       select.appendChild(option);
     });
-    
   } catch (error) {
-    console.error('Error populating budget selector:', error);
-    alert('Failed to load budget list from server');
+    console.error("Error populating budget selector:", error);
+    alert("Failed to load budget list from server");
   }
 }
+
 
 export async function saveBudgetToServer(csvData, metadata = {}) {
   try {
@@ -147,6 +168,7 @@ export async function deleteBudgetFromServer(budgetId) {
     throw error;
   }
 }
+
 
 
 
