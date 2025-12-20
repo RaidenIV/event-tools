@@ -3,7 +3,7 @@
 import { loadCSV } from './csv.js';
 
 // Your Pi5 server address
-const API_BASE = 'http://192.168.1.217:3000';
+const API_BASE = 'https://192.168.1.217:3000';
 
 export async function loadBudgetFromServer(budgetId, regenerators, updateBudgetFn) {
   const statusEl = document.getElementById('loadStatus');
@@ -133,3 +133,4 @@ export async function deleteBudgetFromServer(budgetId) {
     throw error;
   }
 }
+
