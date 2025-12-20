@@ -266,10 +266,19 @@ window.loadBudgetAndCloseModal = loadBudgetAndCloseModal;
 window.handleModalSearch = handleModalSearch;
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  // Initialize budget selector if it exists
-  if (document.getElementById('budgetSelector')) {
-    initBudgetSelector();
-  }
+document.addEventListener('DOMContentLoaded', async () => {
+  const selector = document.getElementById('budgetSelector');
+  if (!selector) return;
 
+  // Populate the dropdown first
+  await initBudgetSelector();
+
+  // Track selection changes
+  selector.addEventListener('change', (e) => {
+    handleBudgetSelection(e.target.value);
+  });
+
+  // Optional: if the selector already has a value (e.g., browser restores state)
+  handleBudgetSelection(selector.value);
 });
+
