@@ -7,30 +7,65 @@ const API_BASE = 'https://192.168.1.217:3000';
 
 export async function loadBudgetFromServer(budgetId, regenerators, updateBudgetFn) {
   const statusEl = document.getElementById('loadStatus');
-  
+
   try {
     if (statusEl) statusEl.textContent = 'Loading budget...';
-    
-    const response = await fetch(`${API_BASE}/api/budgets/${budgetId}`);
-    
+
+    const response = await fetch(`${API_BASE}/api/budgets/${encodeURIComponent(budgetId)}`);
+
     if (!response.ok) {
-      throw new Error(`Failed to load budget: ${response.statusText}`);
+      throw new Error(`Failed to load budget: ${response.status} ${response.statusText}`);
     }
-    
-    const csvText = await response.text();
-    loadCSV(csvText, regenerators, updateBudgetFn);
-    
+
+    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+
+    let csvText = '';
+
+    // Preferred: backend returns JSON like { csv: "...." }
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      csvText = data?.csv ?? data?.budget?.csv ?? data?.data?.csv ?? '';
+    } else {
+      // Backend returns raw CSV text
+      csvText = await response.text();
+
+      // Defensive fallback: sometimes servers return JSON but forget the header
+      const trimmed = csvText.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          const data = JSON.parse(trimmed);
+          csvText = data?.csv ?? data?.budget?.csv ?? data?.data?.csv ?? '';
+        } catch {
+          // leave as-is
+        }
+      }
+    }
+
+    if (!csvText || typeof csvText !== 'string') {
+      throw new Error('Server response did not include CSV data (expected raw CSV or JSON with a "csv" field).');
+    }
+
+    // Optional quick debug (remove after confirmed):
+    // console.log('Loaded CSV preview:', csvText.slice(0, 120));
+
+    await loadCSV(csvText, regenerators, updateBudgetFn);
+
+    // If loadCSV does not call updateBudgetFn internally, force a refresh
+    if (typeof updateBudgetFn === 'function') {
+      requestAnimationFrame(() => updateBudgetFn());
+    }
+
     if (statusEl) {
       statusEl.textContent = 'Budget loaded successfully!';
-      setTimeout(() => statusEl.textContent = '', 3000);
+      setTimeout(() => (statusEl.textContent = ''), 3000);
     }
-    
   } catch (error) {
     console.error('Error loading budget:', error);
     if (statusEl) statusEl.textContent = `Error: ${error.message}`;
     alert(`Failed to load budget: ${error.message}`);
   }
 }
+
 
 export async function fetchBudgetList() {
   try {
@@ -168,6 +203,7 @@ export async function deleteBudgetFromServer(budgetId) {
     throw error;
   }
 }
+
 
 
 
