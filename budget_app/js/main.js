@@ -48,6 +48,12 @@ export function resetForm() {
   const form = document.getElementById("budgetForm");
   if (form) form.reset();
 
+  // Reset the budget selector dropdown
+  const budgetSelector = document.getElementById("budgetSelector");
+  if (budgetSelector) {
+    budgetSelector.value = "";
+  }
+
   const numHeadliners = document.getElementById("numHeadliners");
   const numLocalDJs = document.getElementById("numLocalDJs");
   const numCDJs = document.getElementById("numCDJs");
@@ -149,5 +155,6 @@ window.updateBudget = updateBudget;
 window.toggleCollapse = toggleCollapse;
 window.regenerateHeadliners = () => regenerateHeadliners(updateBudget);
 // etc...
+
 
 
