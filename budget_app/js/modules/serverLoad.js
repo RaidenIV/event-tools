@@ -55,6 +55,9 @@ export async function populateBudgetSelector(selectId) {
   try {
     const budgets = await fetchBudgetList();
     
+    // Sort newest first
+    budgets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
     while (select.options.length > 1) {
       select.remove(1);
     }
@@ -62,7 +65,18 @@ export async function populateBudgetSelector(selectId) {
     budgets.forEach(budget => {
       const option = document.createElement('option');
       option.value = budget.id;
-      option.textContent = `${budget.name} - ${budget.date}`;
+      
+      // Format timestamp nicely
+      const savedDate = new Date(budget.createdAt);
+      const timeStr = savedDate.toLocaleString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        hour: 'numeric', 
+        minute: '2-digit' 
+      });
+      
+      option.textContent = `${budget.name} - ${budget.date} (Saved: ${timeStr})`;
+      
       select.appendChild(option);
     });
     
@@ -71,6 +85,18 @@ export async function populateBudgetSelector(selectId) {
     alert('Failed to load budget list from server');
   }
 }
+```
+
+**Result (newest at top):**
+```
+Bass Music Show - 2024-03-15 (Saved: Dec 20, 2:30 PM)
+Bass Music Show - 2024-03-15 (Saved: Dec 19, 5:45 PM)
+House Party - 2024-03-10 (Saved: Dec 18, 1:20 PM)
+
+**Result:**
+```
+Bass Music Show - 2024-03-15 (12/20/2024, 2:30:45 PM)
+Bass Music Show - 2024-03-16 (12/21/2024, 10:15:22 AM)
 
 export async function saveBudgetToServer(csvData, metadata = {}) {
   try {
@@ -133,4 +159,5 @@ export async function deleteBudgetFromServer(budgetId) {
     throw error;
   }
 }
+
 
