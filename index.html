@@ -82,6 +82,9 @@
     <div class="button-container">
         <button onclick="goToTool('invoice')">Invoice Generator</button>
     </div>
+    <div class="button-container">
+        <button onclick="goToTool('ros')">ROS Email Generator</button>
+    </div>
 
     <script>
         function goToTool(tool) {
@@ -111,10 +114,14 @@
             }
             else if (tool === "contest") {
                 window.location.href = base + "contest_wheel.html";
-            }              
+            }
+            else if (tool === "ros") {
+                window.location.href = base + "ros_generator.html";
+            }  
         }
     </script>
 
 </body>
 </html>
+
 
