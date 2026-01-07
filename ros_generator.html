@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ROS Email Generator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background: #ffffff;
+        color: #111;
+        margin: 0;
+        padding: 30px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .back-button {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        background: #228B22;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        z-index: 9999;
+        font-weight: 700;
+    }
+
+    .panel {
+        background: #fafafa;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        width: 100%;
+        max-width: 600px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        font-weight: 700;
+        margin-top: 12px;
+        font-size: 14px;
+    }
+
+    input[type="text"], textarea {
+        padding: 10px;
+        margin-top: 6px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: bold;
+        width: 100%;
+        font-family: 'Rajdhani';
+        box-sizing: border-box;
+    }
+
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    button.primary {
+        background: #228B22;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        font-family: 'Rajdhani';
+        margin-top: 15px;
+    }
+
+    button.primary:hover {
+        background: #1d701d;
+    }
+
+    button.ghost {
+        background: white;
+        border: 1px solid #ddd;
+        color: #228B22;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .preview-label {
+        margin-top: 30px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .preview-box {
+        margin-top: 6px;
+        background: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 400;
+        white-space: pre-wrap;
+        min-height: 100px;
+        line-height: 1.6;
+        font-family: 'Rajdhani', sans-serif;
+    }
+
+    .preview-box .label {
+        font-weight: 700;
+    }
+
+    .form-section {
+        margin-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+    <button class="back-button" onclick="window.location.href='https://www.xodiamediagroup.com/tools'">⬅ Back to Tools</button>
+
+<div class="panel">
+
+    <h1>ROS Email Generator</h1>
+
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <button id="importBtn" class="primary">Import CSV</button>
+        <button id="exportBtn" class="primary">Export CSV</button>
+    </div>
+    <input type="file" id="csvUpload" accept=".csv" style="display:none;">
+
+    <div class="form-section">
+        <label>Venue Contact:</label>
+        <input type="text" id="venueContact" list="venueContactList">
+        <datalist id="venueContactList">
+            <option value="Jim Berling (614) 769-1857">
+        </datalist>
+
+        <label>Venue Artist Entrance Address:</label>
+        <input type="text" id="entranceAddress" list="entranceAddressList">
+        <datalist id="entranceAddressList">
+            <option value="1151 N. High St, Columbus OH 43201">
+        </datalist>
+
+        <label>Venue/Settlement Contact:</label>
+        <input type="text" id="settlementContact" list="settlementContactList">
+        <datalist id="settlementContactList">
+            <option value="Dante Evans (614) 204-5395">
+        </datalist>
+
+        <label>Primary DOS Contact [Promoter]:</label>
+        <input type="text" id="dosContact" list="dosContactList">
+        <datalist id="dosContactList">
+            <option value="Dante Evans (614) 204-5395">
+        </datalist>
+
+        <label>Primary On-Site Contact:</label>
+        <input type="text" id="onsiteContact" list="onsiteContactList">
+        <datalist id="onsiteContactList">
+            <option value="Gabe Brea (614) 603-7176">
+        </datalist>
+
+        <label>Transportation:</label>
+        <input type="text" id="transportation" list="transportationList">
+        <datalist id="transportationList">
+            <option value="Jordan Reid (614) 266-3942">
+        </datalist>
+
+        <label>Production:</label>
+        <input type="text" id="production" list="productionList">
+        <datalist id="productionList">
+            <option value="Chris Lee (858) 761-2638">
+            <option value="John Richardson (614) 783-3499">
+        </datalist>
+
+        <label>Production/Tech:</label>
+        <input type="text" id="productionTech" list="productionTechList">
+        <datalist id="productionTechList">
+            <option value="Jon Sedlak: (440) 554-1285 sedlakjonathan@gmail.com">
+        </datalist>
+
+        <label>Media:</label>
+        <input type="text" id="media" list="mediaList">
+        <datalist id="mediaList">
+            <option value="Virg - HighGrvde Visuals (@highgrvdevisuals)">
+        </datalist>
+
+        <label>Sound Check:</label>
+        <input type="time" id="soundCheck" value="12:00">
+
+        <label>Run of Show (Set Times):</label>
+        <textarea id="runOfShow"></textarea>
+
+        <label>Hotel:</label>
+        <input type="text" id="hotel" list="hotelList">
+        <datalist id="hotelList">
+            <option value="Hilton Garden Inn Columbus Airport
+4265 Sawyer Road Columbus, Ohio 43219 USA">
+        </datalist>
+
+        <label>Confirmation #:</label>
+        <input type="text" id="confirmation">
+    </div>
+
+    <button id="resetBtn" class="ghost">Reset</button>
+
+    <div class="preview-label">Email Preview</div>
+    <div id="previewBox" class="preview-box">Email preview will appear here as you type.</div>
+
+    <button id="copyBtn" class="primary">Copy</button>
+
+</div>
+
+<script>
+/* ---------- DOM ---------- */
+const inputs = {
+    venueContact: document.getElementById("venueContact"),
+    entranceAddress: document.getElementById("entranceAddress"),
+    dosContact: document.getElementById("dosContact"),
+    onsiteContact: document.getElementById("onsiteContact"),
+    transportation: document.getElementById("transportation"),
+    production: document.getElementById("production"),
+    productionTech: document.getElementById("productionTech"),
+    settlementContact: document.getElementById("settlementContact"),
+    media: document.getElementById("media"),
+    soundCheck: document.getElementById("soundCheck"),
+    runOfShow: document.getElementById("runOfShow"),
+    hotel: document.getElementById("hotel"),
+    confirmation: document.getElementById("confirmation")
+};
+
+const previewBox = document.getElementById("previewBox");
+const csvUpload = document.getElementById("csvUpload");
+
+/* ---------- TIME CONVERSION ---------- */
+function convertTo12Hour(time24) {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    let h = parseInt(hours);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${minutes} ${ampm}`;
+}
+
+/* ---------- GENERATE EMAIL ---------- */
+function generateEmail() {
+    const data = {};
+    for (let key in inputs) {
+        data[key] = inputs[key].value.trim();
+    }
+
+    // Build email text with labels and spacing
+    let emailText = '';
+    let emailHTML = '';
+    
+    if (data.venueContact) {
+        emailText += `Venue Contact: ${data.venueContact}\n\n`;
+        emailHTML += `<span class="label">Venue Contact:</span> ${data.venueContact}\n\n`;
+    }
+    if (data.entranceAddress) {
+        emailText += `Venue Artist Entrance Address: ${data.entranceAddress}\n\n`;
+        emailHTML += `<span class="label">Venue Artist Entrance Address:</span> ${data.entranceAddress}\n\n`;
+    }
+    if (data.settlementContact) {
+        emailText += `Venue/Settlement Contact: ${data.settlementContact}\n\n`;
+        emailHTML += `<span class="label">Venue/Settlement Contact:</span> ${data.settlementContact}\n\n`;
+    }
+    if (data.dosContact) {
+        emailText += `Primary DOS Contact [Promoter]: ${data.dosContact}\n\n`;
+        emailHTML += `<span class="label">Primary DOS Contact [Promoter]:</span> ${data.dosContact}\n\n`;
+    }
+    if (data.onsiteContact) {
+        emailText += `Primary On-Site Contact: ${data.onsiteContact}\n\n`;
+        emailHTML += `<span class="label">Primary On-Site Contact:</span> ${data.onsiteContact}\n\n`;
+    }
+    if (data.transportation) {
+        emailText += `Transportation: ${data.transportation}\n\n`;
+        emailHTML += `<span class="label">Transportation:</span> ${data.transportation}\n\n`;
+    }
+    if (data.production) {
+        emailText += `Production: ${data.production}\n\n`;
+        emailHTML += `<span class="label">Production:</span> ${data.production}\n\n`;
+    }
+    if (data.productionTech) {
+        emailText += `Production/Tech: ${data.productionTech}\n\n`;
+        emailHTML += `<span class="label">Production/Tech:</span> ${data.productionTech}\n\n`;
+    }
+    if (data.media) {
+        emailText += `Media: ${data.media}\n\n`;
+        emailHTML += `<span class="label">Media:</span> ${data.media}\n\n`;
+    }
+    
+    if (data.soundCheck) {
+        const time12 = convertTo12Hour(data.soundCheck);
+        emailText += `Sound Check: ${time12}\n\n`;
+        emailHTML += `<span class="label">Sound Check:</span> ${time12}\n\n`;
+    }
+    
+    if (data.runOfShow) {
+        emailText += `Run of Show (Set Times): ${data.runOfShow}\n\n`;
+        emailHTML += `<span class="label">Run of Show (Set Times):</span> ${data.runOfShow}\n\n`;
+    }
+    
+    if (data.hotel) {
+        emailText += `Hotel: ${data.hotel}\n\n`;
+        emailHTML += `<span class="label">Hotel:</span> ${data.hotel}\n\n`;
+    }
+    if (data.confirmation) {
+        emailText += `Confirmation #: ${data.confirmation}\n\n`;
+        emailHTML += `<span class="label">Confirmation #:</span> ${data.confirmation}\n\n`;
+    }
+
+    // Store plain text for copying
+    previewBox.dataset.plainText = emailText;
+    
+    // Display HTML version with bold labels
+    previewBox.innerHTML = emailHTML || "Email preview will appear here as you type.";
+}
+
+/* ---------- RESET ---------- */
+function resetForm() {
+    for (let key in inputs) {
+        inputs[key].value = '';
+    }
+    generateEmail();
+}
+
+/* ---------- CSV IMPORT ---------- */
+function importCSV(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split('\n');
+        
+        // Parse CSV - expecting "Field,Value" format
+        lines.forEach(line => {
+            line = line.trim();
+            if (!line) return;
+            
+            // Split on first comma only
+            const commaIndex = line.indexOf(',');
+            if (commaIndex === -1) return;
+            
+            const field = line.substring(0, commaIndex).trim().toLowerCase();
+            const value = line.substring(commaIndex + 1).trim();
+            
+            // Map CSV field names to input IDs
+            const fieldMap = {
+                'venue contact': 'venueContact',
+                'venue artist entrance address': 'entranceAddress',
+                'primary dos contact [promoter]': 'dosContact',
+                'primary dos contact': 'dosContact',
+                'primary on-site contact': 'onsiteContact',
+                'transportation': 'transportation',
+                'production': 'production',
+                'production/tech': 'productionTech',
+                'venue/settlement contact': 'settlementContact',
+                'media': 'media',
+                'sound check': 'soundCheck',
+                'run of show (set times)': 'runOfShow',
+                'run of show': 'runOfShow',
+                'hotel': 'hotel',
+                'confirmation #': 'confirmation',
+                'confirmation': 'confirmation'
+            };
+            
+            const inputKey = fieldMap[field];
+            if (inputKey && inputs[inputKey]) {
+                inputs[inputKey].value = value;
+            }
+        });
+        
+        generateEmail();
+    };
+    reader.readAsText(file);
+}
+
+csvUpload.onchange = function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        importCSV(file);
+    }
+    // Reset input so same file can be uploaded again
+    e.target.value = '';
+};
+
+/* ---------- COPY ---------- */
+function copyEmail() {
+    const text = previewBox.dataset.plainText || previewBox.textContent;
+    if (text === "Email preview will appear here as you type.") {
+        alert("Nothing to copy yet!");
+        return;
+    }
+    navigator.clipboard.writeText(text);
+    alert("Copied!");
+}
+
+/* ---------- EXPORT CSV ---------- */
+function exportCSV() {
+    const data = {};
+    for (let key in inputs) {
+        data[key] = inputs[key].value.trim();
+    }
+
+    // Create CSV content
+    let csv = '';
+    const fieldLabels = {
+        venueContact: 'Venue Contact',
+        entranceAddress: 'Venue Artist Entrance Address',
+        dosContact: 'Primary DOS Contact [Promoter]',
+        onsiteContact: 'Primary On-Site Contact',
+        transportation: 'Transportation',
+        production: 'Production',
+        productionTech: 'Production/Tech',
+        settlementContact: 'Venue/Settlement Contact',
+        media: 'Media',
+        soundCheck: 'Sound Check',
+        runOfShow: 'Run of Show (Set Times)',
+        hotel: 'Hotel',
+        confirmation: 'Confirmation #'
+    };
+
+    for (let key in inputs) {
+        const value = data[key];
+        if (value) {
+            // Escape quotes and wrap in quotes if contains comma or newline
+            const escapedValue = value.includes(',') || value.includes('\n') || value.includes('"')
+                ? '"' + value.replace(/"/g, '""') + '"'
+                : value;
+            csv += `${fieldLabels[key]},${escapedValue}\n`;
+        }
+    }
+
+    if (!csv) {
+        alert("No data to export!");
+        return;
+    }
+
+    // Create download link
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ros_email_data.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/* ---------- EVENT LISTENERS ---------- */
+for (let key in inputs) {
+    inputs[key].oninput = generateEmail;
+}
+
+document.getElementById("importBtn").onclick = () => csvUpload.click();
+document.getElementById("exportBtn").onclick = exportCSV;
+document.getElementById("resetBtn").onclick = resetForm;
+document.getElementById("copyBtn").onclick = copyEmail;
+
+/* ---------- INIT ---------- */
+generateEmail();
+</script>
+
+</body>
+</html>
