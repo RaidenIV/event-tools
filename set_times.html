@@ -116,7 +116,7 @@
 
     #presetSelect {
         width: 180px !important;
-        padding-right: 30px; /* ensures text doesn’t overlap arrow */
+        padding-right: 30px; /* ensures text doesn't overlap arrow */
 
         /* Move the dropdown arrow left */
         background-position: right 10px center !important;
@@ -188,7 +188,8 @@
         border: 1px solid #ddd;
         border-radius: 8px;
         padding: 10px;
-        font-size: 13px;
+        font-size: 16px;
+        font-weight: 700;
         white-space: pre-line;
         min-height: 60px;
     }
@@ -204,7 +205,7 @@
     <div class="row">
         <div style="flex:1;">
             <label># of DJs?</label>
-            <input id="djCount" type="number" min="1" value="3">
+            <input id="djCount" type="number" min="1" value="6">
         </div>
 
         <div style="flex:1;">
@@ -240,14 +241,13 @@
     <h2 style="margin-top:20px; font-size:18px;">Calculated Schedule</h2>
     <div id="results"></div>
 
+    <!-- LIVE PREVIEW BOX -->
+    <div class="preview-label" style="margin-top:18px;">Schedule Preview</div>
+    <div id="previewBox" class="preview-box">Schedule preview will appear here.</div>
+
     <div style="margin-top:15px; display:flex; gap:10px;">
-        <button id="updateBtn" class="primary">Update</button>
         <button id="copyBtnBottom" class="primary">Copy</button>
     </div>
-
-    <!-- LIVE PREVIEW BOX -->
-    <div class="preview-label">Schedule Preview</div>
-    <div id="previewBox" class="preview-box">Schedule preview will appear here.</div>
 
 </div>
 
@@ -308,9 +308,10 @@ let sortable;
 /* ---------- SCHEDULE TEXT + PREVIEW ---------- */
 function scheduleToText(rows){
     if(!rows || !rows.length) return "";
-    return rows.map(r =>
+    const schedule = rows.map(r =>
         `${minToDisplay(r.start)}-${minToDisplay(r.end)}: ${r.label}`
     ).join("\n");
+    return `SET TIMES:\n${schedule}`;
 }
 
 function updatePreview(){
@@ -349,6 +350,59 @@ function buildDJInputs(){
         handle:".drag-handle",
         animation:150,
         onEnd(){ calculate(); }
+    });
+}
+
+/* ---------- SYNC TIMES ---------- */
+function syncTimes(idx, type, value){
+    let rows = resultsEl._rows;
+    if(!rows) return;
+
+    let t = parseDisplay(value);
+    if(t == null) return;
+
+    let row = rows[idx];
+
+    if(type === "start"){
+        row.start = t;
+        row.dur = row.end - row.start;
+        
+        // Update previous slot's end time
+        if(idx > 0){
+            rows[idx-1].end = t;
+            rows[idx-1].dur = rows[idx-1].end - rows[idx-1].start;
+        }
+    } else if(type === "end"){
+        row.end = t;
+        row.dur = row.end - row.start;
+        
+        // Update next slot's start time
+        if(idx < rows.length - 1){
+            rows[idx+1].start = t;
+            rows[idx+1].dur = rows[idx+1].end - rows[idx+1].start;
+        }
+    }
+
+    // Re-render to show updated times
+    renderTimesOnly();
+    updatePreview();
+}
+
+/* ---------- RENDER TIMES ONLY ---------- */
+function renderTimesOnly(){
+    let rows = resultsEl._rows;
+    if(!rows) return;
+
+    [...resultsEl.querySelectorAll("input.inline")].forEach(inp => {
+        let idx = +inp.dataset.idx;
+        let type = inp.dataset.type;
+        let row = rows[idx];
+
+        if(type === "start"){
+            inp.value = minToDisplay(row.start);
+        } else if(type === "end"){
+            inp.value = minToDisplay(row.end);
+        }
     });
 }
 
@@ -453,6 +507,10 @@ function render(rows){
         e.dataset.type="end";
         e.value=minToDisplay(r.end);
 
+        // Add real-time sync on input
+        s.oninput = () => syncTimes(i, 'start', s.value);
+        e.oninput = () => syncTimes(i, 'end', e.value);
+
         timeRow.appendChild(s);
         timeRow.appendChild(document.createTextNode("-"));
         timeRow.appendChild(e);
@@ -465,48 +523,6 @@ function render(rows){
 
     resultsEl._rows = rows;
     updatePreview();
-}
-
-/* ---------- UPDATE BUTTON ---------- */
-function updateSchedule(){
-    let rows=resultsEl._rows;
-    if(!rows)return;
-
-    let end=hhmmToMin(endEl.value);
-
-    [...resultsEl.querySelectorAll("input.inline")].forEach(inp=>{
-        let idx=+inp.dataset.idx;
-        let type=inp.dataset.type;
-        let row=rows[idx];
-
-        if(type==="name"){ row.label=inp.value.trim(); return; }
-
-        let t=parseDisplay(inp.value);
-        if(t==null)return;
-
-        if(type==="start"){ row.start=t; row.end=t+row.dur; }
-        if(type==="end"){ row.end=t; row.dur=row.end-row.start; }
-    });
-
-    for(let i=1;i<rows.length;i++){
-        rows[i].start=rows[i-1].end;
-        rows[i].end=rows[i].start+rows[i].dur;
-    }
-
-    let last=rows[rows.length-1];
-    if(last.end < end){
-        rows.push({
-            label:"B2B",
-            start:last.end,
-            end:end,
-            dur:end-last.end,
-            isB2B:true
-        });
-    } else if(last.isB2B && last.end >= end){
-        rows.pop();
-    }
-
-    render(rows);
 }
 
 /* ---------- COPY ---------- */
@@ -527,7 +543,6 @@ document.getElementById("resetBtn").onclick=()=>{
 
 /* ---------- BUTTON WIRING ---------- */
 document.getElementById("calcBtn").onclick = calculate;
-document.getElementById("updateBtn").onclick = updateSchedule;
 document.getElementById("copyBtnBottom").onclick = copySchedule;
 
 /* ---------- INPUT WATCHERS ---------- */
