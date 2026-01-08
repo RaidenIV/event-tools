@@ -155,15 +155,42 @@
         cursor: pointer;
     }
 
+    button.danger {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        font-family: 'Rajdhani';
+    }
+
+    button.danger:hover {
+        background: #c82333;
+    }
+
     .result-row {
         display: flex;
         flex-direction: column;
+        background: transparent;
+        border: none;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 0;
+        gap: 4px;
+    }
+
+    .result-row:last-child {
+        border-bottom: none;
+    }
+
+    #results {
         background: #fff;
         border: 1px solid #eee;
         padding: 10px;
         border-radius: 8px;
-        margin-bottom: 8px;
-        gap: 4px;
+        margin-top: 10px;
     }
 
     .result-row input.inline {
@@ -233,12 +260,7 @@
     <label style="margin-top:12px;">DJ Lineup (drag to reorder)</label>
     <div id="djNamesContainer" class="dj-list"></div>
 
-    <div style="margin-top:15px; display:flex; gap:10px;">
-        <button id="calcBtn" class="primary">Generate</button>
-        <button id="resetBtn" class="ghost">Reset</button>
-    </div>
-
-    <h2 style="margin-top:20px; font-size:18px;">Calculated Schedule</h2>
+    <h2 style="margin-top:20px; font-size:18px;">Edit Schedule</h2>
     <div id="results"></div>
 
     <!-- LIVE PREVIEW BOX -->
@@ -247,6 +269,7 @@
 
     <div style="margin-top:15px; display:flex; gap:10px;">
         <button id="copyBtnBottom" class="primary">Copy</button>
+        <button id="resetBtn" class="danger">Reset</button>
     </div>
 
 </div>
@@ -257,9 +280,8 @@ function hhmmToMin(t){ let[p,q]=t.split(":").map(Number); return p*60+q; }
 function minToDisplay(m){
     m=((m%1440)+1440)%1440;
     let h=Math.floor(m/60), mm=m%60;
-    let ap=h>=12?"PM":"AM";
     h=(h%12)||12;
-    return `${h}:${String(mm).padStart(2,'0')} ${ap}`;
+    return `${h}:${String(mm).padStart(2,'0')}`;
 }
 function parseDisplay(s){
     let m=s.match(/(\d{1,2}):(\d{2}) ?(AM|PM)?/i);
@@ -542,7 +564,6 @@ document.getElementById("resetBtn").onclick=()=>{
 };
 
 /* ---------- BUTTON WIRING ---------- */
-document.getElementById("calcBtn").onclick = calculate;
 document.getElementById("copyBtnBottom").onclick = copySchedule;
 
 /* ---------- INPUT WATCHERS ---------- */
