@@ -86,14 +86,12 @@
 
     textarea { height: 90px; resize: vertical; }
 
-    /* Smaller width just for "How many DJs?" and "How many Other sections?" */
-    #djCount,
-    #otherCount {
+    /* Smaller width just for "How many DJs?" */
+    #djCount, #otherCount {
         width: 120px;
     }
 
-    .dj-block,
-    .other-block {
+    .dj-block, .other-block {
         background: #fff;
         padding: 12px;
         border-radius: 8px;
@@ -101,7 +99,27 @@
         margin-top: 12px;
     }
 
-    .drag {
+    
+
+    .dj-member-heading {
+        margin-top: 8px;
+        font-weight: 700;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .dj-member-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .dj-member-meta > div {
+        width: 100%;
+    }
+
+.drag {
         cursor: grab;
         font-weight: 700;
         margin-bottom: 8px;
@@ -156,12 +174,10 @@
         width: 100%;
     }
 
-    /* IMPORTANT: prevent long names/titles from overflowing into the next column */
     .col-section {
         white-space: pre-wrap;
-        overflow-wrap: anywhere;
-        word-break: break-word;
-        min-width: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     .section-title {
@@ -169,9 +185,8 @@
         text-decoration: underline;
         text-decoration-thickness: 2px;
         margin-bottom: 6px;
-
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     .page-block {
@@ -214,7 +229,7 @@
         <input id="headliner" type="text">
 
         <label>Direct Support</label>
-        <input id="directSupportName" type="text" placeholder="e.g. Support Artist Name">
+        <input id="directSupport" type="text">
 
         <label>Date</label>
         <input id="date" type="date">
@@ -231,7 +246,12 @@
         <label>XODIA Guests</label>
         <textarea id="xodiaGuests"></textarea>
 
-        <label>Promo Team</label>
+        
+
+        <label>Free Spots</label>
+        <textarea id="freeSpots" placeholder="Names for complimentary / free entry (e.g. sponsors, comps, etc.)"></textarea>
+
+<label>Promo Team</label>
         <textarea id="promoTeam"></textarea>
 
         <label>How many DJs?</label>
@@ -292,7 +312,7 @@ function smartCap(str) {
     return str
         .toLowerCase()
         .split(" ")
-        .map(w => w[0] ? (w[0].toUpperCase() + w.slice(1)) : "")
+        .map(w => w[0].toUpperCase() + w.slice(1))
         .join(" ");
 }
 
@@ -303,9 +323,9 @@ function getShowNameCap() {
 function getHeadlinerCap() {
     return headliner.value.trim().toUpperCase();
 }
-function getDirectSupportTitle() {
-    const v = (directSupportName?.value || "").trim();
-    return v ? smartCap(v) : "Direct Support";
+
+function getDirectSupportCap() {
+    return directSupport.value.trim().toUpperCase();
 }
 
 /* -----------------------------------------------------------
@@ -313,7 +333,7 @@ function getDirectSupportTitle() {
 ----------------------------------------------------------- */
 function cleanList(text, globalSeen) {
     const seen = globalSeen || new Set();
-    return (text || "")
+    return text
         .split("\n")
         .map(n => smartCap(n.trim()))
         .filter(n => n)
@@ -353,22 +373,29 @@ function getDayOfShowLines() {
 */
 function syncTopYForDayOfShowLines(lines) {
     const n = (lines && lines.length) ? lines.length : 1;
-
-    // CHANGE REQUEST:
-    // dayLineH increased to 12 (was 10)
     const dayLineH = 12;
 
+    // Y position of "Total names" on first page:
+    // y = 60  (start)
+    // + dayLineH (label)
+    // + n * dayLineH (pricing lines)
+    // + dayLineH (extra space before total names)
     const totalNamesY = 60 + dayLineH * (n + 2);
-    layoutConfig.topY = totalNamesY + 22;
+
+    // Content columns start a bit below the total names line
+    layoutConfig.topY = totalNamesY + 20;
 }
 
 /* -----------------------------------------------------------
    BUILD SECTION DATA IN REQUIRED ORDER
-   Order: Headliner, Direct Support, XODIA, Promo, DJs, Other(s)
+   Order: Headliner, XODIA, Promo, DJs, Other
+   Also returns totalNames across all sections.
 ----------------------------------------------------------- */
+
 function getSectionsForLayout() {
     const globalSeen = new Set();
-    const headlinerName = getHeadlinerCap(); // ALL CAPS
+    const headlinerName = getHeadlinerCap();
+    const directSupportName = getDirectSupportCap();
     const sections = [];
     let totalNames = 0;
 
@@ -376,32 +403,34 @@ function getSectionsForLayout() {
         const list = cleanList(rawText, globalSeen);
         if (!list.length) return;
         if (title === "Headliner") title = headlinerName;
+        if (title === "Direct Support") title = directSupportName;
         sections.push({ title, list });
         totalNames += list.length;
     }
 
     addSection("Headliner", headlinerGuests.value);
-    addSection(getDirectSupportTitle(), directSupportGuests.value);
+    addSection("Direct Support", directSupportGuests.value);
     addSection("XODIA Guests", xodiaGuests.value);
+    addSection("Free Spots", (typeof freeSpots !== "undefined" ? freeSpots.value : ""));
     addSection("Promo Team", promoTeam.value);
 
     const djBlocks = [...document.querySelectorAll(".dj-block")];
-    djBlocks.forEach(block => {
-        const name = smartCap(block.querySelector(".dj-name").value.trim());
-        const guests = block.querySelector(".dj-guests").value;
-        addSection(name, guests);
+    djBlocks.forEach((block, idx) => {
+        const djData = getDJBlockData(block, `DJ ${idx + 1}`);
+        const title = buildDJTitleFromMembers(djData.members, `DJ ${idx + 1}`);
+        addSection(title, djData.guests);
     });
 
     const otherBlocks = [...document.querySelectorAll(".other-block")];
     otherBlocks.forEach(block => {
-        const nameRaw = block.querySelector(".other-name").value.trim();
-        const title = smartCap(nameRaw) || "Other";
+        const name = smartCap(block.querySelector(".other-name").value.trim());
         const guests = block.querySelector(".other-guests").value;
-        addSection(title, guests);
+        addSection(name, guests);
     });
 
     return { sections, totalNames };
 }
+
 
 /* -----------------------------------------------------------
    LAYOUT SECTIONS INTO PAGES & COLUMNS
@@ -470,25 +499,185 @@ function layoutSections(sections) {
 /* -----------------------------------------------------------
    DJ INPUT BUILDER
 ----------------------------------------------------------- */
+
+/* -----------------------------------------------------------
+   DJ INPUT HELPERS (Stage Name + Legal Name, Solo/Duo/Trio)
+----------------------------------------------------------- */
+function getDJMembersFromBlock(block) {
+    return [...block.querySelectorAll(".dj-member-row")].map(row => ({
+        stage: (row.querySelector(".dj-stage")?.value || "").trim(),
+        legal: (row.querySelector(".dj-legal")?.value || "").trim()
+    }));
+}
+
+function getDJBlockData(block, fallbackStage = "") {
+    const memberCountEl = block.querySelector(".dj-member-count");
+    const memberCount = Math.min(3, Math.max(1, Number(memberCountEl?.value || 1)));
+
+    const existing = getDJMembersFromBlock(block);
+    const members = [];
+    for (let i = 0; i < memberCount; i++) {
+        members.push(existing[i] || { stage: "", legal: "" });
+    }
+
+    // Backward compatibility: if an old .dj-name exists, treat as member 1 stage
+    const legacyName = block.querySelector(".dj-name")?.value?.trim() || "";
+    if (!members[0].stage && legacyName) {
+        members[0].stage = legacyName;
+    }
+    if (!members[0].stage && fallbackStage) {
+        members[0].stage = fallbackStage;
+    }
+
+    const guests = block.querySelector(".dj-guests")?.value || "";
+    return { memberCount, members, guests };
+}
+
+function buildDJTitleFromMembers(members, fallbackTitle) {
+    const cleaned = (members || [])
+        .map(m => ({ stage: (m.stage || "").trim(), legal: (m.legal || "").trim() }))
+        .filter(m => m.stage || m.legal);
+
+    if (!cleaned.length) return fallbackTitle;
+
+    const parts = cleaned.map(m => {
+        const stage = smartCap(m.stage);
+        const legal = smartCap(m.legal);
+        if (stage && legal) return `${stage} (${legal})`;
+        return stage || legal;
+    });
+
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return `${parts[0]} & ${parts[1]}`;
+    return `${parts[0]}, ${parts[1]} & ${parts[2]}`;
+}
+
+function createDJMemberRow(memberIndex, memberData) {
+    const row = document.createElement("div");
+    row.className = "dj-member-row";
+
+    const heading = document.createElement("div");
+    heading.className = "dj-member-heading";
+    heading.textContent = `Name ${memberIndex}`;
+    row.appendChild(heading);
+
+    const meta = document.createElement("div");
+    meta.className = "dj-member-meta";
+
+    const stageWrap = document.createElement("div");
+    stageWrap.innerHTML = `
+        <label>Stage Name</label>
+        <input class="dj-stage" type="text">
+    `;
+    stageWrap.querySelector("input").value = memberData?.stage || "";
+    meta.appendChild(stageWrap);
+
+    const legalWrap = document.createElement("div");
+    legalWrap.innerHTML = `
+        <label>Legal Name</label>
+        <input class="dj-legal" type="text">
+    `;
+    legalWrap.querySelector("input").value = memberData?.legal || "";
+    meta.appendChild(legalWrap);
+
+    row.appendChild(meta);
+    return row;
+}
+
+function setDJMembersInBlock(block, desiredCount, seedMembers = []) {
+    const wrap = block.querySelector(".dj-members-wrap");
+    if (!wrap) return;
+
+    const count = Math.min(3, Math.max(1, Number(desiredCount || 1)));
+    wrap.innerHTML = "";
+
+    for (let i = 0; i < count; i++) {
+        wrap.appendChild(createDJMemberRow(i + 1, seedMembers[i] || { stage: "", legal: "" }));
+    }
+}
+
+
+/* -----------------------------------------------------------
+   DJ INPUT BUILDER
+----------------------------------------------------------- */
 function buildDJInputs(preserveExisting = true) {
-    const count = Math.max(1, Number(djCount.value || 1));
+    const count = Math.min(10, Math.max(1, Number(djCount.value || 1)));
     const container = djContainer;
 
-    const old = preserveExisting ? [...container.querySelectorAll(".dj-block")] : [];
+    const oldBlocks = preserveExisting ? [...container.querySelectorAll(".dj-block")] : [];
+    const oldData = oldBlocks.map((b, idx) => getDJBlockData(b, `DJ ${idx + 1}`));
+
     container.innerHTML = "";
 
     for (let i = 0; i < count; i++) {
-        let name = (preserveExisting && old[i]?.querySelector(".dj-name")?.value) || `DJ ${i+1}`;
-        let guests = (preserveExisting && old[i]?.querySelector(".dj-guests")?.value) || "";
+        const existing = preserveExisting ? oldData[i] : null;
+
+        const fallbackStage = `DJ ${i + 1}`;
+        const memberCount = existing?.memberCount || Math.min(3, Math.max(1, existing?.members?.length || 1));
+        const members = existing?.members?.length ? existing.members : [{ stage: fallbackStage, legal: "" }];
+        const guests = existing?.guests || "";
 
         const block = document.createElement("div");
         block.className = "dj-block";
+
         block.innerHTML = `
             <div class="drag">☰ Drag</div>
-            <label>DJ ${i+1} Name</label>
-            <input class="dj-name" type="text" value="${name}">
+
+            <label>DJ ${i + 1} Names</label>
+            <select class="dj-member-count">
+                <option value="1">Solo (1 name)</option>
+                <option value="2">Duo (2 names)</option>
+                <option value="3">Trio (3 names)</option>
+            </select>
+
+            <div class="dj-members-wrap"></div>
+
             <label>Guest List</label>
-            <textarea class="dj-guests">${guests}</textarea>
+            <textarea class="dj-guests"></textarea>
+        `;
+
+        // Set values
+        const sel = block.querySelector(".dj-member-count");
+        sel.value = String(memberCount);
+
+        block.querySelector(".dj-guests").value = guests;
+
+        // Ensure member list is at least memberCount long
+        const seed = [...members];
+        while (seed.length < memberCount) seed.push({ stage: "", legal: "" });
+        setDJMembersInBlock(block, memberCount, seed);
+
+        container.appendChild(block);
+    }
+
+    Sortable.create(container, {
+        handle: ".drag",
+        animation: 150,
+        onEnd: updatePreview
+    });
+
+    updatePreview();
+}
+
+function buildOtherInputs(preserveExisting = true) {
+    const count = Number(otherCount.value);
+    const container = otherContainer;
+
+    const old = preserveExisting ? [...container.querySelectorAll(".other-block")] : [];
+    container.innerHTML = "";
+
+    for (let i = 0; i < count; i++) {
+        let name = preserveExisting && old[i]?.querySelector(".other-name")?.value || `Other ${i+1}`;
+        let guests = preserveExisting && old[i]?.querySelector(".other-guests")?.value || "";
+
+        const block = document.createElement("div");
+        block.className = "other-block";
+        block.innerHTML = `
+            <div class="drag">☰ Drag</div>
+            <label>Other Section ${i+1} Name</label>
+            <input class="other-name" type="text" value="${name}">
+            <label>Guest List</label>
+            <textarea class="other-guests">${guests}</textarea>
         `;
         container.appendChild(block);
     }
@@ -502,40 +691,31 @@ function buildDJInputs(preserveExisting = true) {
     updatePreview();
 }
 
-/* -----------------------------------------------------------
-   OTHER INPUT BUILDER (multiple sections)
------------------------------------------------------------ */
-function buildOtherInputs(preserveExisting = true) {
-    const count = Math.max(1, Number(otherCount.value || 1));
-    const container = otherContainer;
-
-    const old = preserveExisting ? [...container.querySelectorAll(".other-block")] : [];
-    container.innerHTML = "";
-
-    for (let i = 0; i < count; i++) {
-        let name = (preserveExisting && old[i]?.querySelector(".other-name")?.value) || (count === 1 ? "Other" : `Other ${i+1}`);
-        let guests = (preserveExisting && old[i]?.querySelector(".other-guests")?.value) || "";
-
-        const block = document.createElement("div");
-        block.className = "other-block";
-        block.innerHTML = `
-            <label>Other Section ${i+1} Name</label>
-            <input class="other-name" type="text" value="${name}">
-            <label>Other Section ${i+1} Guest List</label>
-            <textarea class="other-guests">${guests}</textarea>
-        `;
-        container.appendChild(block);
-    }
-
-    updatePreview();
-}
 
 /* Live-update preview on input */
 document.addEventListener("input", e => {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") {
         updatePreview();
     }
 });
+document.addEventListener("change", e => {
+    if (e.target.tagName === "SELECT") {
+        updatePreview();
+    }
+});
+
+/* DJ Solo/Duo/Trio selector -> rebuild name fields */
+djContainer.addEventListener("change", e => {
+    if (!e.target.classList.contains("dj-member-count")) return;
+    const block = e.target.closest(".dj-block");
+    if (!block) return;
+
+    const desired = Math.min(3, Math.max(1, Number(e.target.value || 1)));
+    const existing = getDJMembersFromBlock(block);
+    setDJMembersInBlock(block, desired, existing);
+    updatePreview();
+});
+
 
 /* ALWAYS ALL-CAPS inputs for show name + headliner on blur */
 headliner.addEventListener("blur", () => {
@@ -547,11 +727,14 @@ showName.addEventListener("blur", () => {
     updatePreview();
 });
 
-djCount.addEventListener("input", () => buildDJInputs(true));
-otherCount.addEventListener("input", () => buildOtherInputs(true));
+directSupport.addEventListener("blur", () => {
+    directSupport.value = getDirectSupportCap();
+    updatePreview();
+});
 
+djCount.addEventListener("input", () => buildDJInputs());
+otherCount.addEventListener("input", () => buildOtherInputs());
 buildDJInputs();
-buildOtherInputs();
 
 /* -----------------------------------------------------------
    DATE FORMAT
@@ -563,7 +746,10 @@ function dateFormat(d) {
 }
 
 /* -----------------------------------------------------------
-   PREVIEW UPDATE – applies requested font sizes
+   PREVIEW UPDATE – title & headliner ALL CAPS
+   Day-of-show pricing only on first page. Label bold.
+   Total names only on first page.
+   "GUEST LIST" & show title/date only on first page.
 ----------------------------------------------------------- */
 function updatePreview() {
     const showCap = getShowNameCap(); // ALL CAPS
@@ -587,6 +773,7 @@ function updatePreview() {
         html += `<summary style="font-size:13px;font-weight:700;cursor:pointer;">Page ${pageNum}</summary>`;
 
         if (pIndex === 0) {
+            // First page: logo + header + Day of Show Pricing + Total names
             html += `<div class="page-inner" style="margin-top:8px; position:relative;">`;
             html += `<img src="${LOGO_BASE64}" alt="Logo" style="
                 position:absolute;
@@ -599,6 +786,7 @@ function updatePreview() {
                 object-fit:contain;
             ">`;
 
+            // GUEST LIST title + show name/date ONLY on first page
             html += `<div style="text-align:center;font-weight:700;font-size:14px;margin-bottom:4px;">
                 GUEST LIST
             </div>`;
@@ -606,22 +794,18 @@ function updatePreview() {
                 ${title}
             </div>`;
 
-            // CHANGE REQUEST:
-            // Day of Show Pricing label: 10px
+            // Day of Show Pricing ONLY on first page
             html += `<div style="font-size:10px;font-weight:700;margin-bottom:2px;text-align:left;">
 Day of Show Pricing:
             </div>`;
-
-            // CHANGE REQUEST:
-            // Day of Show Pricing data: 11px
             html += `<div style="font-size:11px;font-weight:400;margin-bottom:8px;text-align:left;">${dayPricingHTML}</div>`;
 
-            // CHANGE REQUEST:
-            // Total names: 11px
-            html += `<div style="font-size:11px;font-weight:700;margin-bottom:14px;text-align:left;">
+            // Total names ONLY on first page, with extra space after
+            html += `<div style="font-size:11px;font-weight:400;margin-bottom:14px;text-align:left;">
 Total names: ${totalNames}
             </div>`;
         } else {
+            // Other pages: no logo, no GUEST LIST header, no title/date, no pricing, no total names
             html += `<div class="page-inner" style="margin-top:8px;">`;
         }
 
@@ -670,7 +854,7 @@ Total names: ${totalNames}
 Day of Show Pricing:
                 </div>
                 <div style="font-size:11px;font-weight:400;margin-bottom:8px;text-align:left;">${dayPricingHTMLEmpty}</div>
-                <div style="font-size:11px;font-weight:700;margin-bottom:14px;text-align:left;">
+                <div style="font-size:11px;font-weight:400;margin-bottom:14px;text-align:left;">
 Total names: 0
                 </div>
                 <div class="col-layout">
@@ -688,7 +872,9 @@ Total names: 0
 }
 
 /* -----------------------------------------------------------
-   COPY
+   COPY – list format, with ALL-CAPS show name & headliner
+   and Day of Show Pricing block.
+   (Total names is still included once here as a summary.)
 ----------------------------------------------------------- */
 function copyPreview() {
     const showCap = getShowNameCap(); // ALL CAPS
@@ -744,58 +930,58 @@ function copyPreview() {
 }
 
 /* -----------------------------------------------------------
-   RESET
+   RESET – clear the entire form
 ----------------------------------------------------------- */
+
 function resetAll() {
     showName.value = "";
     headliner.value = "";
-    directSupportName.value = "";
+    directSupport.value = "";
     date.value = "";
     dayOfShowPricing.value = "";
     headlinerGuests.value = "";
     directSupportGuests.value = "";
     xodiaGuests.value = "";
+    if (typeof freeSpots !== "undefined") freeSpots.value = "";
     promoTeam.value = "";
-
     djCount.value = 1;
     otherCount.value = 1;
-
     djContainer.innerHTML = "";
     otherContainer.innerHTML = "";
-
     buildDJInputs(false);
     buildOtherInputs(false);
     updatePreview();
 }
 
+
 /* -----------------------------------------------------------
-   CSV EXPORT / IMPORT
+   CSV EXPORT / IMPORT (JSON payload)
 ----------------------------------------------------------- */
+
 function exportCSV() {
     let data = {
         showName: showName.value,
         headliner: headliner.value,
-
-        directSupportName: directSupportName.value,
-        directSupportGuests: directSupportGuests.value,
-
+        directSupport: directSupport.value,
         date: date.value,
         dayOfShowPricing: dayOfShowPricing.value,
         headlinerGuests: headlinerGuests.value,
+        directSupportGuests: directSupportGuests.value,
         xodiaGuests: xodiaGuests.value,
+        freeSpots: (typeof freeSpots !== "undefined" ? freeSpots.value : ""),
         promoTeam: promoTeam.value,
-
         djCount: djCount.value,
         djs: [],
-
         otherCount: otherCount.value,
         others: []
     };
 
-    document.querySelectorAll(".dj-block").forEach(b => {
+    document.querySelectorAll(".dj-block").forEach((b, i) => {
+        const djData = getDJBlockData(b, `DJ ${i + 1}`);
         data.djs.push({
-            name: b.querySelector(".dj-name").value,
-            guests: b.querySelector(".dj-guests").value
+            memberCount: djData.memberCount,
+            members: djData.members,
+            guests: djData.guests
         });
     });
 
@@ -814,6 +1000,8 @@ function exportCSV() {
     a.click();
 }
 
+
+
 function importCSV() {
     const input = document.createElement("input");
     input.type = "file";
@@ -828,40 +1016,54 @@ function importCSV() {
 
             showName.value = (data.showName || "").trim().toUpperCase();
             headliner.value = (data.headliner || "").trim().toUpperCase();
-
-            directSupportName.value = (data.directSupportName || "").trim();
-            directSupportGuests.value = data.directSupportGuests || "";
-
+            directSupport.value = (data.directSupport || "").trim().toUpperCase();
             date.value = data.date || "";
             dayOfShowPricing.value = data.dayOfShowPricing || "";
             headlinerGuests.value = data.headlinerGuests || "";
+            directSupportGuests.value = data.directSupportGuests || "";
             xodiaGuests.value = data.xodiaGuests || "";
+            if (typeof freeSpots !== "undefined") freeSpots.value = data.freeSpots || "";
             promoTeam.value = data.promoTeam || "";
 
-            djCount.value = data.djCount || 1;
+            const importedDjs = Array.isArray(data.djs) ? data.djs : [];
+            djCount.value = data.djCount || importedDjs.length || 1;
+
+            otherCount.value = data.otherCount || 1;
+
             buildDJInputs(false);
-
-            const blocks = [...document.querySelectorAll(".dj-block")];
-            (data.djs || []).forEach((dj, i) => {
-                if (blocks[i]) {
-                    blocks[i].querySelector(".dj-name").value = dj.name || `DJ ${i+1}`;
-                    blocks[i].querySelector(".dj-guests").value = dj.guests || "";
-                }
-            });
-
-            let others = Array.isArray(data.others) ? data.others.slice() : [];
-            if (!others.length && (data.otherName || data.otherGuests)) {
-                others = [{ name: data.otherName || "Other", guests: data.otherGuests || "" }];
-            }
-
-            otherCount.value = data.otherCount || Math.max(1, others.length || 1);
             buildOtherInputs(false);
 
+            const blocks = [...document.querySelectorAll(".dj-block")];
+            importedDjs.forEach((dj, i) => {
+                if (!blocks[i]) return;
+
+                let members = [];
+                if (Array.isArray(dj.members)) {
+                    members = dj.members;
+                } else if (typeof dj.name === "string" && dj.name.trim()) {
+                    members = [{ stage: dj.name.trim(), legal: "" }];
+                } else if (typeof dj.stageName === "string" && dj.stageName.trim()) {
+                    members = [{ stage: dj.stageName.trim(), legal: (dj.legalName || "").trim() }];
+                }
+
+                const desiredCountRaw = Number(dj.memberCount || members.length || 1);
+                const desiredCount = Math.min(3, Math.max(1, desiredCountRaw));
+
+                const block = blocks[i];
+                block.querySelector(".dj-member-count").value = String(desiredCount);
+
+                const seed = [...members];
+                while (seed.length < desiredCount) seed.push({ stage: "", legal: "" });
+                setDJMembersInBlock(block, desiredCount, seed);
+
+                block.querySelector(".dj-guests").value = dj.guests || "";
+            });
+
             const otherBlocks = [...document.querySelectorAll(".other-block")];
-            others.forEach((o, i) => {
+            (data.others || []).forEach((other, i) => {
                 if (otherBlocks[i]) {
-                    otherBlocks[i].querySelector(".other-name").value = o.name || (otherBlocks.length === 1 ? "Other" : `Other ${i+1}`);
-                    otherBlocks[i].querySelector(".other-guests").value = o.guests || "";
+                    otherBlocks[i].querySelector(".other-name").value = other.name || `Other ${i+1}`;
+                    otherBlocks[i].querySelector(".other-guests").value = other.guests || "";
                 }
             });
 
@@ -874,8 +1076,13 @@ function importCSV() {
     input.click();
 }
 
+
 /* -----------------------------------------------------------
-   EXPORT PDF – apply requested font sizes + dayLineH=12
+   EXPORT PDF – SAME layout rules as preview:
+   - Logo only on first page
+   - "GUEST LIST" + title only on first page
+   - Day of Show Pricing only on first page
+   - Total names only on first page
 ----------------------------------------------------------- */
 function exportPDF() {
     const { jsPDF } = window.jspdf;
@@ -890,19 +1097,20 @@ function exportPDF() {
     const topY = layoutConfig.topY;
 
     const xLeft = 50;
-    const colWidth = 175;
-    const colX = [xLeft, xLeft + colWidth, xLeft + colWidth * 2];
+    const colWidth = 165;
+    const colX = [xLeft, xLeft + colWidth + 10, xLeft + (colWidth + 10) * 2];
+    const maxWidth = colWidth;
 
     const { sections, totalNames } = getSectionsForLayout();
 
     function drawMainTitle(pageIndex) {
         const pageWidth = doc.internal.pageSize.getWidth();
         const marginRight = 30;
-
-        // CHANGE REQUEST: dayLineH increased to 12
         const dayLineH = 12;
 
+        // Only draw logo + header + pricing + total names on FIRST page
         if (pageIndex === 0) {
+            // Logo
             const maxLogoWidth = 80;
             const maxLogoHeight = 40;
 
@@ -920,8 +1128,11 @@ function exportPDF() {
                 if (LOGO_BASE64) {
                     doc.addImage(LOGO_BASE64, LOGO_FORMAT, logoX, logoY, logoW, logoH);
                 }
-            } catch (e) {}
+            } catch (e) {
+                // ignore image errors silently
+            }
 
+            // Titles (only on first page)
             doc.setFont("helvetica", "bold");
             doc.setFontSize(14);
             doc.text("GUEST LIST", pageWidth / 2, 30, { align: "center" });
@@ -932,33 +1143,28 @@ function exportPDF() {
 
             let y = 60;
 
-            // CHANGE REQUEST:
-            // Day of Show Pricing label: 10px (PDF: 10pt)
+            // Day of Show Pricing ONLY on first page
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
             doc.text("Day of Show Pricing:", xLeft, y);
             y += dayLineH;
 
-            // CHANGE REQUEST:
-            // Day of Show Pricing data: 11px (PDF: 11pt)
             doc.setFont("helvetica", "normal");
             doc.setFontSize(11);
             if (dayPricingLines.length) {
                 dayPricingLines.forEach(line => {
-                    const wrapped = doc.splitTextToSize(line, 520);
-                    doc.text(wrapped, xLeft, y);
-                    y += dayLineH * wrapped.length;
+                    doc.text(line, xLeft, y);
+                    y += dayLineH;
                 });
             } else {
                 doc.text("N/A", xLeft, y);
                 y += dayLineH;
             }
 
+            // extra spacing between pricing block and total names
             y += dayLineH;
 
-            // CHANGE REQUEST:
-            // Total names: 11px (PDF: 11pt)
-            doc.setFont("helvetica", "bold");
+            // Total names ONLY on first page
             doc.setFontSize(11);
             doc.text(`Total names: ${totalNames}`, xLeft, y);
         }
@@ -981,34 +1187,43 @@ function exportPDF() {
     const pages = layoutSections(sections);
 
     pages.forEach((page, pIndex) => {
-        if (pIndex > 0) doc.addPage();
+        if (pIndex > 0) {
+            doc.addPage();
+        }
 
         drawMainTitle(pIndex);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
 
         page.columns.forEach((blocks, colIdx) => {
             let y = topY;
             const x = colX[colIdx];
-            const usableW = colWidth - 8;
 
             blocks.forEach(block => {
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(12);
-
-                const titleLines = doc.splitTextToSize(block.title, usableW);
-                doc.text(titleLines, x, y);
-
-                const underlineW = Math.min(doc.getTextWidth(titleLines[0] || ""), usableW);
-                doc.line(x, y + 2, x + underlineW, y + 2);
-
-                y += layoutConfig.headerHeight * Math.max(1, titleLines.length);
+                
+                const titleLines = doc.splitTextToSize(block.title, maxWidth);
+                titleLines.forEach((line, idx) => {
+                    if (idx === 0) {
+                        const w = doc.getTextWidth(line);
+                        doc.text(line, x, y);
+                        doc.line(x, y + 2, x + Math.min(w, maxWidth), y + 2);
+                    } else {
+                        doc.text(line, x, y);
+                    }
+                    y += layoutConfig.headerHeight;
+                });
 
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(10);
-
+                
                 block.names.forEach(name => {
-                    const nameLines = doc.splitTextToSize(name, usableW);
-                    doc.text(nameLines, x, y);
-                    y += layoutConfig.lineHeight * Math.max(1, nameLines.length);
+                    const nameLines = doc.splitTextToSize(name, maxWidth);
+                    nameLines.forEach(line => {
+                        doc.text(line, x, y);
+                        y += layoutConfig.lineHeight;
+                    });
                 });
 
                 y += layoutConfig.sectionSpacing;
