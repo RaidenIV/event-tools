@@ -40,7 +40,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     padding: 4rem 5%;
     z-index: 9999;
 }
@@ -99,7 +99,7 @@
     position: relative;
     width: 100%;
     max-width: 700px;
-    height: 90px;
+    height: 80px;
     background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(20, 20, 20, 0.9) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
@@ -291,46 +291,94 @@
     transform: translateX(-5px);
 }
 
+/* Social Media Icons */
+.social-container {
+    margin-top: 1rem;
+    display: flex;
+    gap: 2rem;
+    animation: fadeIn 1s ease 0.8s forwards;
+    opacity: 0;
+}
+
+.social-icon {
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-icon:hover {
+    color: var(--primary);
+    transform: translateY(-3px);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     #contact-container {
-        padding: 3rem 5%;
+        padding: 1.5rem 4%;
         justify-content: flex-start;
     }
 
-    .page-title {
-        font-size: 2.5rem;
-        margin-bottom: 2rem;
-        margin-top: 3rem;
+    .logo {
+        width: 120px;
+    }
+
+    .logo-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .forms-container {
+        gap: 1rem;
     }
 
     .form-card {
-        height: auto;
-        min-height: 80px;
+        height: 60px;
+        max-width: 100%;
     }
 
     .form-card-content {
-        padding: 1rem;
-        gap: 1.5rem;
+        padding: 0 1rem;
+        gap: 0.8rem;
+    }
+
+    .form-icon {
+        display: none;
+    }
+
+    .form-text {
+        transform: translateY(-3px);
     }
 
     .form-title {
-        font-size: 1.4rem;
+        font-size: 1rem;
+        line-height: 1.1;
     }
 
     .form-description {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
+        margin-top: 0.15rem;
     }
 
     .form-arrow {
-        font-size: 2rem;
+        font-size: 1.5rem;
+    }
+
+    .social-container {
+        margin-top: 1rem;
+        gap: 1.5rem;
+    }
+
+    .social-icon svg {
+        width: 28px;
+        height: 28px;
     }
 
     .back-button {
         top: 1rem;
         left: 1rem;
-        font-size: 0.9rem;
-        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        padding: 0.5rem 0.9rem;
     }
 }
 </style>
@@ -343,7 +391,7 @@
     <!-- Back Button -->
     <a href="/" class="back-button">
         <span>←</span>
-        <span>Back to Home</span>
+        <span>BACK</span>
     </a>
 
     <!-- Logo -->
@@ -476,4 +524,21 @@
             <div class="form-card-shine"></div>
         </a>
     </div>
+
+    <!-- Social Media Icons -->
+    <div class="social-container">
+        <a href="https://instagram.com/xodiamg" target="_blank" rel="noopener noreferrer" class="social-icon">
+            <svg width="35" height="35" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="8" width="44" height="44" rx="12" stroke="currentColor" stroke-width="3"/>
+                <circle cx="30" cy="30" r="10" stroke="currentColor" stroke-width="3"/>
+                <circle cx="43" cy="17" r="2.5" fill="currentColor"/>
+            </svg>
+        </a>
+        <a href="https://facebook.com/xodiamg" target="_blank" rel="noopener noreferrer" class="social-icon">
+            <svg width="35" height="35" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="30" cy="30" r="22" stroke="currentColor" stroke-width="3"/>
+                <path d="M33 52V32H38L39 25H33V21C33 19 33.5 18 36 18H39V12C38 12 35.5 11.5 33 11.5C28 11.5 25 14 25 20V25H20V32H25V52H33Z" fill="currentColor"/>
+            </svg>
+        </a>
+    
 </div>
