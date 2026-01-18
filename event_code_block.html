@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Squarespace Event Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b0b0c; --panel:#131316; --text:#f2f2f4; --muted:#a7a7ad; --line:#2a2a2f; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px;
+      font-family: 'Rajdhani', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 980px) { .wrap { grid-template-columns: 1fr; } }
+
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+    h1 { font-size: 20px; margin: 0 0 6px; }
+    p { margin: 0 0 12px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+    label { display:block; font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #0f0f12;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 10px;
+      font-size: 14px;
+      outline: none;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+    .btnbar { display:flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    button {
+      border: 1px solid var(--line);
+      background: #1b1b20;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    button:hover { background: #22222a; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .ok { color: #9fe6b8; }
+    .warn { color: #ffd38a; }
+    .mono { 
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; 
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .small { font-size: 12px; }
+    .divider { height:1px; background: var(--line); margin: 14px 0; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Squarespace Event Creator</h1>
+      <p>
+        Fill this out, click <b>Generate</b>, then paste the output into a Squarespace <b>Code Block</b> on your event page.
+        This is front-end only; for Spotify/SoundCloud, embed iframe code is most reliable.
+      </p>
+
+      <label>Event Name</label>
+      <input id="eventName" placeholder="SPACE CAMP: MSTIC-27" />
+
+      <div class="row">
+        <div>
+          <label>Event Date & Time (local)</label>
+          <input id="eventDate" type="datetime-local" />
+        </div>
+        <div>
+          <label>Timezone Label (display only)</label>
+          <input id="tzLabel" placeholder="ET" value="ET" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <label>Flyer Image</label>
+      <div class="row">
+        <div>
+          <label class="small">Flyer Image URL (recommended)</label>
+          <input id="flyerUrl" placeholder="https://.../flyer-square.jpg" />
+          <div class="hint">Recommended: upload to Squarespace and use the hosted URL.</div>
+        </div>
+        <div>
+          <label class="small">Or choose a file (creates a DataURL)</label>
+          <input id="flyerFile" type="file" accept="image/*" />
+          <div class="hint warn">DataURLs can be large; Squarespace Code Blocks may become heavy.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <label>Tickets</label>
+      <div class="row">
+        <div>
+          <label class="small">Ticket Mode</label>
+          <select id="ticketMode">
+            <option value="button">Button link (simple, most compatible)</option>
+            <option value="embed">Embed code (iframe/script)</option>
+          </select>
+        </div>
+        <div>
+          <label class="small">Ticket Button Text</label>
+          <input id="ticketBtnText" value="Get Tickets" />
+        </div>
+      </div>
+
+      <div id="ticketButtonWrap">
+        <label class="small">Ticket URL (Posh/Eventbrite event page or checkout URL)</label>
+        <input id="ticketUrl" placeholder="https://posh.vip/e/..." />
+        <div class="hint">Use this if you just want a clean “Get Tickets” button.</div>
+      </div>
+
+      <div id="ticketEmbedWrap" style="display:none;">
+        <label class="small">Ticket Embed Code (paste iframe/script)</label>
+        <textarea id="ticketEmbed" placeholder="<iframe ...></iframe>"></textarea>
+        <div class="hint">Paste the official embed code from Eventbrite/Posh if you want embedded checkout.</div>
+      </div>
+
+      <div>
+        <label class="small">Event Description (optional)</label>
+        <textarea id="eventDescription" placeholder="Enter event description to display above ticket checkout..."></textarea>
+        <div class="hint">This text will appear above the ticket section.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <label>Music Embeds</label>
+      <p class="small">Best practice: paste the iframe embed code from Spotify/SoundCloud. If you only have links, they will render as buttons.</p>
+
+      <div class="row">
+        <div>
+          <label class="small">Spotify Embed Code (iframe) or Link</label>
+          <textarea id="spotifyInput" placeholder="<iframe ...></iframe>  OR  https://open.spotify.com/..."></textarea>
+        </div>
+        <div>
+          <label class="small">SoundCloud Embed Code (iframe) or Link</label>
+          <textarea id="soundcloudInput" placeholder="<iframe ...></iframe>  OR  https://soundcloud.com/..."></textarea>
+        </div>
+      </div>
+
+      <div class="btnbar">
+        <button id="generateBtn">Generate</button>
+        <button id="copyBtn">Copy Output</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+
+      <div id="status" class="hint"></div>
+    </div>
+
+    <div class="card">
+      <h1>Generated Squarespace Code Block Snippet</h1>
+      <p>Paste this into a Squarespace Code Block. It includes HTML, CSS, and JS inline.</p>
+      <textarea id="output" class="mono" spellcheck="false" style="min-height: 520px;"></textarea>
+      <button id="copyOutputBtn" style="margin-top: 12px; width: 100%;">Copy to Clipboard</button>
+      <div class="hint">
+        If something doesn’t render in Squarespace, it’s usually due to blocked scripts in third-party embeds. In that case, use Ticket Mode = Button and use Spotify/SoundCloud official iframes.
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const state = {
+    flyerDataUrl: ""
+  };
+
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function looksLikeIframeOrEmbedCode(s) {
+    const t = (s || "").trim();
+    if (!t) return false;
+    return /<iframe[\s>]/i.test(t) || /<script[\s>]/i.test(t) || /<blockquote[\s>]/i.test(t);
+  }
+
+  function normalizeMaybeEmbed(input, labelIfLink) {
+    const t = (input || "").trim();
+    if (!t) return "";
+    if (looksLikeIframeOrEmbedCode(t)) return t;
+    // else treat as link
+    const safe = escapeHtml(t);
+    const text = escapeHtml(labelIfLink || "Open");
+    return `<a class="xmg-linkbtn" href="${safe}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  }
+
+  function updateTicketModeUI() {
+    const mode = $("ticketMode").value;
+    $("ticketButtonWrap").style.display = (mode === "button") ? "" : "none";
+    $("ticketEmbedWrap").style.display  = (mode === "embed") ? "" : "none";
+  }
+
+  $("ticketMode").addEventListener("change", updateTicketModeUI);
+
+  $("flyerFile").addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      state.flyerDataUrl = reader.result;
+      $("status").innerHTML = `<span class="ok">Flyer loaded as DataURL.</span> (Consider using a hosted URL if output gets too large.)`;
+    };
+    reader.readAsDataURL(f);
+  });
+
+  $("clearBtn").addEventListener("click", () => {
+    ["eventName","eventDate","tzLabel","flyerUrl","ticketUrl","ticketEmbed","eventDescription","spotifyInput","soundcloudInput","ticketBtnText"].forEach(id => $(id).value = "");
+    $("tzLabel").value = "ET";
+    $("ticketMode").value = "button";
+    updateTicketModeUI();
+    state.flyerDataUrl = "";
+    $("output").value = "";
+    $("status").textContent = "";
+    $("flyerFile").value = "";
+  });
+
+  function generateSnippet(data) {
+    // Unique-ish namespace to reduce Squarespace CSS collisions
+    const ns = "xmgEventModule";
+
+    const eventName = escapeHtml(data.eventName || "Event");
+    const tzLabel = escapeHtml(data.tzLabel || "");
+    const eventISO = data.eventISO || "";
+
+    // Flyer
+    const flyerSrc = data.flyerUrlTrimmed
+      ? escapeHtml(data.flyerUrlTrimmed)
+      : (data.flyerDataUrl ? escapeHtml(data.flyerDataUrl) : "");
+
+    const flyerHtml = flyerSrc
+      ? `<div class="${ns}__flyer"><img src="${flyerSrc}" alt="${eventName} flyer"></div>`
+      : `<div class="${ns}__flyer ${ns}__flyer--empty"><div class="${ns}__flyerPlaceholder">Flyer</div></div>`;
+
+    // Tickets
+    const eventDesc = (data.eventDescription || "").trim();
+    const descriptionHtml = eventDesc 
+      ? `<div class="${ns}__description">${escapeHtml(eventDesc).replace(/\n/g, '<br>')}</div>`
+      : "";
+
+    let ticketHtml = "";
+    if (data.ticketMode === "embed") {
+      const embed = (data.ticketEmbed || "").trim();
+      if (embed) {
+        // Check if it's a POSH embed and limit height
+        const isPosh = /posh\.vip/i.test(embed);
+        const embedClass = isPosh ? `${ns}__tickets ${ns}__tickets--posh` : `${ns}__tickets`;
+        ticketHtml = `<div class="${embedClass}">${embed}</div>`;
+      } else {
+        ticketHtml = `<div class="${ns}__tickets"><a class="${ns}__btn" href="#" onclick="return false;">${escapeHtml(data.ticketBtnText || "Get Tickets")}</a></div>`;
+      }
+    } else {
+      const url = (data.ticketUrl || "").trim();
+      ticketHtml = url
+        ? `<div class="${ns}__tickets"><a class="${ns}__btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.ticketBtnText || "Get Tickets")}</a></div>`
+        : `<div class="${ns}__tickets"><a class="${ns}__btn" href="#" onclick="return false;">${escapeHtml(data.ticketBtnText || "Get Tickets")}</a></div>`;
+    }
+
+    // Music embeds
+    const spotifyHtml = normalizeMaybeEmbed(data.spotifyInput, "Open Spotify");
+    const soundcloudHtml = normalizeMaybeEmbed(data.soundcloudInput, "Open SoundCloud");
+
+    const musicBlocks = [spotifyHtml, soundcloudHtml].filter(Boolean).map((html) => {
+      // If it’s an iframe/script, wrap to control sizing
+      const isEmbed = looksLikeIframeOrEmbedCode(html);
+      return isEmbed
+        ? `<div class="${ns}__embedWrap">${html}</div>`
+        : `<div class="${ns}__linkWrap">${html}</div>`;
+    }).join("\n");
+
+    const musicSection = musicBlocks
+      ? `<div class="${ns}__music">
+          <div class="${ns}__sectionTitle">Listen</div>
+          ${musicBlocks}
+        </div>`
+      : "";
+
+    // Final snippet: self-contained
+    return `<!-- ${ns}: paste into a Squarespace Code Block -->
+<div class="${ns}" data-event-iso="${escapeHtml(eventISO)}" data-tz-label="${tzLabel}">
+  <div class="${ns}__top">
+    ${flyerHtml}
+
+    <div class="${ns}__content">
+      <div class="${ns}__name">${eventName}</div>
+
+      <div class="${ns}__countdown" aria-live="polite">
+        <div class="${ns}__countLabel">Countdown</div>
+        <div class="${ns}__countRow">
+          <div class="${ns}__countItem"><div class="${ns}__countNum" data-unit="days">--</div><div class="${ns}__countTxt">Days</div></div>
+          <div class="${ns}__countItem"><div class="${ns}__countNum" data-unit="hours">--</div><div class="${ns}__countTxt">Hours</div></div>
+          <div class="${ns}__countItem"><div class="${ns}__countNum" data-unit="mins">--</div><div class="${ns}__countTxt">Mins</div></div>
+          <div class="${ns}__countItem"><div class="${ns}__countNum" data-unit="secs">--</div><div class="${ns}__countTxt">Secs</div></div>
+        </div>
+        <div class="${ns}__countMeta" data-meta></div>
+      </div>
+
+      ${descriptionHtml}
+      ${ticketHtml}
+    </div>
+  </div>
+
+  ${musicSection}
+</div>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+  .${ns}{
+    --bg:#ffffff;
+    --text:#0b0b0c;
+    --muted:#5b5b63;
+    --line:#e7e7ee;
+    --card:#fafafe;
+    --radius:18px;
+
+    font-family: 'Rajdhani', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .${ns}__top{
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  .${ns}__flyer img{
+    width:100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 14px;
+    display:block;
+    background: #f2f2f6;
+    border: 1px solid var(--line);
+  }
+
+  .${ns}__flyer--empty{
+    width:100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    border: 1px dashed var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: #fbfbff;
+    color: var(--muted);
+  }
+
+  .${ns}__content{
+    display:flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .${ns}__name{
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    line-height: 1.1;
+  }
+
+  .${ns}__countdown{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+  }
+
+  .${ns}__countLabel{
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  .${ns}__countRow{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .${ns}__countItem{
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    min-width: 92px;
+    text-align: center;
+  }
+
+  .${ns}__countNum{
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .${ns}__countTxt{
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-weight: 700;
+  }
+
+  .${ns}__countMeta{
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+
+  .${ns}__description{
+    margin-top: 16px;
+    padding: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  .${ns}__tickets{
+    margin-top: 16px;
+  }
+
+  .${ns}__tickets--posh iframe{
+    max-height: 250px !important;
+    height: 250px !important;
+  }
+
+  .${ns}__btn{
+    display:inline-block;
+    text-decoration:none;
+    background: #0b0b0c;
+    color:#ffffff;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 800;
+    border: 1px solid #0b0b0c;
+  }
+
+  .${ns}__btn:hover{ opacity: 0.92; }
+
+  .${ns}__music{
+    margin-top: 16px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+
+  .${ns}__sectionTitle{
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.4px;
+    margin-bottom: 10px;
+  }
+
+  .${ns}__embedWrap{
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #ffffff;
+    margin-bottom: 12px;
+  }
+
+  .${ns}__embedWrap iframe{
+    width: 100% !important;
+    border: 0 !important;
+    display:block;
+  }
+
+  .xmg-linkbtn{
+    display:inline-block;
+    text-decoration:none;
+    background: #ffffff;
+    color:#0b0b0c;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    border: 1px solid var(--line);
+  }
+  .xmg-linkbtn:hover{ background:#f6f6fb; }
+
+  .${ns}__linkWrap{ margin-bottom: 12px; }
+
+  @media (max-width: 860px){
+    .${ns}__top{ grid-template-columns: 1fr; }
+    .${ns}__name{ font-size: 24px; }
+  }
+</style>
+
+<scr" + "ipt>
+(function(){
+  // Protect against duplicate runs in Squarespace page builders
+  var root = document.currentScript && document.currentScript.previousElementSibling;
+  // Fallback: locate the most recent module if builder rearranges DOM
+  if (!root || !root.classList || !root.classList.contains("${ns}")) {
+    var nodes = document.querySelectorAll(".${ns}");
+    root = nodes[nodes.length - 1];
+  }
+  if (!root || root.__${ns}Initialized) return;
+  root.__${ns}Initialized = true;
+
+  var iso = root.getAttribute("data-event-iso") || "";
+  var tz = root.getAttribute("data-tz-label") || "";
+  var metaEl = root.querySelector("[data-meta]");
+  var dEl = root.querySelector('[data-unit="days"]');
+  var hEl = root.querySelector('[data-unit="hours"]');
+  var mEl = root.querySelector('[data-unit="mins"]');
+  var sEl = root.querySelector('[data-unit="secs"]');
+
+  function pad2(n){ return String(n).padStart(2, "0"); }
+
+  function setMeta(text){ if (metaEl) metaEl.textContent = text || ""; }
+
+  if (!iso) {
+    setMeta("Set event date/time to enable countdown.");
+    return;
+  }
+
+  // Parse ISO local datetime: YYYY-MM-DDTHH:MM
+  // This is interpreted in the viewer's local timezone (which is usually what you want for local events).
+  var target = new Date(iso);
+  if (isNaN(target.getTime())) {
+    setMeta("Invalid event date/time.");
+    return;
+  }
+
+  function tick(){
+    var now = new Date();
+    var diffMs = target.getTime() - now.getTime();
+    var ended = diffMs <= 0;
+
+    if (ended) diffMs = 0;
+
+    var totalSec = Math.floor(diffMs / 1000);
+    var days = Math.floor(totalSec / 86400);
+    var rem = totalSec % 86400;
+    var hrs = Math.floor(rem / 3600);
+    rem = rem % 3600;
+    var mins = Math.floor(rem / 60);
+    var secs = rem % 60;
+
+    if (dEl) dEl.textContent = days;
+    if (hEl) hEl.textContent = pad2(hrs);
+    if (mEl) mEl.textContent = pad2(mins);
+    if (sEl) sEl.textContent = pad2(secs);
+
+    var dateStr = target.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    setMeta((ended ? "Event started: " : "Event starts: ") + dateStr + (tz ? " " + tz : ""));
+
+    if (ended) {
+      // Stop updating after it hits zero
+      clearInterval(root.__${ns}Timer);
+      root.__${ns}Timer = null;
+    }
+  }
+
+  tick();
+  root.__${ns}Timer = setInterval(tick, 1000);
+})();
+</scr" + "ipt>`;
+  }
+
+  $("generateBtn").addEventListener("click", () => {
+    const eventName = $("eventName").value.trim();
+    const eventDateVal = $("eventDate").value; // "YYYY-MM-DDTHH:MM"
+    const tzLabel = $("tzLabel").value.trim();
+
+    const flyerUrlTrimmed = $("flyerUrl").value.trim();
+    const ticketMode = $("ticketMode").value;
+    const ticketUrl = $("ticketUrl").value.trim();
+    const ticketEmbed = $("ticketEmbed").value;
+    const ticketBtnText = $("ticketBtnText").value.trim() || "Get Tickets";
+    const eventDescription = $("eventDescription").value.trim();
+
+    const spotifyInput = $("spotifyInput").value;
+    const soundcloudInput = $("soundcloudInput").value;
+
+    if (!eventDateVal) {
+      $("status").innerHTML = `<span class="warn">Missing event date/time.</span> Countdown will still generate, but will show a prompt until you set a date.`;
+    } else {
+      $("status").innerHTML = `<span class="ok">Generated.</span>`;
+    }
+
+    const snippet = generateSnippet({
+      eventName,
+      eventISO: eventDateVal,
+      tzLabel,
+      flyerUrlTrimmed,
+      flyerDataUrl: state.flyerDataUrl,
+      ticketMode,
+      ticketUrl,
+      ticketEmbed,
+      ticketBtnText,
+      eventDescription,
+      spotifyInput,
+      soundcloudInput
+    });
+
+    $("output").value = snippet;
+  });
+
+  $("copyBtn").addEventListener("click", async () => {
+    const text = $("output").value;
+    if (!text.trim()) {
+      $("status").innerHTML = `<span class="warn">Nothing to copy.</span> Generate output first.`;
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      $("status").innerHTML = `<span class="ok">Copied to clipboard.</span>`;
+    } catch {
+      $("output").focus();
+      $("output").select();
+      $("status").innerHTML = `<span class="warn">Clipboard blocked.</span> I selected the text; copy manually (Ctrl+C).`;
+    }
+  });
+
+  // Copy button below the output textarea
+  $("copyOutputBtn").addEventListener("click", async () => {
+    const text = $("output").value;
+    if (!text.trim()) {
+      alert("Nothing to copy. Generate output first.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      const btn = $("copyOutputBtn");
+      const originalText = btn.textContent;
+      btn.textContent = "✓ Copied!";
+      btn.style.background = "#2a6f3f";
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = "";
+      }, 2000);
+    } catch {
+      $("output").focus();
+      $("output").select();
+      alert("Clipboard blocked. Text is selected - copy manually (Ctrl+C).");
+    }
+  });
+
+  updateTicketModeUI();
+
+  // Set default time to 8:00 PM EST on page load if field is empty
+  if (!$("eventDate").value) {
+    const now = new Date();
+    now.setHours(20, 0, 0, 0); // 8:00 PM
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    $("eventDate").value = `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+})();
+</script>
+</body>
+</html>
