@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Squarespace Event Creator</title>
+  <title>Event Code Block Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -15,10 +15,35 @@
       font-family: 'Rajdhani', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
       background: var(--bg); color: var(--text);
     }
-    .wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 16px; grid-template-columns: 1fr 1fr; padding-top: 60px; }
+    .wrap { max-width: 1600px; margin: 0 auto; display: grid; gap: 16px; grid-template-columns: 1fr 1fr; padding-top: -10px; }
     @media (max-width: 980px) { .wrap { grid-template-columns: 1fr; } }
 
     .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+    
+    .card-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    
+    .card-left {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    @media (max-width: 1200px) { 
+      .card-split { 
+        grid-template-columns: 1fr; 
+      }
+    }
+    
     h1 { font-size: 20px; margin: 0 0 6px; }
     p { margin: 0 0 12px; color: var(--muted); font-size: 13px; line-height: 1.4; }
     label { display:block; font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
@@ -94,21 +119,35 @@
     
     .logo-container {
       text-align: center;
-      margin-bottom: 30px;
-      padding-top: 20px;
+      margin-bottom: 20px;
+      padding-top: -25px;
     }
     
     .logo-container img {
-      max-width: 200px;
+      max-width: 100px;
       height: auto;
       display: block;
       margin: 0 auto;
+    }
+    
+    .music-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
     }
   </style>
 </head>
 
 <body>
-  <a href="/event-tools-dashboard" class="home-button">
+  <a href="https://www.xodiamediagroup.com/tools" class="home-button">
     <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -128,103 +167,109 @@
         This is front-end only; for Spotify/SoundCloud, embed iframe code is most reliable.
       </p>
 
-      <label>Event Name</label>
-      <input id="eventName" />
+      <div class="card-split">
+        <!-- LEFT COLUMN -->
+        <div class="card-left">
+          <div class="section-title">Event Name</div>
+          <input id="eventName" placeholder="SPACE CAMP: SKRILLEX" />
 
-      <div class="row">
-        <div>
-          <label>Event Date & Time (local)</label>
-          <input id="eventDate" type="datetime-local" />
+          <div class="row">
+            <div>
+              <label>Event Date & Time (local)</label>
+              <input id="eventDate" type="datetime-local" />
+            </div>
+            <div>
+              <label>Timezone Label (display only)</label>
+              <input id="tzLabel" placeholder="ET" value="ET" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Flyer Image</div>
+          <div class="row">
+            <div>
+              <label class="small">Flyer Image URL (recommended)</label>
+              <input id="flyerUrl" placeholder="https://.../flyer-square.jpg" />
+              <div class="hint">Recommended: upload to Squarespace and use the hosted URL.</div>
+            </div>
+            <div>
+              <label class="small">Or choose a file (creates a DataURL)</label>
+              <input id="flyerFile" type="file" accept="image/*" />
+              <div class="hint warn">DataURLs can be large; Squarespace Code Blocks may become heavy.</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Tickets</div>
+          <div class="row">
+            <div>
+              <label class="small">Ticket Mode</label>
+              <select id="ticketMode">
+                <option value="embed">Embed code (iframe/script)</option>
+                <option value="button">Button link (simple, most compatible)</option>
+              </select>
+            </div>
+            <div>
+              <label class="small">Ticket Button Text</label>
+              <input id="ticketBtnText" value="Get Tickets" />
+            </div>
+          </div>
+
+          <div id="ticketButtonWrap" style="display:none;">
+            <label class="small">Ticket URL (Posh/Eventbrite event page or checkout URL)</label>
+            <input id="ticketUrl" placeholder="https://posh.vip/e/..." />
+            <div class="hint">Use this if you just want a clean "Get Tickets" button.</div>
+          </div>
+
+          <div id="ticketEmbedWrap">
+            <label class="small">Ticket Embed Code (paste iframe/script)</label>
+            <textarea id="ticketEmbed" placeholder="<iframe ...></iframe>"></textarea>
+            <div class="hint">Paste the official embed code from Eventbrite/Posh if you want embedded checkout.</div>
+          </div>
+
+          <div class="btnbar">
+            <button id="generateBtn">Generate</button>
+            <button id="clearBtn">Clear</button>
+          </div>
+
+          <div id="status" class="hint"></div>
         </div>
-        <div>
-          <label>Timezone Label (display only)</label>
-          <input id="tzLabel" placeholder="ET" value="ET" />
+
+        <!-- RIGHT COLUMN - MUSIC EMBEDS -->
+        <div class="card-right">
+          <div>
+            <label class="small">Event Description (optional)</label>
+            <textarea id="eventDescription" placeholder="Enter event description to display above ticket checkout..."></textarea>
+            <div class="hint">This text will appear above the ticket section.</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="music-section-title">Music Embeds</div>
+          <p class="small">Best practice: paste the iframe embed code from Spotify/SoundCloud. If you only have links, they will render as buttons.</p>
+          
+          <div>
+            <label class="small">Spotify Embed Code (iframe) or Link</label>
+            <textarea id="spotifyInput" placeholder="<iframe ...></iframe>  OR  https://open.spotify.com/..."></textarea>
+          </div>
+          
+          <div>
+            <label class="small">SoundCloud Embed Code (iframe) or Link</label>
+            <textarea id="soundcloudInput" placeholder="<iframe ...></iframe>  OR  https://soundcloud.com/..."></textarea>
+          </div>
         </div>
       </div>
-
-      <div class="divider"></div>
-
-      <label>Flyer Image</label>
-      <div class="row">
-        <div>
-          <label class="small">Flyer Image URL (recommended)</label>
-          <input id="flyerUrl" placeholder="https://.../flyer-square.jpg" />
-          <div class="hint">Recommended: upload to Squarespace and use the hosted URL.</div>
-        </div>
-        <div>
-          <label class="small">Or choose a file (creates a DataURL)</label>
-          <input id="flyerFile" type="file" accept="image/*" />
-          <div class="hint warn">DataURLs can be large; Squarespace Code Blocks may become heavy.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <label>Tickets</label>
-      <div class="row">
-        <div>
-          <label class="small">Ticket Mode</label>
-          <select id="ticketMode">
-            <option value="button">Button link (simple, most compatible)</option>
-            <option value="embed">Embed code (iframe/script)</option>
-          </select>
-        </div>
-        <div>
-          <label class="small">Ticket Button Text</label>
-          <input id="ticketBtnText" value="Get Tickets" />
-        </div>
-      </div>
-
-      <div id="ticketButtonWrap">
-        <label class="small">Ticket URL (Posh/Eventbrite event page or checkout URL)</label>
-        <input id="ticketUrl" placeholder="https://posh.vip/e/..." />
-        <div class="hint">Use this if you just want a clean “Get Tickets” button.</div>
-      </div>
-
-      <div id="ticketEmbedWrap" style="display:none;">
-        <label class="small">Ticket Embed Code (paste iframe/script)</label>
-        <textarea id="ticketEmbed" placeholder="<iframe ...></iframe>"></textarea>
-        <div class="hint">Paste the official embed code from Eventbrite/Posh if you want embedded checkout.</div>
-      </div>
-
-      <div>
-        <label class="small">Event Description (optional)</label>
-        <textarea id="eventDescription" placeholder="Enter event description to display above ticket checkout..."></textarea>
-        <div class="hint">This text will appear above the ticket section.</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <label>Music Embeds</label>
-      <p class="small">Best practice: paste the iframe embed code from Spotify/SoundCloud. If you only have links, they will render as buttons.</p>
-
-      <div class="row">
-        <div>
-          <label class="small">Spotify Embed Code (iframe) or Link</label>
-          <textarea id="spotifyInput" placeholder="<iframe ...></iframe>  OR  https://open.spotify.com/..."></textarea>
-        </div>
-        <div>
-          <label class="small">SoundCloud Embed Code (iframe) or Link</label>
-          <textarea id="soundcloudInput" placeholder="<iframe ...></iframe>  OR  https://soundcloud.com/..."></textarea>
-        </div>
-      </div>
-
-      <div class="btnbar">
-        <button id="generateBtn">Generate</button>
-        <button id="copyBtn">Copy Output</button>
-        <button id="clearBtn">Clear</button>
-      </div>
-
-      <div id="status" class="hint"></div>
     </div>
 
     <div class="card">
-      <h1>Generated Squarespace Code Block Snippet</h1>
+      <h1>Generated Code Block Snippet</h1>
       <p>Paste this into a Squarespace Code Block. It includes HTML, CSS, and JS inline.</p>
       <textarea id="output" class="mono" spellcheck="false" style="min-height: 520px;"></textarea>
       <button id="copyOutputBtn" style="margin-top: 12px; width: 100%;">Copy to Clipboard</button>
       <div class="hint">
-        If something doesn’t render in Squarespace, it’s usually due to blocked scripts in third-party embeds. In that case, use Ticket Mode = Button and use Spotify/SoundCloud official iframes.
+        If something doesn't render in Squarespace, it's usually due to blocked scripts in third-party embeds. In that case, use Ticket Mode = Button and use Spotify/SoundCloud official iframes.
       </div>
     </div>
   </div>
