@@ -1,7 +1,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
- /* Hide Squarespace header on this page */
+/* Hide Squarespace header on this page */
 #header {
     display: none !important;
 }
@@ -27,30 +27,140 @@
     --secondary: #00ffff;
     --darker: #000000;
     --light: #ffffff;
+    /* Shared top UI height (Menu button + top logo) */
+    --top-ui-height: 48px;
 }
 
 * {
     font-family: 'Rajdhani', sans-serif;
 }
 
+/* Force Rajdhani for headings (Squarespace can override h1/h2/h3) */
+#homepage-container h1,
+#homepage-container h2,
+#homepage-container h3,
+.tagline {
+    font-family: 'Rajdhani', sans-serif !important;
+}
+
+.tagline {
+    font-weight: 900 !important;
+}
+
+
 body {
     overflow: hidden !important;
     height: 100vh;
 }
 
+/* Navigation Dropdown */
+.nav-dropdown {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.nav-toggle {
+    background: rgba(26, 26, 26, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    height: var(--top-ui-height);
+    padding: 0 16px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-toggle:hover {
+    background: rgba(36, 36, 36, 0.9);
+    border-color: var(--primary);
+}
+
+.nav-menu {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 8px;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-dropdown.active .nav-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.nav-menu a {
+    display: block;
+    padding: 12px 16px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-menu a:hover {
+    background: rgba(0, 153, 255, 0.1);
+    color: var(--primary);
+}
+
 /* Main Container */
+
+/* Squarespace code-block/section padding resets (prevents the page from being pushed down) */
+#page,
+.page-section,
+.content-wrapper,
+.sqs-block,
+.sqs-block-content {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Ensure our full-screen container ignores Squarespace layout flow */
 #homepage-container {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
     height: 100vh;
-    background: linear-gradient(180deg, #000000 0%, #0a0a0a 100%);
+    background: #000000;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 40px 30px 80px;
+    /* Top padding keeps content visually aligned with the fixed Menu button */
+    padding: 20px 30px 40px;
     box-sizing: border-box;
     overflow: hidden;
+}
+
+/* Page Logo */
+.page-logo {
+    height: var(--top-ui-height);
+    width: auto;
+    max-width: 85vw;
+    display: block;
+    margin: 10px 0 8px 0;
+    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.18));
 }
 
 /* Tagline */
@@ -59,19 +169,30 @@ body {
     font-size: 72px;
     font-weight: 900;
     text-align: center;
-    margin: 0 0 60px 0;
+    margin: 0 0 10px 0;
     letter-spacing: 2px;
     text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+/* Subtitle */
+.subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    margin: 0 0 30px 0;
+    letter-spacing: 1px;
 }
 
 /* Events Grid */
 .events-grid {
     width: 100%;
     max-width: 1400px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    display: flex;
     gap: 30px;
-    margin-bottom: 60px;
+    margin-bottom: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 /* Event Card */
@@ -87,6 +208,8 @@ body {
     backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
+    width: 320px;
+    flex-shrink: 0;
 }
 
 .event-card::before {
@@ -133,6 +256,9 @@ body {
     overflow: hidden;
     position: relative;
     z-index: 2;
+    border-radius: 12px;
+    margin: 12px;
+    width: calc(100% - 24px);
 }
 
 .event-flyer img {
@@ -148,7 +274,7 @@ body {
 
 /* Event Content */
 .event-content {
-    padding: 24px;
+    padding: 16px 24px 24px 24px;
     position: relative;
     z-index: 2;
     flex: 1;
@@ -237,7 +363,7 @@ body {
 
 /* Social Media Icons */
 .social-container {
-    margin-top: 1rem;
+    margin-top: 0;
     display: flex;
     gap: 2rem;
     justify-content: center;
@@ -259,22 +385,41 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    :root {
+        --top-ui-height: 44px;
+    }
+    /* Page Logo - Mobile */
+    .page-logo {
+        margin: 8px 0 6px 0;
+    }
     .tagline {
         font-size: 48px;
-        margin-bottom: 40px;
+        margin: 0 0 8px 0;
+    }
+    
+    .subtitle {
+        font-size: 16px;
+        margin-bottom: 20px;
     }
     
     .events-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: center;
         gap: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .event-card {
+        width: 100%;
+        max-width: 320px;
     }
     
     #homepage-container {
-        padding: 30px 20px 60px;
+        padding: 15px 20px 30px;
     }
     
     .social-container {
-        margin-top: 1.5rem;
+        margin-top: 0;
         gap: 1.5rem;
     }
 
@@ -285,27 +430,58 @@ body {
 }
 
 @media (max-width: 480px) {
+    :root {
+        --top-ui-height: 42px;
+    }
+    /* Page Logo - Small Mobile */
+    .page-logo {
+        margin: 6px 0 6px 0;
+    }
     .tagline {
         font-size: 36px;
-        margin-bottom: 30px;
+        margin: 0 0 6px 0;
+    }
+    
+    .subtitle {
+        font-size: 14px;
+        margin-bottom: 15px;
     }
     
     .event-title {
         font-size: 20px;
+    }
+    
+    .event-card {
+        width: 100%;
+        max-width: 280px;
     }
 }
 </style>
 
 <div id="homepage-container">
  
+ <!-- Navigation Dropdown -->
+ <div class="nav-dropdown" id="navDropdown">
+  <button class="nav-toggle" id="navToggle">
+   Menu
+  </button>
+  <div class="nav-menu">
+   <a href="/">Home</a>
+   <a href="/contact">Contact</a>
+   <a href="/tools">Tools</a>
+  </div>
+ </div>
+ 
  <!-- Tagline -->
+ <img class="page-logo" src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Xodia MEDIA Group" loading="eager" />
  <h1 class="tagline">UPCOMING EVENTS</h1>
+ <p class="subtitle">Check out our upcoming show and grab your tickets now!</p>
  
  <!-- Events Grid -->
  <div class="events-grid">
   
   <!-- Example Event Card 1 -->
-  <a class="event-card" href="/SWERVE">
+  <a class="event-card" href="/swerve">
    <div class="event-card-bg"></div>
    <div class="event-flyer">
     <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/f342d628-c4df-4037-adf9-14321dfed4a6/phodsdsdnto.JPG?format=500w" alt="SWERVE Flyer" />
@@ -365,28 +541,6 @@ body {
   </a>
   
  </div>
-
-   <!-- Example Event Card 3 -->
-  <a class="event-card" href="/event-page-url-3">
-   <div class="event-card-bg"></div>
-   <div class="event-flyer">
-    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/7b4fee49-1f87-4fac-9832-7ec2c473ac5f/phonto.JPG?format=500w" alt="???" />
-   </div>
-   <div class="event-content">
-    <h3 class="event-title">???</h3>
-    <p class="event-venue">???</p>
-    <p class="event-description">???????</p>
-    <div class="event-date">??????, Mar ??, 2026</div>
-    <div class="event-arrow">
-     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewbox="0 0 24 24">
-      <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
-     </svg>
-    </div>
-   </div>
-   <div class="event-card-shine"></div>
-  </a>
-  
- </div>
  
  <!-- Social Media Icons -->
  <div class="social-container">
@@ -405,3 +559,29 @@ body {
   </a>
  </div>
 </div>
+
+<script>
+// Navigation dropdown toggle
+const navDropdown = document.getElementById('navDropdown');
+const navToggle = document.getElementById('navToggle');
+
+navToggle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    navDropdown.classList.toggle('active');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!navDropdown.contains(e.target)) {
+        navDropdown.classList.remove('active');
+    }
+});
+
+// Close dropdown when clicking a link
+const navLinks = document.querySelectorAll('.nav-menu a');
+navLinks.forEach(link => {
+    link.addEventListener('click', function() {
+        navDropdown.classList.remove('active');
+    });
+});
+</script>
