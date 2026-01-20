@@ -385,6 +385,13 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    /* Mobile scrolling: allow the full-page container to scroll */
+    #homepage-container {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
     :root {
         --top-ui-height: 44px;
     }
@@ -467,7 +474,7 @@ body {
   </button>
   <div class="nav-menu">
    <a href="/">Home</a>
-   <a href="/contact">Contact</a>
+   <a href="/contact">Contact Us</a>
    <a href="/tools">Tools</a>
   </div>
  </div>
@@ -475,7 +482,7 @@ body {
  <!-- Tagline -->
  <img class="page-logo" src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Xodia MEDIA Group" loading="eager" />
  <h1 class="tagline">UPCOMING EVENTS</h1>
- <p class="subtitle">Check out our upcoming show and grab your tickets now!</p>
+ <p class="subtitle">Check out our upcoming shows and grab your tickets now</p>
  
  <!-- Events Grid -->
  <div class="events-grid">
@@ -489,7 +496,7 @@ body {
    <div class="event-content">
     <h3 class="event-title">SWERVE</h3>
     <p class="event-venue">Skully's Music Diner</p>
-    <p class="event-description">All hip hop banger all night!</p>
+    <p class="event-description">All hip hop bangers all night!</p>
     <div class="event-date">Friday, Jan 30, 2026</div>
     <div class="event-arrow">
      <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewbox="0 0 24 24">
