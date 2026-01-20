@@ -8,43 +8,193 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
+<!-- Theme bootstrap: default DARK, persist in localStorage -->
+<script>
+(function () {
+    try {
+        var saved = localStorage.getItem('xmg_theme');
+        var theme = saved || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+})();
+</script>
+
 <style>
-    body {
+    :root {
+        --accent: #0099ff;
+        --accent2: #00ffff;
+        --success: #228B22;
+        --danger: #dc3545;
+        --radius: 12px;
+        --shadow: 0 10px 30px rgba(0,0,0,0.18);
+
+        /* Shared top UI height for menu button */
+        --top-ui-height: 48px;
+    }
+
+    html[data-theme="light"] {
+        --bg: #ffffff;
+        --text: #111111;
+        --muted: rgba(0,0,0,0.65);
+        --panel: #fafafa;
+        --panel-2: #ffffff;
+        --border: rgba(0,0,0,0.10);
+        --border-2: rgba(0,0,0,0.08);
+        --input-bg: #ffffff;
+        --input-text: #111111;
+        --chip: rgba(0,0,0,0.06);
+        --chip-text: rgba(0,0,0,0.72);
+    }
+
+    html[data-theme="dark"] {
+        --bg: #0b0d10;
+        --text: rgba(255,255,255,0.92);
+        --muted: rgba(255,255,255,0.65);
+        --panel: rgba(18, 20, 24, 0.92);
+        --panel-2: rgba(26, 28, 34, 0.92);
+        --border: rgba(255,255,255,0.16);
+        --border-2: rgba(255,255,255,0.10);
+        --input-bg: rgba(255,255,255,0.06);
+        --input-text: rgba(255,255,255,0.92);
+        --chip: rgba(255,255,255,0.08);
+        --chip-text: rgba(255,255,255,0.78);
+    }
+
+    * {
+        box-sizing: border-box;
         font-family: 'Rajdhani', sans-serif;
-        background: #ffffff;
-        color: #111;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
         margin: 0;
         padding: 30px;
+        min-height: 100vh;
         display: flex;
         justify-content: center;
     }
 
-    .back-button {
+    /* ======= MENU NAV (from events_menu_v7.html) ======= */
+    .nav-dropdown {
         position: fixed;
         top: 18px;
         left: 18px;
-        background: #228B22;
-        color: #fff;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        z-index: 9999;
-        font-weight: 700;
+        z-index: 10000;
     }
 
+    .nav-toggle {
+        background: rgba(26, 26, 26, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        height: var(--top-ui-height);
+        padding: 0 16px;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    html[data-theme="light"] .nav-toggle {
+        background: rgba(245, 245, 245, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        color: rgba(0,0,0,0.88);
+    }
+
+    .nav-toggle:hover {
+        background: rgba(36, 36, 36, 0.9);
+        border-color: var(--accent);
+    }
+
+    html[data-theme="light"] .nav-toggle:hover {
+        background: rgba(235, 235, 235, 0.95);
+        border-color: var(--accent);
+    }
+
+    .nav-menu {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        background: rgba(26, 26, 26, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 8px;
+        min-width: 180px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    html[data-theme="light"] .nav-menu {
+        background: rgba(245, 245, 245, 0.96);
+        border: 1px solid rgba(0, 0, 0, 0.16);
+    }
+
+    .nav-dropdown.active .nav-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .nav-menu a,
+    .nav-menu button.nav-item-btn {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    html[data-theme="light"] .nav-menu a,
+    html[data-theme="light"] .nav-menu button.nav-item-btn {
+        color: rgba(0,0,0,0.75);
+    }
+
+    .nav-menu a:hover,
+    .nav-menu button.nav-item-btn:hover {
+        background: rgba(0, 153, 255, 0.12);
+        color: var(--accent);
+    }
+
+    /* ======= APP UI ======= */
     .panel {
-        background: #fafafa;
+        background: var(--panel);
         padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
         width: 100%;
         max-width: 450px;
     }
 
     h1 {
         text-align: center;
-        margin-bottom: 20px;
+        margin: 10px 0 20px 0;
+        letter-spacing: 0.5px;
+    }
+
+    h2 {
+        margin: 18px 0 10px 0;
+        font-size: 18px;
     }
 
     label {
@@ -52,21 +202,74 @@
         font-weight: 700;
         margin-top: 10px;
         font-size: 14px;
+        color: var(--muted);
     }
 
     input[type="text"], input[type="time"], input[type="number"], select {
         padding: 10px;
         margin-top: 6px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
         font-size: 15px;
-        font-weight: bold;
+        font-weight: 700;
         width: 50%;
-        font-family: 'Rajdhani';
+        background: var(--input-bg);
+        color: var(--input-text);
+        font-family: 'Rajdhani', sans-serif;
+        outline: none;
+    }
+
+    input[type="text"]::placeholder,
+    input[type="number"]::placeholder {
+        color: rgba(255,255,255,0.45);
+    }
+
+    html[data-theme="light"] input[type="text"]::placeholder,
+    html[data-theme="light"] input[type="number"]::placeholder {
+        color: rgba(0,0,0,0.45);
+    }
+
+    input[type="text"]:focus,
+    input[type="time"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+        border-color: rgba(0,153,255,0.75);
+        box-shadow: 0 0 0 3px rgba(0,153,255,0.18);
     }
 
     .time-small {
         width: 120px !important;
+    }
+
+    /* Time input clock icon: force WHITE in dark mode by drawing our own icon
+       (hides native indicator because some browsers ignore filter on time inputs). */
+    html[data-theme="dark"] {
+        color-scheme: dark;
+    }
+    html[data-theme="light"] {
+        color-scheme: light;
+    }
+
+    html[data-theme="dark"] input[type="time"] {
+        color-scheme: dark;
+        padding-right: 38px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 18px 18px;
+    }
+
+    /* Hide native picker icon so our white clock is the visible one */
+    html[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator {
+        opacity: 0;
+        display: block;
+    }
+
+    /* Keep native icon in light mode */
+    html[data-theme="light"] input[type="time"] {
+        color-scheme: light;
+        background-image: none;
+        padding-right: 10px;
     }
 
     .row {
@@ -76,7 +279,20 @@
     }
 
     #presetSelect {
-        width: 150px !important;   /* Or any width you prefer */
+        width: 180px !important;
+        padding-right: 30px;
+        background-position: right 10px center !important;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+
+        background-image: url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="20" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><polygon points="5,7 15,7 10,12" /></svg>');
+        background-repeat: no-repeat;
+    }
+
+    /* Preset dropdown option text (expanded list) */
+    #presetSelect option {
+        color: #000000;
     }
 
     .dj-list {
@@ -90,84 +306,75 @@
         display: flex;
         align-items: center;
         padding: 8px;
-        background: #fff;
-        border-radius: 8px;
-        border: 1px solid #eee;
+        background: var(--panel-2);
+        border-radius: 10px;
+        border: 1px solid var(--border-2);
         gap: 10px;
     }
 
     .drag-handle {
         padding: 6px 10px;
-        background: #f2f2f2;
-        border-radius: 6px;
+        background: var(--chip);
+        border-radius: 8px;
         cursor: grab;
-        font-weight: 700;
-        color: #444;
+        font-weight: 800;
+        color: var(--chip-text);
+        user-select: none;
     }
 
     .dj-item input.name {
-        width: 120px;   /* Adjust size as needed */
-        flex: initial;  /* Disable flex expansion */
+        width: 120px;
+        flex: initial;
         border: none;
         background: transparent;
         font-size: 15px;
-        font-weight: 700;
+        font-weight: 800;
+        padding: 6px 0;
     }
 
-    #presetSelect {
-        width: 180px !important;
-        padding-right: 30px; /* ensures text doesn't overlap arrow */
-
-        /* Move the dropdown arrow left */
-        background-position: right 10px center !important;
-
-        /* Required for custom arrow alignment on some browsers */
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-
-        background-image: url('data:image/svg+xml;utf8,<svg fill="%23228B22" height="20" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><polygon points="5,7 15,7 10,12" /></svg>');
-        background-repeat: no-repeat;
+    .dj-item input.name:focus {
+        outline: none;
+        box-shadow: none;
     }
 
     button.primary {
-        background: #228B22;
+        background: var(--success);
         color: white;
         border: none;
         padding: 10px 16px;
-        border-radius: 8px;
+        border-radius: 10px;
         cursor: pointer;
-        font-weight: 700;
-        font-family: 'Rajdhani';
+        font-weight: 800;
+        font-family: 'Rajdhani', sans-serif;
     }
 
     button.primary:hover {
-        background: #1d701d;
+        filter: brightness(0.95);
     }
 
     button.ghost {
-        background: white;
-        border: 1px solid #ddd;
-        color: #228B22;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--accent);
         padding: 10px 16px;
-        border-radius: 8px;
-        font-weight: 700;
+        border-radius: 10px;
+        font-weight: 800;
         cursor: pointer;
     }
 
     button.danger {
-        background: #dc3545;
+        background: var(--danger);
         color: white;
         border: none;
         padding: 10px 16px;
-        border-radius: 8px;
+        border-radius: 10px;
         cursor: pointer;
-        font-weight: 700;
-        font-family: 'Rajdhani';
+        font-weight: 800;
+        font-family: 'Rajdhani', sans-serif;
     }
 
     button.danger:hover {
-        background: #c82333;
+        filter: brightness(0.95);
     }
 
     .result-row {
@@ -175,10 +382,10 @@
         flex-direction: column;
         background: transparent;
         border: none;
-        padding: 8px 0;
-        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-2);
         margin-bottom: 0;
-        gap: 4px;
+        gap: 6px;
     }
 
     .result-row:last-child {
@@ -186,44 +393,78 @@
     }
 
     #results {
-        background: #fff;
-        border: 1px solid #eee;
+        background: var(--panel-2);
+        border: 1px solid var(--border-2);
         padding: 10px;
-        border-radius: 8px;
+        border-radius: 12px;
         margin-top: 10px;
     }
 
     .result-row input.inline {
         width: 130px;
         padding: 8px;
-        border-radius: 6px;
-        border: 1px solid #ddd;
-        font-family: 'Rajdhani';
-        font-weight: bold;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--input-bg);
+        color: var(--input-text);
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 800;
     }
 
     /* PREVIEW BOX */
     .preview-label {
         margin-top: 18px;
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 800;
+        color: var(--muted);
     }
 
     .preview-box {
         margin-top: 6px;
-        background: #ffffff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
         padding: 10px;
         font-size: 16px;
-        font-weight: 700;
+        font-weight: 800;
         white-space: pre-line;
         min-height: 60px;
+        color: var(--text);
+    }
+
+    @media (max-width: 768px) {
+        :root {
+            --top-ui-height: 44px;
+        }
+        body {
+            padding: 18px;
+        }
+        .panel {
+            max-width: 520px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        :root {
+            --top-ui-height: 42px;
+        }
+        body {
+            padding: 14px;
+        }
     }
 </style>
 </head>
 <body>
-    <button class="back-button" onclick="window.location.href='https://www.xodiamediagroup.com/tools'">⬅ Back to Tools</button>
+
+<!-- Navigation Dropdown (replaces Back button) -->
+<div class="nav-dropdown" id="navDropdown">
+    <button class="nav-toggle" id="navToggle">Menu</button>
+    <div class="nav-menu">
+        <a href="/">Home</a>
+        <a href="/contact">Contact</a>
+        <a href="/tools">Tools</a>
+    </div>
+</div>
 
 <div class="panel">
 
@@ -260,11 +501,10 @@
     <label style="margin-top:12px;">DJ Lineup (drag to reorder)</label>
     <div id="djNamesContainer" class="dj-list"></div>
 
-    <h2 style="margin-top:20px; font-size:18px;">Edit Schedule</h2>
+    <h2>Edit Schedule</h2>
     <div id="results"></div>
 
-    <!-- LIVE PREVIEW BOX -->
-    <div class="preview-label" style="margin-top:18px;">Schedule Preview</div>
+    <div class="preview-label">Schedule Preview</div>
     <div id="previewBox" class="preview-box">Schedule preview will appear here.</div>
 
     <div style="margin-top:15px; display:flex; gap:10px;">
@@ -275,6 +515,31 @@
 </div>
 
 <script>
+/* ======= NAV DROPDOWN (from events_menu_v7.html) ======= */
+const navDropdown = document.getElementById('navDropdown');
+const navToggle = document.getElementById('navToggle');
+
+navToggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    navDropdown.classList.toggle('active');
+});
+
+document.addEventListener('click', function (e) {
+    if (!navDropdown.contains(e.target)) {
+        navDropdown.classList.remove('active');
+    }
+});
+
+const navLinks = document.querySelectorAll('.nav-menu a');
+navLinks.forEach(link => {
+    link.addEventListener('click', function () {
+        navDropdown.classList.remove('active');
+    });
+});
+
+/* ======= DARK MODE (default) ======= */
+// Theme toggle removed per request. Default remains dark via bootstrap script in <head>.
+
 /* ---------- TIME HELPERS ---------- */
 function hhmmToMin(t){ let[p,q]=t.split(":").map(Number); return p*60+q; }
 function minToDisplay(m){
@@ -388,8 +653,7 @@ function syncTimes(idx, type, value){
     if(type === "start"){
         row.start = t;
         row.dur = row.end - row.start;
-        
-        // Update previous slot's end time
+
         if(idx > 0){
             rows[idx-1].end = t;
             rows[idx-1].dur = rows[idx-1].end - rows[idx-1].start;
@@ -397,15 +661,13 @@ function syncTimes(idx, type, value){
     } else if(type === "end"){
         row.end = t;
         row.dur = row.end - row.start;
-        
-        // Update next slot's start time
+
         if(idx < rows.length - 1){
             rows[idx+1].start = t;
             rows[idx+1].dur = rows[idx+1].end - rows[idx+1].start;
         }
     }
 
-    // Re-render to show updated times
     renderTimesOnly();
     updatePreview();
 }
@@ -499,7 +761,7 @@ function render(rows){
         div.className="result-row";
 
         let nameBlock=document.createElement("div");
-        nameBlock.style.fontWeight="700";
+        nameBlock.style.fontWeight="800";
 
         if(r.isB2B){
             let nameInput=document.createElement("input");
@@ -529,7 +791,6 @@ function render(rows){
         e.dataset.type="end";
         e.value=minToDisplay(r.end);
 
-        // Add real-time sync on input
         s.oninput = () => syncTimes(i, 'start', s.value);
         e.oninput = () => syncTimes(i, 'end', e.value);
 
@@ -551,7 +812,6 @@ function render(rows){
 function copySchedule(){
     let rows=resultsEl._rows||[];
     let text = scheduleToText(rows);
-
     navigator.clipboard.writeText(text);
 }
 
