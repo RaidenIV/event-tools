@@ -25,20 +25,6 @@
         font-weight: 700;
     }
 
-    .back-button {
-        position: fixed;
-        top: 18px;
-        left: 18px;
-        background: #228B22;
-        color: #fff;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        z-index: 9999;
-        font-weight: 700;
-    }
-
     .layout {
         max-width: 1300px;
         margin: auto;
@@ -137,10 +123,10 @@
     }
 
     .primary {
-        background: #228B22;
+        background: #0099ff;
         color: #fff;
     }
-    .primary:hover { background: #1d701d; }
+    .primary:hover { background: #0088e6; }
 
     .warning {
         color: #c0392b;
@@ -240,11 +226,196 @@
     .panel.dragover .drop-hint {
         display: flex;
     }
+
+    /* ==========================
+       DARK MODE (DEFAULT)
+       Applied via <body class="theme-dark">
+
+<!-- Navigation Dropdown (from set_times.html) -->
+<div class="nav-dropdown" id="navDropdown">
+  <button class="nav-toggle" id="navToggle">Menu</button>
+  <div class="nav-menu">
+    <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+    <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+    <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+    <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
+  </div>
+</div>
+
+
+       ========================== */
+    body.theme-dark {
+        background: #0b0b0d;
+        color: #f2f2f2;
+    }
+
+    body.theme-dark .panel {
+        background: #121216;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+    }
+
+    body.theme-dark label { color: #f2f2f2; }
+
+    body.theme-dark input,
+    body.theme-dark textarea,
+    body.theme-dark select {
+        background: #0f0f13;
+        border-color: #2a2a33;
+        color: #f2f2f2;
+    }
+
+    body.theme-dark input::placeholder,
+    body.theme-dark textarea::placeholder {
+        color: rgba(242, 242, 242, 0.55);
+    }
+
+    body.theme-dark .dj-block,
+    body.theme-dark .other-block {
+        background: #0f0f13;
+        border-color: #2a2a33;
+    }
+
+    body.theme-dark .dj-member-heading { color: rgba(242, 242, 242, 0.85); }
+
+    body.theme-dark .drag { color: rgba(242, 242, 242, 0.70); }
+
+    body.theme-dark .preview {
+        background: #ffffff;
+        border-color: #eeeeee;
+        color: #111111;
+    }
+
+    body.theme-dark .section-title { color: #f2f2f2; }
+
+    body.theme-dark .warning { color: #ff6b5f; }
+
+    body.theme-dark .dup { color: #ff6b5f; }
+
+    body.theme-dark .panel.dragover {
+        outline: 3px dashed rgba(34, 139, 34, 0.70);
+        box-shadow: 0 14px 34px rgba(34, 139, 34, 0.22);
+    }
+
+    body.theme-dark .drop-hint {
+        background: rgba(34, 139, 34, 0.16);
+        color: rgba(242, 242, 242, 0.92);
+    }
+
+
+/* === DARK MODE OVERRIDES (HARD) === */
+body.theme-dark { background: #0b0f14 !important; color: #f2f2f2 !important; }
+body.theme-dark * { color-scheme: dark; }
+body.theme-dark .panel,
+body.theme-dark .left,
+body.theme-dark .right,
+body.theme-dark .container,
+body.theme-dark .card { background: #121216 !important; color: #f2f2f2 !important; border-color: rgba(255,255,255,0.10) !important; }
+body.theme-dark input,
+body.theme-dark select,
+body.theme-dark textarea { background: #0f0f13 !important; color: #f2f2f2 !important; border-color: rgba(255,255,255,0.14) !important; }
+body.theme-dark button { border-color: rgba(255,255,255,0.18) !important; }
+
+/* Keep TEXT PREVIEW in LIGHT MODE even when the page is dark */
+body.theme-dark #preview,
+body.theme-dark .preview {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border-color: #e6e6e6 !important;
+    color-scheme: light !important;
+}
+body.theme-dark #preview .section-title,
+body.theme-dark #preview .page-number,
+body.theme-dark #preview .warning,
+body.theme-dark #preview .dup {
+    color: #111111 !important;
+}
+
+
+    /* ======= MENU NAV (from set_times.html) ======= */
+    :root {
+        --top-ui-height: 48px;
+    }
+
+    .nav-dropdown {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        z-index: 10000;
+    }
+
+    .nav-toggle {
+        background: rgba(26, 26, 26, 0.90);
+        border: 1px solid rgba(255, 255, 255, 0.20);
+        border-radius: 12px;
+        height: var(--top-ui-height);
+        padding: 0 16px;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: all 0.25s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .nav-toggle:hover {
+        border-color: #0099ff;
+        background: rgba(36, 36, 36, 0.90);
+    }
+
+    .nav-menu {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        background: rgba(26, 26, 26, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.20);
+        border-radius: 12px;
+        padding: 8px;
+        min-width: 190px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.25s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .nav-dropdown.active .nav-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .nav-menu a {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        color: rgba(255, 255, 255, 0.86);
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.25s ease;
+    }
+
+    .nav-menu a:hover {
+        background: rgba(0, 153, 255, 0.12);
+        color: #0099ff;
+    }
+
+    @media (max-width: 768px) {
+        :root { --top-ui-height: 44px; }
+    }
+    @media (max-width: 480px) {
+        :root { --top-ui-height: 42px; }
+    }
+
 </style>
 </head>
-<body>
-    <button class="back-button" onclick="window.location.href='https://www.xodiamediagroup.com/tools'">⬅ Back to Tools</button>
-
+<body class="theme-dark">
 <h1>Guest List Generator</h1>
 
 <div class="layout">
@@ -1209,5 +1380,41 @@ function exportPDF() {
 
 updatePreview();
 </script>
+
+<script>
+  // Ensure dark mode is applied by default, even if other scripts modify body classes
+  (function(){
+    try { document.body.classList.add('theme-dark'); } catch(e) {}
+  })();
+</script>
+
+
+<script>
+/* ======= NAV DROPDOWN (from set_times.html) ======= */
+(function () {
+    const navDropdown = document.getElementById('navDropdown');
+    const navToggle = document.getElementById('navToggle');
+    if (!navDropdown || !navToggle) return;
+
+    navToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        navDropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!navDropdown.contains(e.target)) {
+            navDropdown.classList.remove('active');
+        }
+    });
+
+    const navLinks = document.querySelectorAll('.nav-menu a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            navDropdown.classList.remove('active');
+        });
+    });
+})();
+</script>
+
 </body>
 </html>
