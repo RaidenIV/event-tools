@@ -4,121 +4,234 @@
 <meta charset="UTF-8">
 <title>Contest Spinner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
     :root {
         --green: #228B22;
         --green-dark: #1d701d;
-        --bg: #f5f5f5;
+
+        --accent: #0099ff;
+        --accent2: #00ffff;
+        --top-ui-height: 48px;
+
+        /* Dark mode palette (default) */
+        --bg: #0b0c0f;
+        --panel: #12141a;
+        --panel-2: #161a22;
+        --text: #e8eaf0;
+        --muted: #a6adbb;
+        --border: #2a2f3a;
+        --input-bg: #0f1218;
+        --input-text: #e8eaf0;
+        --canvas-bg: #0b0c0f;
+        --shadow: 0 4px 14px rgba(0,0,0,0.45);
     }
 
-    * {
-        box-sizing: border-box;
-    }
+    
 
-    body {
-        font-family: 'Rajdhani', sans-serif;
-        background: #ffffff;
-        margin: 0;
-        padding: 24px;
-        color: #111;
-    }
-
-    h1 {
-        text-align: center;
-        font-size: 32px;
-        margin-bottom: 10px;
-        font-weight: 700;
-    }
-
-    .back-button {
+/* ======= MENU NAV (from events_menu_v7.html) ======= */
+    .nav-dropdown {
         position: fixed;
         top: 18px;
         left: 18px;
-        background: #228B22;
-        color: #fff;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        z-index: 9999;
-        font-weight: 700;
+        z-index: 10000;
     }
 
-    .subtitle {
+    .nav-toggle {
+        background: rgba(26, 26, 26, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        height: var(--top-ui-height);
+        padding: 0 16px;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        font-family: 'Rajdhani', sans-serif;
+    }
+
+    html[data-theme="light"] .nav-toggle {
+        background: rgba(245, 245, 245, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        color: rgba(0,0,0,0.88);
+    }
+
+    .nav-toggle:hover {
+        background: rgba(36, 36, 36, 0.9);
+        border-color: var(--accent);
+    }
+
+    html[data-theme="light"] .nav-toggle:hover {
+        background: rgba(235, 235, 235, 0.95);
+        border-color: var(--accent);
+    }
+
+    .nav-menu {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        background: rgba(26, 26, 26, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 8px;
+        min-width: 180px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+
+    html[data-theme="light"] .nav-menu {
+        background: rgba(245, 245, 245, 0.96);
+        border: 1px solid rgba(0, 0, 0, 0.16);
+    }
+
+    .nav-dropdown.active .nav-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .nav-menu a,
+    .nav-menu button.nav-item-btn {
+        display: block;
+        text-align: left;
+        padding: 12px 16px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-family: 'Rajdhani', sans-serif;
+    }
+
+    html[data-theme="light"] .nav-menu a,
+    html[data-theme="light"] .nav-menu button.nav-item-btn {
+        color: rgba(0,0,0,0.75);
+    }
+
+    .nav-menu a:hover,
+    .nav-menu button.nav-item-btn:hover {
+        background: rgba(0, 153, 255, 0.12);
+        color: var(--accent);
+    }
+
+/* Scope everything to avoid Squarespace collisions */
+    #contest-wheel-app, #contest-wheel-app * {
+        box-sizing: border-box;
+        font-family: 'Rajdhani', sans-serif;
+    }
+
+    /* Force full-page dark background (prevents white margins in local files + Squarespace) */
+    html, body {
+        background: var(--bg) !important;
+        color: var(--text) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh !important;
+        width: 100% !important;
+    }
+
+
+    #contest-wheel-app {
+        background: var(--bg);
+        color: var(--text);
+        padding: 24px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.06);
+        max-width: 980px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    #contest-wheel-app h1 {
+        text-align: center;
+        font-size: 32px;
+        margin: 0 0 10px 0;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    #contest-wheel-app .subtitle {
         text-align: center;
         font-size: 14px;
-        margin-bottom: 24px;
-        color: #555;
+        margin: 0 0 24px 0;
+        color: var(--muted);
     }
-
-    .layout {
-        max-width: 900px;
-        margin: 0 auto;
+#contest-wheel-app .layout {
         display: flex;
         flex-direction: column;
         gap: 20px;
         align-items: center;
     }
 
-    .panel {
-        background: #fafafa;
+    #contest-wheel-app .panel {
+        background: var(--panel);
         padding: 18px;
         border-radius: 12px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-        width: 100%;          /* <-- change from 60% to 100% */
-        max-width: 900px;     /* still keeps it nice on desktop */
+        box-shadow: var(--shadow);
+        width: 100%;
+        max-width: 900px;
+        border: 1px solid rgba(255,255,255,0.03);
     }
 
-    .panel-input {
-        min-width: 280px;
-    }
-
-    .panel-wheel {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    label {
+    #contest-wheel-app label {
         display: block;
         font-weight: 700;
         font-size: 14px;
         margin-bottom: 6px;
+        color: var(--text);
     }
 
-    textarea {
+    #contest-wheel-app textarea {
         width: 100%;
+        background: var(--input-bg);
+        color: var(--input-text);
         height: 260px;
         padding: 8px;
         border-radius: 8px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border);
         font-family: 'Rajdhani', monospace;
         font-size: 16px;
         resize: vertical;
-        font-weight: 600; /* USER INPUT BOLD */
+        font-weight: 600;
     }
 
-    input[type="text"] {
+    #contest-wheel-app input[type="text"],
+    #contest-wheel-app select {
         width: 100%;
+        background: var(--input-bg);
+        color: var(--input-text);
         padding: 6px 8px;
         border-radius: 8px;
-        border: 1px solid #ccc;
-        font-family: 'Rajdhani', sans-serif;
+        border: 1px solid var(--border);
         font-size: 16px;
         margin-bottom: 8px;
-        font-weight: 600; /* USER INPUT BOLD */
+        font-weight: 600;
     }
 
-    .hint {
+    #contest-wheel-app .hint {
         font-size: 12px;
-        color: #777;
+        color: var(--muted);
         margin-top: 4px;
         margin-bottom: 8px;
     }
 
-    .btn-row {
+    #contest-wheel-app .btn-row {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
@@ -126,9 +239,8 @@
         margin-bottom: 10px;
     }
 
-    button {
+    #contest-wheel-app button {
         padding: 8px 14px;
-        font-family: 'Rajdhani', sans-serif;
         font-size: 14px;
         font-weight: 700;
         border-radius: 8px;
@@ -141,164 +253,135 @@
         white-space: nowrap;
     }
 
-    button:active {
+    #contest-wheel-app button:active {
         transform: translateY(1px);
         box-shadow: 0 2px 6px rgba(0,0,0,0.15) inset;
     }
 
-    .btn-primary {
+    #contest-wheel-app .btn-primary {
         background: var(--green);
         color: #fff;
     }
+    #contest-wheel-app .btn-primary:hover { background: var(--green-dark); }
 
-    .btn-primary:hover {
-        background: var(--green-dark);
+    #contest-wheel-app .btn-ghost {
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--border);
     }
+    #contest-wheel-app .btn-ghost:hover { background: #1b2030; }
 
-    .btn-ghost {
-        background: #e9e9e9;
-        color: #333;
-    }
-
-    .btn-ghost:hover {
-        background: #ddd;
-    }
-
-    .options-row {
+    #contest-wheel-app .options-row {
         display: flex;
         flex-wrap: wrap;
         gap: 14px;
         align-items: center;
         margin-top: 6px;
         font-size: 13px;
+        color: var(--text);
     }
 
-    .options-row input[type="checkbox"] {
-        margin-right: 5px;
-    }
-
-    .spin-area {
+    #contest-wheel-app .spin-area {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 8px;
     }
 
-    canvas {
-        background: #ffffff;
+    #contest-wheel-app canvas {
+        background: var(--canvas-bg);
         border-radius: 50%;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.12);
-        width: 100%;          /* fill the panel width */
-        max-width: 420px;      /* don’t get bigger than your logical size */
-        height: auto;          /* let height follow width */
-        aspect-ratio: 1 / 1;   /* keep it perfectly square */
+        box-shadow: 0 4px 18px rgba(0,0,0,0.45);
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        border: 1px solid rgba(255,255,255,0.06);
+        display: block;
     }
 
-    .spin-button {
+    #contest-wheel-app .spin-button {
         margin-top: 10px;
         font-size: 16px;
         padding: 10px 24px;
     }
 
-    .spin-button[disabled] {
+    #contest-wheel-app .spin-button[disabled] {
         opacity: 0.6;
         cursor: not-allowed;
     }
 
-    .winner-display {
+    #contest-wheel-app .winner-display {
         margin-top: 12px;
         text-align: center;
         font-size: 18px;
         font-weight: 700;
         min-height: 24px;
+        color: var(--text);
     }
 
-    .winner-display span {
+    #contest-wheel-app .winner-display span {
         padding: 4px 10px;
         border-radius: 999px;
-        background: rgba(34,139,34,0.08);
-        border: 1px solid rgba(34,139,34,0.3);
+        background: rgba(34,139,34,0.15);
+        border: 1px solid rgba(34,139,34,0.35);
     }
 
-    .history {
+    #contest-wheel-app .history {
         margin-top: 16px;
+        margin-left: auto;
+        margin-right: auto;
         width: 100%;
         max-width: 420px;
     }
 
-    .history-title {
+    #contest-wheel-app .history-title {
         font-size: 14px;
         font-weight: 700;
         margin-bottom: 4px;
+        color: var(--text);
+        text-align: center;
     }
 
-    .history-list {
+    #contest-wheel-app .history-list {
         border-radius: 8px;
-        border: 1px solid #ddd;
-        background: #fff;
+        border: 1px solid var(--border);
+        background: var(--panel-2);
         max-height: 170px;
         overflow-y: auto;
         padding: 6px 10px;
         font-size: 14px;
         font-weight: 600;
+        color: var(--text);
     }
 
-    .history-item {
+    #contest-wheel-app .history-item {
         padding: 3px 0;
-        border-bottom: 1px dashed #eee;
+        border-bottom: 1px dashed var(--border);
         display: flex;
         justify-content: space-between;
         gap: 10px;
     }
+    #contest-wheel-app .history-item:last-child { border-bottom: none; }
 
-    .history-item:last-child {
-        border-bottom: none;
-    }
+    #contest-wheel-app .history-index,
+    #contest-wheel-app .history-time { color: var(--muted); }
 
-    .history-index {
-        color: #777;
-        min-width: 22px;
-    }
-
-    .history-name {
-        flex: 1;
-    }
-
-    .history-time {
-        color: #000000;
+    #contest-wheel-app .status-line {
         font-size: 12px;
-        font-weight: 600;
-    }
-
-    .status-line {
-        font-size: 12px;
-        color: #999;
+        color: var(--muted);
         margin-top: 4px;
         text-align: center;
     }
 
-    /* Show title / prize above wheel */
-    .show-info {
-        text-align: center;
-        margin-bottom: 8px;
-    }
+    #contest-wheel-app .show-info { text-align: center; margin-bottom: 8px; }
+    #contest-wheel-app .show-title-display { font-size: 20px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
+    #contest-wheel-app .prize-display { font-size: 14px; color: var(--muted); }
 
-    .show-title-display {
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 2px;
-    }
-
-    .prize-display {
-        font-size: 14px;
-        color: #333;
-    }
-
-    /* Winner modal */
-    .winner-modal-overlay {
+    #contest-wheel-app .winner-modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.6);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -308,52 +391,58 @@
         z-index: 9999;
     }
 
-    .winner-modal-overlay.active {
+    #contest-wheel-app .winner-modal-overlay.active {
         opacity: 1;
         pointer-events: auto;
     }
 
-    .winner-modal {
-        background: #ffffff;
+    #contest-wheel-app .winner-modal {
+        background: var(--panel);
         border-radius: 14px;
         padding: 20px 24px;
         max-width: 320px;
         width: 90%;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.55);
         text-align: center;
+        border: 1px solid rgba(255,255,255,0.06);
+        color: var(--text);
     }
 
-    .winner-modal-title {
-        font-size: 18px;
-        font-weight: 700;
-        margin-bottom: 10px;
+    #contest-wheel-app textarea::placeholder,
+    #contest-wheel-app input::placeholder {
+        color: rgba(232,234,240,0.55);
     }
 
-    .winner-modal-body {
-        font-size: 16px;
-        margin-bottom: 16px;
-    }
-
-    .winner-modal-body span {
-        font-weight: 700;
-    }
-
-    .winner-modal-close {
-        width: 100%;
-        justify-content: center;
+    #contest-wheel-app textarea:focus,
+    #contest-wheel-app input[type="text"]:focus,
+    #contest-wheel-app select:focus {
+        outline: none;
+        border-color: rgba(0,153,255,0.65);
+        box-shadow: 0 0 0 3px rgba(0,153,255,0.18);
     }
 
     @media (max-width: 800px) {
-        body {
-            padding: 16px;
-        }
+        #contest-wheel-app { padding: 16px; }
     }
 </style>
-</head>
-<body>
-    <button class="back-button" onclick="window.location.href='https://www.xodiamediagroup.com/tools'">⬅</button>
 
-<h1>Contest Wheel</h1>
+</head>
+<body style="margin:0; padding:0; background: transparent;">
+
+<!-- Navigation Dropdown -->
+<div class="nav-dropdown" id="navDropdown">
+  <button class="nav-toggle" id="navToggle">
+   Menu
+  </button>
+  <div class="nav-menu">
+    <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+    <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+    <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+  </div>
+ </div>
+
+<div id="contest-wheel-app">
+    <h1>Contest Wheel</h1>
 <div class="layout">
 
     <!-- Wheel + winner panel (TOP) -->
@@ -539,6 +628,42 @@ function clearAll() {
 /* -----------------------------------------------------------
    DRAWING THE WHEEL
 ----------------------------------------------------------- */
+function hslToRgb(h, s, l) {
+    // h: 0-360, s/l: 0-100
+    s /= 100;
+    l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const hp = (h % 360) / 60;
+    const x = c * (1 - Math.abs((hp % 2) - 1));
+    let r1 = 0, g1 = 0, b1 = 0;
+
+    if (0 <= hp && hp < 1) { r1 = c; g1 = x; b1 = 0; }
+    else if (1 <= hp && hp < 2) { r1 = x; g1 = c; b1 = 0; }
+    else if (2 <= hp && hp < 3) { r1 = 0; g1 = c; b1 = x; }
+    else if (3 <= hp && hp < 4) { r1 = 0; g1 = x; b1 = c; }
+    else if (4 <= hp && hp < 5) { r1 = x; g1 = 0; b1 = c; }
+    else { r1 = c; g1 = 0; b1 = x; }
+
+    const m = l - c / 2;
+    return [r1 + m, g1 + m, b1 + m]; // 0-1
+}
+
+function relativeLuminance(rgb01) {
+    // rgb in 0-1
+    const lin = rgb01.map(v => {
+        return (v <= 0.03928) ? (v / 12.92) : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+}
+
+function getContrastingTextColorFromHue(hue) {
+    // Match the segment fill: hsl(hue, 70%, 60%)
+    const rgb = hslToRgb(hue, 70, 60);
+    const lum = relativeLuminance(rgb);
+    // If segment is bright, use dark text; otherwise light text.
+    return lum > 0.45 ? "#0b0c0f" : "#e8eaf0";
+}
+
 function drawWheel() {
     const size = logicalSize;
     const centerX = size / 2;
@@ -553,13 +678,13 @@ function drawWheel() {
         ctx.translate(centerX, centerY);
         ctx.beginPath();
         ctx.arc(0, 0, radius, 0, Math.PI * 2);
-        ctx.fillStyle = "#f0f0f0";
+        ctx.fillStyle = "#12141a";
         ctx.fill();
-        ctx.strokeStyle = "#ccc";
+        ctx.strokeStyle = "#2a2f3a";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = "#999";
+        ctx.fillStyle = "#a6adbb";
         ctx.font = "16px Rajdhani";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -592,7 +717,7 @@ function drawWheel() {
         const hue = (i / entries.length) * 360;
         ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
         ctx.fill();
-        ctx.strokeStyle = "#ffffff";
+        ctx.strokeStyle = "#000000";
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
@@ -602,7 +727,7 @@ function drawWheel() {
         ctx.rotate(midAngle);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = "#222";
+        ctx.fillStyle = "#000000";
         ctx.font = "bold 16px Rajdhani";
 
         // Text closer to center so it's not on the edge
@@ -620,7 +745,7 @@ function drawWheel() {
     ctx.arc(0, 0, radius * 0.25, 0, Math.PI * 2);
     ctx.fillStyle = "#000000";
     ctx.fill();
-    ctx.strokeStyle = "#ccc";
+    ctx.strokeStyle = "#2a2f3a";
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -862,11 +987,30 @@ window.addEventListener("keydown", (e) => {
 updateShowInfo();
 drawWheel();
 </script>
-</body>
-</html>
 
+</div>
+<script>
+/* ======= NAV DROPDOWN (from events_menu_v7.html) ======= */
+const navDropdown = document.getElementById('navDropdown');
+const navToggle = document.getElementById('navToggle');
 
+navToggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    navDropdown.classList.toggle('active');
+});
 
+document.addEventListener('click', function (e) {
+    if (!navDropdown.contains(e.target)) {
+        navDropdown.classList.remove('active');
+    }
+});
 
+const navLinks = document.querySelectorAll('.nav-menu a');
+navLinks.forEach(link => {
+    link.addEventListener('click', function () {
+        navDropdown.classList.remove('active');
+    });
+});
+</script>
 
-
+
