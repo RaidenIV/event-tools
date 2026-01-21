@@ -675,6 +675,34 @@ body.splash-active {
   }
 }
 
+
+
+/* Short desktop screens (e.g., 1366x768): prevent logo/tagline from being clipped */
+@media (max-height: 800px) {
+  #homepage-container{
+    padding: 1.5rem 5%;
+    overflow-y: auto;          /* allow scroll instead of clipping */
+    justify-content: flex-start;
+  }
+
+  .main-logo-container{
+    margin-bottom: 2rem;       /* was larger on tall screens */
+  }
+
+  .main-logo{
+    width: 200px;              /* reduce slightly to fit 768px height */
+  }
+
+  .tagline{
+    margin-top: 1rem;
+    font-size: 1.0rem;
+  }
+
+  .social-container{
+    margin-top: 1.5rem;
+  }
+}
+
 </style>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -757,7 +785,7 @@ body.splash-active {
  <!-- Navigation Cards -->
  <div class="nav-container">
   <!-- Upcoming Events Card -->
-  <a class="nav-card" href="/events">
+  <a class="nav-card" href="/upcoming-events">
    <div class="nav-card-bg">
    </div>
    <div class="nav-card-content">
