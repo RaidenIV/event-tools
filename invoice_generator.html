@@ -4,34 +4,138 @@
     <meta charset="UTF-8">
     <title>Invoice Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
-        h1 { font-family: 'Rajdhani', sans-serif; text-align: center; }
-
-        /* BACK BUTTON (added) */
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: #228B22;
-            color: white;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            z-index: 9999;
-            width: auto !important;
-            max-width: none !important;
-            font-family: 'Arial', sans-serif;
+    
+    <!-- Theme bootstrap: default DARK, persist in localStorage -->
+    <script>
+    (function () {
+        try {
+            var saved = localStorage.getItem('xmg_theme');
+            var theme = saved || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'dark');
         }
-        .back-button:hover {
-            background: #1e7a1e;
+    })();
+</script>
+<style>
+        :root {
+            --accent: #0099ff;
+            --top-ui-height: 48px;
         }
 
-        .container { 
+        /* ---------- GLOBAL DARK MODE (NO TOGGLE) ---------- */
+        html, body { background: #0b0b0b; color: #ffffff; font-family: 'Rajdhani', sans-serif; margin: 0; }
+
+        body { font-family: 'Rajdhani', sans-serif; margin: 20px; text-align: center; background: #0b0b0b; color: #ffffff; }
+        h1 { font-family: 'Rajdhani', sans-serif; text-align: center; color: #ffffff; }
+
+        
+
+        /* ======= MENU NAV (from events_menu_v7.html) ======= */
+    .nav-dropdown {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        z-index: 10000;
+    }
+
+    .nav-toggle {
+        position: relative;
+        z-index: 10002;
+        pointer-events: auto;
+        background: rgba(26, 26, 26, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        height: var(--top-ui-height);
+        padding: 0 16px;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    html[data-theme="light"] .nav-toggle {
+        background: rgba(245, 245, 245, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        color: rgba(0,0,0,0.88);
+    }
+
+    .nav-toggle:hover {
+        background: rgba(36, 36, 36, 0.9);
+        border-color: var(--accent);
+    }
+
+    html[data-theme="light"] .nav-toggle:hover {
+        background: rgba(235, 235, 235, 0.95);
+        border-color: var(--accent);
+    }
+    .nav-menu {
+        position: absolute;
+        top: 80px; /* try 68–80px */
+        left: 0;
+        background: rgba(26, 26, 26, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 8px;
+        min-width: 180px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+
+    html[data-theme="light"] .nav-menu {
+        background: rgba(245, 245, 245, 0.96);
+        border: 1px solid rgba(0, 0, 0, 0.16);
+    }
+
+    .nav-dropdown.active .nav-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .nav-menu a,
+    .nav-menu button.nav-item-btn {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+
+    html[data-theme="light"] .nav-menu a,
+    html[data-theme="light"] .nav-menu button.nav-item-btn {
+        color: rgba(0,0,0,0.75);
+    }
+
+    .nav-menu a:hover,
+    .nav-menu button.nav-item-btn:hover {
+        background: rgba(0, 153, 255, 0.12);
+        color: var(--accent);
+    }
+
+    
+.container { 
             display: flex; 
             justify-content: center; 
             align-items: flex-start; 
@@ -41,40 +145,51 @@
             flex-wrap: wrap; 
         }
         .form-container { 
-            max-width: 600px; 
-            font-family: 'Rajdhani', sans-serif; 
-            text-align: left; 
-            flex: 1; 
-            min-width: 300px; 
+            max-width: 600px;
+            font-family: 'Rajdhani', sans-serif;
+            text-align: left;
+            flex: 1;
+            min-width: 300px;
             font-weight: bold;
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 18px;
         }
         label { display: block; margin-top: 10px; }
         input, textarea { 
-            width: 100%; 
-            padding: 8px; 
-            margin-top: 5px; 
-            box-sizing: border-box; 
-            font-family: 'Rajdhani', sans-serif; 
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
             font-weight: bold;
+            background: #0f0f0f;
+            color: #ffffff;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
         }
-        button { 
-            margin-top: 20px; 
-            padding: 10px; 
-            background: #007bff; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            font-family: 'Rajdhani', sans-serif; 
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background: #0099ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            border-radius: 8px;
         }
         .invoice-preview { 
-            margin-top: 0; 
-            padding: 20px; 
-            border: 1px solid #ddd; 
-            max-width: 600px; 
-            background: white; 
-            flex: 1; 
-            min-width: 300px; 
-            text-align: left; 
+            margin-top: 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            max-width: 600px;
+            background: white;
+            color: #000000;
+            flex: 1;
+            min-width: 300px;
+            text-align: left;
         }
         .invoice-preview * { box-sizing: border-box; }
         .header { 
@@ -152,7 +267,17 @@
 
         @media screen and (max-width: 768px) {
             .container { flex-direction: column; align-items: center; }
-            .form-container, .invoice-preview { max-width: 100%; }
+            .form-container, .invoice-preview { 
+            margin-top: 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            max-width: 600px;
+            background: white;
+            color: #000000;
+            flex: 1;
+            min-width: 300px;
+            text-align: left;
+        }
             .info { flex-direction: column; }
             .left, .right { 
                 max-width: 100%; 
@@ -166,22 +291,40 @@
         }
 
         @media print {
+            .nav-dropdown { display: none; }
+
             h1 { display: none; }
             .form-container, button { display: none; }
             .invoice-preview { 
-                border: none; 
-                margin: 0; 
-                padding: 0; 
-                max-width: 100%; 
-            }
+            margin-top: 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            max-width: 600px;
+            background: white;
+            color: #000000;
+            flex: 1;
+            min-width: 300px;
+            text-align: left;
+        }
             .container { display: block; }
             .back-button { display: none; }
         }
     </style>
 </head>
 <body>
-    <!-- BACK TOOLS BUTTON (added) -->
-    <button class="back-button" onclick="window.location.href='https://www.xodiamediagroup.com/tools'">⬅ Back to Tools</button>
+
+    <!-- Navigation Dropdown -->
+<div class="nav-dropdown" id="navDropdown">
+  <button class="nav-toggle" id="navToggle">
+   Menu
+  </button>
+  <div class="nav-menu">
+    <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+    <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+    <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+    <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
+  </div>
+ </div>
 
     <h1>Invoice Generator</h1>
     <div class="container">
@@ -217,7 +360,32 @@ Venmo: @raidenlabs (or scan QR code)</textarea>
     </div>
 
     <script>
-        function formatDate(dateStr) {
+        
+window.addEventListener('DOMContentLoaded', function () {
+    const navDropdown = document.getElementById('navDropdown');
+    const navToggle = document.getElementById('navToggle');
+    if (!navDropdown || !navToggle) return;
+
+    navToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        navDropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!navDropdown.contains(e.target)) {
+            navDropdown.classList.remove('active');
+        }
+    });
+
+    const navLinks = document.querySelectorAll('.nav-menu a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            navDropdown.classList.remove('active');
+        });
+    });
+});
+
+function formatDate(dateStr) {
             if (!dateStr) return '';
             const date = new Date(dateStr);
             const options = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -333,6 +501,10 @@ Venmo: @raidenlabs (or scan QR code)</textarea>
         // Auto-generate preview on load
         generateInvoice();
     </script>
+
+    <script>
+        // Menu toggle (no theme toggle)
+        </script>
+
 </body>
 </html>
-
