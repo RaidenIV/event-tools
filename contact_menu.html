@@ -27,6 +27,74 @@
     --light: #ffffff;
 }
 
+
+/* Navigation Dropdown */
+.nav-dropdown {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.nav-toggle {
+    background: rgba(26, 26, 26, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-toggle:hover {
+    background: rgba(36, 36, 36, 0.9);
+    border-color: var(--primary);
+}
+
+.nav-menu {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 8px;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-dropdown.active .nav-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.nav-menu a {
+    display: block;
+    padding: 12px 16px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-menu a:hover {
+    background: rgba(0, 153, 255, 0.1);
+    color: var(--primary);
+}
+
 #contact-container {
     position: fixed;
     top: 0;
@@ -231,10 +299,17 @@
 
 .form-arrow {
     flex-shrink: 0;
-    font-size: 2.5rem;
-    font-weight: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: rgba(255, 255, 255, 0.3);
     transition: all 0.4s ease;
+}
+
+.form-arrow-icon {
+    width: 28px;
+    height: 28px;
+    display: block;
 }
 
 .form-card:hover .form-arrow {
@@ -263,36 +338,10 @@
     transform: translateX(100%);
 }
 
-/* Back Button */
-.back-button {
-    position: absolute;
-    top: 2rem;
-    left: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.8rem 1.5rem;
-    background: rgba(26, 26, 26, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: var(--light);
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    animation: fadeIn 1s ease forwards;
-}
-
-.back-button:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    transform: translateX(-5px);
-}
 
 /* Social Media Icons */
-.social-container {
+
+    .social-container {
     margin-top: 1rem;
     display: flex;
     gap: 2rem;
@@ -314,6 +363,44 @@
 }
 
 /* Responsive */
+
+/* Short desktop screens (e.g., 1366x768) */
+@media (max-height: 800px) {
+    #contact-container {
+        padding: 2rem 5%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        justify-content: flex-start;
+    }
+
+    .logo-container {
+        margin-bottom: 1.75rem;
+    }
+
+    .logo {
+        width: 160px;
+    }
+
+    .page-title {
+        font-size: 2.8rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .forms-container {
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-card {
+        height: 70px;
+    }
+
+    .social-container {
+        margin-top: 0.75rem;
+    }
+}
+
+
 @media (max-width: 768px) {
     #contact-container {
         padding: 1.5rem 4%;
@@ -360,8 +447,9 @@
         margin-top: 0.15rem;
     }
 
-    .form-arrow {
-        font-size: 1.5rem;
+    .form-arrow-icon {
+        width: 20px;
+        height: 20px;
     }
 
     .social-container {
@@ -373,13 +461,6 @@
         width: 28px;
         height: 28px;
     }
-
-    .back-button {
-        top: 1rem;
-        left: 1rem;
-        font-size: 0.85rem;
-        padding: 0.5rem 0.9rem;
-    }
 }
 </style>
 
@@ -388,13 +469,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <div id="contact-container">
-    <!-- Back Button -->
-    <a href="/" class="back-button">
-        <span>←</span>
-        <span>BACK</span>
-    </a>
 
-    <!-- Logo -->
+<!-- Navigation Dropdown -->
+<div class="nav-dropdown" id="navDropdown">
+  <button class="nav-toggle" id="navToggle">
+   Menu
+  </button>
+  <div class="nav-menu">
+   <a href="/">Home</a>
+   <a href="/upcoming-events">Upcoming Events</a>
+   <a href="/tools">Tools</a>
+  </div>
+ </div>
+
+
+<!-- Logo -->
     <div class="logo-container">
         <div class="logo">
             <!-- PASTE YOUR BASE64 LOGO HERE -->
@@ -417,7 +506,11 @@
                     <h3 class="form-title">Updates & Promo</h3>
                     <p class="form-description">Stay updated with our latest events and promotions</p>
                 </div>
-                <div class="form-arrow">→</div>
+                <div class="form-arrow">
+    <svg class="form-arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    </svg>
+</div>
             </div>
             <div class="form-card-shine"></div>
         </a>
@@ -441,7 +534,11 @@
                     <h3 class="form-title">DJs</h3>
                     <p class="form-description">Apply to perform at our events</p>
                 </div>
-                <div class="form-arrow">→</div>
+                <div class="form-arrow">
+    <svg class="form-arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    </svg>
+</div>
             </div>
             <div class="form-card-shine"></div>
         </a>
@@ -463,7 +560,11 @@
                     <h3 class="form-title">Vendors</h3>
                     <p class="form-description">Become a vendor at our events</p>
                 </div>
-                <div class="form-arrow">→</div>
+                <div class="form-arrow">
+    <svg class="form-arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    </svg>
+</div>
             </div>
             <div class="form-card-shine"></div>
         </a>
@@ -481,7 +582,11 @@
                     <h3 class="form-title">Sponsors</h3>
                     <p class="form-description">Partner with us for sponsorship opportunities</p>
                 </div>
-                <div class="form-arrow">→</div>
+                <div class="form-arrow">
+    <svg class="form-arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    </svg>
+</div>
             </div>
             <div class="form-card-shine"></div>
         </a>
@@ -500,7 +605,11 @@
                     <h3 class="form-title">Weddings/Corporate</h3>
                     <p class="form-description">Book us for your private events</p>
                 </div>
-                <div class="form-arrow">→</div>
+                <div class="form-arrow">
+    <svg class="form-arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    </svg>
+</div>
             </div>
             <div class="form-card-shine"></div>
         </a>
@@ -519,7 +628,11 @@
                     <h3 class="form-title">General Inquiry</h3>
                     <p class="form-description">Get in touch for any other questions</p>
                 </div>
-                <div class="form-arrow">→</div>
+                <div class="form-arrow">
+    <svg class="form-arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    </svg>
+</div>
             </div>
             <div class="form-card-shine"></div>
         </a>
@@ -542,3 +655,29 @@
         </a>
     
 </div>
+
+<script>
+// Navigation dropdown toggle
+const navDropdown = document.getElementById('navDropdown');
+const navToggle = document.getElementById('navToggle');
+
+navToggle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    navDropdown.classList.toggle('active');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!navDropdown.contains(e.target)) {
+        navDropdown.classList.remove('active');
+    }
+});
+
+// Close dropdown when clicking a link
+const navLinks = document.querySelectorAll('.nav-menu a');
+navLinks.forEach(link => {
+    link.addEventListener('click', function() {
+        navDropdown.classList.remove('active');
+    });
+});
+</script>
