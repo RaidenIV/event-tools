@@ -383,6 +383,42 @@ body {
     transform: translateY(-3px);
 }
 
+/* Short desktop screens (e.g., 1366x768) */
+@media (max-height: 800px) {
+    /* Allow vertical scroll if content exceeds viewport height */
+    #homepage-container {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        padding: 14px 24px 26px; /* reduce vertical padding */
+    }
+
+    /* Slightly tighten top branding spacing */
+    .page-logo {
+        margin: 6px 0 6px 0;
+    }
+
+    .tagline {
+        font-size: 56px; /* was 72px */
+        margin: 0 0 8px 0;
+    }
+
+    .subtitle {
+        margin: 0 0 20px 0;
+        font-size: 16px; /* was 18px */
+    }
+
+    /* Tighten grid spacing so header stays visible */
+    .events-grid {
+        gap: 22px;       /* was 30px */
+        margin-bottom: 22px; /* was 30px */
+    }
+
+    .social-container {
+        gap: 1.5rem;     /* was 2rem */
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     /* Mobile scrolling: allow the full-page container to scroll */
