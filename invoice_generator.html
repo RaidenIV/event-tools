@@ -51,6 +51,7 @@
         color: #ffffff;
         font-size: 16px;
         font-weight: 600;
+        font-family: 'Rajdhani', sans-serif;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -115,6 +116,7 @@
         text-decoration: none;
         font-size: 15px;
         font-weight: 500;
+        font-family: 'Rajdhani', sans-serif;
         border-radius: 8px;
         transition: all 0.3s ease;
         background: transparent;
@@ -136,27 +138,52 @@
 
     
 .container { 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            gap: 40px; 
-            flex-wrap: wrap; 
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            align-items: stretch;
+            min-height: calc(100vh - 140px);
         }
         .form-container { 
-            max-width: 600px;
             font-family: 'Rajdhani', sans-serif;
             text-align: left;
-            flex: 1;
-            min-width: 300px;
             font-weight: bold;
             background: #111;
             border: 1px solid #2a2a2a;
             border-radius: 10px;
             padding: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 6px;
+        }
+        .form-container-right { 
+            font-family: 'Rajdhani', sans-serif;
+            text-align: left;
+            font-weight: bold;
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .form-container-right form {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 6px;
         }
         label { display: block; margin-top: 10px; }
+        label:first-child { margin-top: 0; }
         input, textarea { 
             width: 100%;
             padding: 8px;
@@ -169,9 +196,29 @@
             border: 1px solid #2a2a2a;
             border-radius: 6px;
         }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        #notes {
+            height: 80px;
+            flex-grow: 0;
+        }
+        #terms {
+            flex-grow: 0;
+            height: 120px;
+        }
+        label:has(textarea) {
+            display: flex;
+            flex-direction: column;
+        }
+        label:has(#notes),
+        label:has(#terms) {
+            flex-grow: 0;
+        }
         button {
-            margin-top: 20px;
-            padding: 10px;
+            margin-top: auto;
+            padding: 12px;
             background: #0099ff;
             color: white;
             border: none;
@@ -179,17 +226,26 @@
             font-family: 'Rajdhani', sans-serif;
             font-weight: 700;
             border-radius: 8px;
+            flex-shrink: 0;
         }
         .invoice-preview { 
             margin-top: 0;
             padding: 20px;
             border: 1px solid #ddd;
-            max-width: 600px;
             background: white;
             color: #000000;
-            flex: 1;
-            min-width: 300px;
             text-align: left;
+            overflow: hidden;
+            height: calc(100vh - 140px);
+            min-height: 800px;
+            position: relative;
+                    font-family: Arial, sans-serif;
+        }
+        .invoice-preview-wrapper {
+            transform-origin: top left;
+            width: 8.5in;
+            min-height: 11in;
+            background: white;
         }
         .invoice-preview * { box-sizing: border-box; }
         .header { 
@@ -239,7 +295,11 @@
         .totals { text-align: right; font-size: 12px; }
         .totals div { margin-bottom: 5px; }
         .totals strong { font-weight: bold; }
-        .notes, .terms { margin-bottom: 20px; font-size: 12px; }
+        .notes, .terms { 
+            margin-bottom: 20px; 
+            font-size: 12px; 
+            word-wrap: break-word;
+        }
         .notes strong, .terms strong { display: block; margin-bottom: 5px; }
         .terms { white-space: pre-line; }
 
@@ -265,49 +325,44 @@
             font-weight: bold;
         }
 
-        @media screen and (max-width: 768px) {
-            .container { flex-direction: column; align-items: center; }
-            .form-container, .invoice-preview { 
-            margin-top: 0;
-            padding: 20px;
-            border: 1px solid #ddd;
-            max-width: 600px;
-            background: white;
-            color: #000000;
-            flex: 1;
-            min-width: 300px;
-            text-align: left;
-        }
-            .info { flex-direction: column; }
-            .left, .right { 
-                max-width: 100%; 
-                text-align: left; 
-                margin-bottom: 10px; 
-            }
-            .right { text-align: left; }
-            .payment-qr-container {
-                justify-content: flex-start;
+        @media screen and (max-width: 1200px) {
+            .container { 
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
         }
 
         @media print {
+            html { background: #ffffff !important; }
+h1 { display: none; }
             .nav-dropdown { display: none; }
+            .form-container, .form-container-right, button { display: none; }
 
-            h1 { display: none; }
-            .form-container, button { display: none; }
+            body { 
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: Arial, sans-serif !important;
+            }
+
             .invoice-preview { 
-            margin-top: 0;
-            padding: 20px;
-            border: 1px solid #ddd;
-            max-width: 600px;
-            background: white;
-            color: #000000;
-            flex: 1;
-            min-width: 300px;
-            text-align: left;
-        }
+                border: none; 
+                margin: 0; 
+                padding: 0; 
+                max-width: 100%;
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: Arial, sans-serif !important;
+            }
+
+            .invoice-preview-wrapper {
+                transform: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                background: #ffffff !important;
+            }
+
             .container { display: block; }
-            .back-button { display: none; }
         }
     </style>
 </head>
@@ -329,7 +384,7 @@
     <h1>Invoice Generator</h1>
     <div class="container">
         <div class="form-container">
-            <form id="invoiceForm">
+            <form id="invoiceFormLeft">
                 <label>Invoice Number: <input type="text" id="invoice_number" value="INV-00XXX"></label>
                 <label>Bill To: <input type="text" id="bill_to" value="Name/Organization"></label>
                 <label>Date: <input type="date" id="date" value="Date"></label>
@@ -338,6 +393,10 @@
                 <label>Balance Due: <input type="text" id="balance_due" value=""></label>
                 <label>Item: <input type="text" id="item" value=""></label>
                 <label>Quantity: <input type="number" id="quantity" value="1"></label>
+            </form>
+        </div>
+        <div class="form-container-right">
+            <form id="invoiceFormRight">
                 <label>Rate: <input type="text" id="rate" value=""></label>
                 <label>Amount: <input type="text" id="amount" value=""></label>
                 <label>Subtotal: <input type="text" id="subtotal" value=""></label>
@@ -476,7 +535,28 @@ function formatDate(dateStr) {
                     </div>
                 </div>
             `;
-            document.getElementById('invoicePreview').innerHTML = html;
+            const previewEl = document.getElementById('invoicePreview');
+            previewEl.innerHTML = `<div class="invoice-preview-wrapper">${html}</div>`;
+            
+            // Scale to fit within preview container
+            setTimeout(() => {
+                const wrapper = previewEl.querySelector('.invoice-preview-wrapper');
+                const wrapperHeight = wrapper.offsetHeight;
+                const containerHeight = previewEl.clientHeight - 40; // subtract padding
+                const containerWidth = previewEl.clientWidth - 40;
+                const wrapperWidth = wrapper.offsetWidth;
+                
+                // Calculate scale to fit
+                const scaleY = containerHeight / wrapperHeight;
+                const scaleX = containerWidth / wrapperWidth;
+                const scale = Math.min(scaleY, scaleX, 1); // Don't scale up, only down
+                
+                if (scale < 1) {
+                    wrapper.style.transform = `scale(${scale})`;
+                } else {
+                    wrapper.style.transform = 'scale(1)';
+                }
+            }, 10);
         }
 
         function printInvoice() {
@@ -484,7 +564,7 @@ function formatDate(dateStr) {
         }
         // Add event listeners to all form inputs for real-time updates
         document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('#invoiceForm input, #invoiceForm textarea');
+            const inputs = document.querySelectorAll('#invoiceFormLeft input, #invoiceFormLeft textarea, #invoiceFormRight input, #invoiceFormRight textarea');
             inputs.forEach(input => {
                 input.addEventListener('input', generateInvoice);
                 input.addEventListener('change', generateInvoice);
@@ -492,7 +572,7 @@ function formatDate(dateStr) {
         });
         
         // Also trigger on any input/change event (backup in case DOM isn't fully loaded)
-        const allInputs = document.querySelectorAll('#invoiceForm input, #invoiceForm textarea');
+        const allInputs = document.querySelectorAll('#invoiceFormLeft input, #invoiceFormLeft textarea, #invoiceFormRight input, #invoiceFormRight textarea');
         allInputs.forEach(input => {
             input.addEventListener('input', generateInvoice);
             input.addEventListener('change', generateInvoice);
