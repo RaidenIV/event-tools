@@ -19,39 +19,237 @@
         color: #111;
     }
 
+    .logo-container {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .logo-container img {
+        max-width: 100px;
+        height: auto;
+    }
+
     h1 {
         text-align: center;
-        font-size: 28px;
+        font-size: 36px;
         margin-bottom: 20px;
         font-weight: 700;
     }
 
     .layout {
-        max-width: 1300px;
+        max-width: 1800px;
         margin: auto;
-        display: flex;
-        gap: 20px;
-        align-items: flex-start;
     }
 
-    .panel {
+    .panel-wrapper {
         background: #fafafa;
         padding: 20px;
         border-radius: 12px;
-        overflow: hidden;
         box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-        position: relative;
         transition: box-shadow 120ms ease, outline 120ms ease;
+        position: relative;
     }
 
-    .panel-input {
-        flex: 0 0 35%;
-        max-width: 440px;
+    .panel-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+        align-items: stretch;
+    }
+
+    .panel-col {
+        overflow-y: auto;
+        height: calc(100vh - 250px);  /* Was 200px */
+        min-height: 600px;             /* Was 700px */
+        padding-right: 10px;
+    }
+
+    .panel-col1 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        overflow-y: visible;
+    }
+
+    .panel-col2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        overflow-y: visible;
+    }
+
+    .panel-col1 .sub-col,
+    .panel-col2 .sub-col {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    /* Make specific textareas grow to fill space */
+    .panel-col1 .sub-col:first-child #dayOfShowPricing,
+    .panel-col1 .sub-col:first-child #headlinerGuests {
+        flex: 1;
+        min-height: 150px;
+        resize: none;
+    }
+
+    /* Make all textareas in right sub-column equally share space */
+    .panel-col1 .sub-col:last-child textarea {
+        flex: 1;
+        min-height: 100px;
+        resize: none;
+    }
+
+    .panel-col1 .sub-col:first-child label:has(+ #dayOfShowPricing),
+    .panel-col1 .sub-col:first-child label:has(+ #headlinerGuests) {
+        flex-shrink: 0;
+    }
+
+    .panel-col1 .sub-col:last-child label {
+        flex-shrink: 0;
+    }
+
+    .panel-col1 .sub-col::-webkit-scrollbar,
+    .panel-col2 .sub-col::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .panel-col1 .sub-col::-webkit-scrollbar-track,
+    .panel-col2 .sub-col::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+    }
+
+    .panel-col1 .sub-col::-webkit-scrollbar-thumb,
+    .panel-col2 .sub-col::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+    }
+
+    body.theme-dark .panel-col1 .sub-col::-webkit-scrollbar-track,
+    body.theme-dark .panel-col2 .sub-col::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    body.theme-dark .panel-col1 .sub-col::-webkit-scrollbar-thumb,
+    body.theme-dark .panel-col2 .sub-col::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
     }
 
     .panel-preview {
-        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        overflow-y: visible;
+    }
+
+    .panel-preview .warning {
+        flex-shrink: 0;
+    }
+
+    .panel-preview #preview {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+
+    .panel-preview .actions {
+        margin-top: auto;
+        padding-top: 20px;
+        flex-shrink: 0;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+    }
+
+    .panel-preview .actions button {
+        width: 100%;
+    }
+
+    /* Custom scrollbar styling */
+    .panel-col::-webkit-scrollbar,
+    .panel-preview #preview::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .panel-col::-webkit-scrollbar-track,
+    .panel-preview #preview::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+    }
+
+    .panel-col::-webkit-scrollbar-thumb,
+    .panel-preview #preview::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+    }
+
+    .panel-col::-webkit-scrollbar-thumb:hover,
+    .panel-preview #preview::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    body.theme-dark .panel-col::-webkit-scrollbar-track,
+    body.theme-dark .panel-preview #preview::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    body.theme-dark .panel-col::-webkit-scrollbar-thumb,
+    body.theme-dark .panel-preview #preview::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    body.theme-dark .panel-col::-webkit-scrollbar-thumb:hover,
+    body.theme-dark .panel-preview #preview::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .panel-col1,
+    .panel-col2,
+    .panel-preview {
+        flex: 1;
         min-width: 0;
+    }
+
+    @media (max-width: 1400px) {
+        .panel-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .panel-col {
+            height: auto;
+            min-height: 500px;
+        }
+
+        .panel-col1,
+        .panel-col2 {
+            grid-template-columns: 1fr;
+        }
+
+        .panel-preview {
+            min-height: 600px;
+        }
+
+        .panel-preview .actions {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 1000px) {
+        .panel-col1,
+        .panel-col2 {
+            grid-template-columns: 1fr;
+        }
+
+        .panel-preview .actions {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .panel-preview .actions {
+            grid-template-columns: 1fr;
+        }
     }
 
     label {
@@ -192,18 +390,7 @@
         font-size: 13px;
     }
 
-    @media (max-width: 900px) {
-        .layout {
-            flex-direction: column;
-        }
-        .panel-input,
-        .panel-preview {
-            flex: 1 1 auto;
-            max-width: 100%;
-        }
-    }
-
-    .panel.dragover {
+    .panel-wrapper.dragover {
         outline: 3px dashed rgba(34, 139, 34, 0.55);
         outline-offset: 6px;
         box-shadow: 0 10px 26px rgba(34, 139, 34, 0.18);
@@ -225,7 +412,7 @@
         z-index: 10;
     }
 
-    .panel.dragover .drop-hint {
+    .panel-wrapper.dragover .drop-hint {
         display: flex;
     }
 
@@ -253,7 +440,7 @@
 
     body.theme-dark .dup { color: #ff6b5f; }
 
-    body.theme-dark .panel.dragover {
+    body.theme-dark .panel-wrapper.dragover {
         outline: 3px dashed rgba(34, 139, 34, 0.70);
         box-shadow: 0 14px 34px rgba(34, 139, 34, 0.22);
     }
@@ -267,7 +454,7 @@
 /* === DARK MODE OVERRIDES (HARD) === */
 body.theme-dark { background: #0b0f14 !important; color: #f2f2f2 !important; }
 body.theme-dark * { color-scheme: dark; }
-body.theme-dark .panel,
+body.theme-dark .panel-wrapper,
 body.theme-dark .left,
 body.theme-dark .right,
 body.theme-dark .container,
@@ -724,73 +911,90 @@ body.theme-dark .dj-member-count{
 })();
 </script>
 
+<div class="logo-container">
+    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="XODIA Media Group Logo">
+</div>
 
 <h1>Guest List Generator</h1>
 
 <div class="layout">
-
-    <!-- INPUT PANEL -->
-    <div class="panel panel-input" id="dropLeft">
+    <div class="panel-wrapper" id="dropZone">
         <div class="drop-hint">Drop a CSV/JSON file to import</div>
+        
+        <div class="panel-grid">
+            <!-- COLUMN 1: Show Info & Guest Lists (2 sub-columns) -->
+            <div class="panel-col panel-col1">
+                <!-- Left sub-column: Show info -->
+                <div class="sub-col">
+                    <label>Show Name</label>
+                    <input id="showName" type="text">
 
-        <label>Show Name</label>
-        <input id="showName" type="text">
+                    <label>Headliner</label>
+                    <input id="headliner" type="text">
 
-        <label>Headliner</label>
-        <input id="headliner" type="text">
+                    <label>Direct Support</label>
+                    <input id="directSupport" type="text">
 
-        <label>Direct Support</label>
-        <input id="directSupport" type="text">
+                    <label>Date</label>
+                    <input id="date" type="date">
 
-        <label>Date</label>
-        <input id="date" type="date">
+                    <label>Day of Show Pricing</label>
+                    <textarea id="dayOfShowPricing" placeholder="e.g.&#10;$20 presale&#10;$25 at door"></textarea>
 
-        <label>Day of Show Pricing</label>
-        <textarea id="dayOfShowPricing" placeholder="e.g.&#10;$20 presale&#10;$25 at door"></textarea>
+                    <label>Headliner Guest List</label>
+                    <textarea id="headlinerGuests"></textarea>
+                </div>
 
-        <label>Headliner Guest List</label>
-        <textarea id="headlinerGuests"></textarea>
+                <!-- Right sub-column: All other guest lists -->
+                <div class="sub-col">
+                    <label>Direct Support Guest List</label>
+                    <textarea id="directSupportGuests"></textarea>
 
-        <label>Direct Support Guest List</label>
-        <textarea id="directSupportGuests"></textarea>
+                    <label>XODIA Guests</label>
+                    <textarea id="xodiaGuests"></textarea>
 
-        <label>XODIA Guests</label>
-        <textarea id="xodiaGuests"></textarea>
+                    <label>Free Spots</label>
+                    <textarea id="freeSpots" placeholder="Names for complimentary / free entry (e.g. sponsors, comps, etc.)"></textarea>
 
-        <label>Free Spots</label>
-        <textarea id="freeSpots" placeholder="Names for complimentary / free entry (e.g. sponsors, comps, etc.)"></textarea>
+                    <label>Promo Team</label>
+                    <textarea id="promoTeam"></textarea>
+                </div>
+            </div>
 
-        <label>Promo Team</label>
-        <textarea id="promoTeam"></textarea>
+            <!-- COLUMN 2: DJs and Other Sections (2 sub-columns) -->
+            <div class="panel-col panel-col2">
+                <!-- Left sub-column: DJs -->
+                <div class="sub-col">
+                    <label>How many DJs?</label>
+                    <input id="djCount" type="number" min="1" max="10" value="1">
 
-        <label>How many DJs?</label>
-        <input id="djCount" type="number" min="1" max="10" value="1">
+                    <div id="djContainer"></div>
+                </div>
 
-        <div id="djContainer"></div>
+                <!-- Right sub-column: Other sections -->
+                <div class="sub-col">
+                    <label>How many Other sections?</label>
+                    <input id="otherCount" type="number" min="1" max="10" value="1">
 
-        <label>How many Other sections?</label>
-        <input id="otherCount" type="number" min="1" max="10" value="1">
+                    <div id="otherContainer"></div>
+                </div>
+            </div>
 
-        <div id="otherContainer"></div>
-
-        <div class="actions">
-            <button class="primary" onclick="resetAll()">Reset</button>
-            <button class="primary" onclick="copyPreview()">Copy</button>
-            <button class="primary" onclick="exportCSV()">Export CSV</button>
-            <button class="primary" onclick="importCSV()">Import CSV</button>
-            <button class="primary" onclick="exportPDF()">Export PDF</button>
+            <!-- COLUMN 3: Preview -->
+            <div class="panel-col panel-preview">
+                <div id="pageWarning" class="warning"></div>
+                <div id="preview" class="preview"></div>
+                
+                <div class="actions">
+                    <button class="primary" onclick="resetAll()">Reset</button>
+                    <button class="primary" onclick="copyPreview()">Copy</button>
+                    <button class="primary" onclick="exportCSV()">Export CSV</button>
+                    <button class="primary" onclick="importCSV()">Import CSV</button>
+                    <button class="primary" onclick="exportPDF()">Export PDF</button>
+                </div>
+            </div>
         </div>
-
     </div>
-
-    <!-- PREVIEW PANEL -->
-    <div class="panel panel-preview" id="dropRight">
-        <div class="drop-hint">Drop a CSV/JSON file to import</div>
-
-        <div id="pageWarning" class="warning"></div>
-        <div id="preview" class="preview"></div>
-    </div>
-
 </div>
 
 <script>
@@ -1212,6 +1416,7 @@ directSupport.addEventListener("blur", () => { directSupport.value = getDirectSu
 djCount.addEventListener("input", () => buildDJInputs());
 otherCount.addEventListener("input", () => buildOtherInputs());
 buildDJInputs();
+buildOtherInputs();
 
 function dateFormat(d) {
     if (!d) return "";
@@ -1567,8 +1772,7 @@ window.addEventListener("drop", (e) => {
     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) e.preventDefault();
 });
 
-enablePanelDrop(document.getElementById("dropLeft"));
-enablePanelDrop(document.getElementById("dropRight"));
+enablePanelDrop(document.getElementById("dropZone"));
 
 /* PDF export unchanged except it strips HTML tags for duplicate markers */
 function exportPDF() {
