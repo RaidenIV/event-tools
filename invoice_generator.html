@@ -78,7 +78,7 @@
     }
     .nav-menu {
         position: absolute;
-        top: 80px; /* try 68–80px */
+        top: 60px; /* try 68–80px */
         left: 0;
         background: rgba(26, 26, 26, 0.95);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -236,8 +236,7 @@
             color: #000000;
             text-align: left;
             overflow: hidden;
-            height: calc(100vh - 140px);
-            min-height: 800px;
+            height: calc(100vh - 180px);
             position: relative;
                     font-family: Arial, sans-serif;
         }
@@ -457,7 +456,47 @@ function formatDate(dateStr) {
             return date.toLocaleDateString('en-US', options);
         }
 
-        function generateInvoice() {
+// --------- Preview rendering + anti-flicker batching ---------
+let _previewUpdateRaf = null;
+let _previewScaleRaf = null;
+
+function schedulePreviewScale() {
+    if (_previewScaleRaf) cancelAnimationFrame(_previewScaleRaf);
+    _previewScaleRaf = requestAnimationFrame(() => {
+        _previewScaleRaf = null;
+
+        const previewEl = document.getElementById('invoicePreview');
+        if (!previewEl) return;
+
+        const wrapper = previewEl.querySelector('.invoice-preview-wrapper');
+        if (!wrapper) return;
+
+        // Measure (forces a single layout pass) then apply transform once
+        const wrapperHeight = wrapper.scrollHeight;
+        const wrapperWidth = wrapper.scrollWidth;
+
+        const containerHeight = previewEl.clientHeight - 40; // subtract padding
+        const containerWidth = previewEl.clientWidth - 40;
+
+        const scaleY = containerHeight / wrapperHeight;
+        const scaleX = containerWidth / wrapperWidth;
+        const scale = Math.min(scaleY, scaleX, 1); // don't scale up
+
+        wrapper.style.transform = `scale(${scale})`;
+    });
+}
+
+// Public entry point: batch rapid keystrokes into one render per animation frame
+function generateInvoice() {
+    if (_previewUpdateRaf) cancelAnimationFrame(_previewUpdateRaf);
+    _previewUpdateRaf = requestAnimationFrame(() => {
+        _previewUpdateRaf = null;
+        renderInvoicePreview();
+    });
+}
+
+function renderInvoicePreview() {
+
             const data = {
                 invoice_number: document.getElementById('invoice_number').value,
                 bill_to: document.getElementById('bill_to').value,
@@ -541,29 +580,23 @@ function formatDate(dateStr) {
                     </div>
                 </div>
             `;
-            const previewEl = document.getElementById('invoicePreview');
-            previewEl.innerHTML = `<div class="invoice-preview-wrapper">${html}</div>`;
-            
-            // Scale to fit within preview container
-            setTimeout(() => {
-                const wrapper = previewEl.querySelector('.invoice-preview-wrapper');
-                const wrapperHeight = wrapper.offsetHeight;
-                const containerHeight = previewEl.clientHeight - 40; // subtract padding
-                const containerWidth = previewEl.clientWidth - 40;
-                const wrapperWidth = wrapper.offsetWidth;
-                
-                // Calculate scale to fit
-                const scaleY = containerHeight / wrapperHeight;
-                const scaleX = containerWidth / wrapperWidth;
-                const scale = Math.min(scaleY, scaleX, 1); // Don't scale up, only down
-                
-                if (scale < 1) {
-                    wrapper.style.transform = `scale(${scale})`;
-                } else {
-                    wrapper.style.transform = 'scale(1)';
-                }
-            }, 10);
-        }
+                const previewEl = document.getElementById('invoicePreview');
+
+    // Keep a stable wrapper node to prevent flicker (avoid tearing down/recreating the preview DOM)
+    let wrapper = previewEl.querySelector('.invoice-preview-wrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'invoice-preview-wrapper';
+        previewEl.innerHTML = '';
+        previewEl.appendChild(wrapper);
+    }
+
+    // Update content without replacing the wrapper element itself
+    wrapper.innerHTML = html;
+
+    // Scale to fit within preview container (batched to next paint to avoid layout thrash/flicker)
+    schedulePreviewScale();
+}
 
         function printInvoice() {
             window.print();
@@ -576,13 +609,10 @@ function formatDate(dateStr) {
                 input.addEventListener('change', generateInvoice);
             });
         });
-        
-        // Also trigger on any input/change event (backup in case DOM isn't fully loaded)
-        const allInputs = document.querySelectorAll('#invoiceFormLeft input, #invoiceFormLeft textarea, #invoiceFormRight input, #invoiceFormRight textarea');
-        allInputs.forEach(input => {
-            input.addEventListener('input', generateInvoice);
-            input.addEventListener('change', generateInvoice);
-        });
+
+
+// Re-scale on resize without re-rendering
+window.addEventListener('resize', schedulePreviewScale);
 
         // Auto-generate preview on load
         generateInvoice();
