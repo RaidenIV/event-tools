@@ -364,7 +364,13 @@ h1 { display: none; }
 
             .container { display: block; }
         }
-    </style>
+    
+/* Force date input calendar icon to white */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+</style>
 </head>
 <body>
 
