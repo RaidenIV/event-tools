@@ -261,6 +261,23 @@
     }
 
 
+
+    /* Mobile/time input width hardening: prevents native time control from overflowing the card on some browsers */
+    input[type="time"]{
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    /* Keep picker functionality on WebKit while avoiding intrinsic sizing overflow */
+    input[type="time"]::-webkit-calendar-picker-indicator{
+        cursor: pointer;
+    }
+
+
     input[type="text"]::placeholder {
         color: rgba(255,255,255,0.45);
     }
