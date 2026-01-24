@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Set Time Calculator</title>
+<title>Set Time Generator</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -26,12 +26,19 @@
         --accent: #0099ff;
         --accent2: #00ffff;
         --success: #228B22;
-        --danger: #dc3545;
+        --danger: #d13b3b;
         --radius: 12px;
         --shadow: 0 10px 30px rgba(0,0,0,0.18);
 
+        --line: #2a2a2f;
+        --button-bg: #1b1b20;
+        --button-hover: #22222a;
+
         /* Shared top UI height for menu button */
         --top-ui-height: 48px;
+
+        /* Fixed column card height (prevents growth when DJ count increases) */
+        --col-card-height: 700px;
     }
 
     html[data-theme="light"] {
@@ -49,15 +56,15 @@
     }
 
     html[data-theme="dark"] {
-        --bg: #0b0d10;
-        --text: rgba(255,255,255,0.92);
-        --muted: rgba(255,255,255,0.65);
-        --panel: rgba(18, 20, 24, 0.92);
-        --panel-2: rgba(26, 28, 34, 0.92);
-        --border: rgba(255,255,255,0.16);
-        --border-2: rgba(255,255,255,0.10);
-        --input-bg: rgba(255,255,255,0.06);
-        --input-text: rgba(255,255,255,0.92);
+        --bg: #0b0b0c;
+        --text: #f2f2f4;
+        --muted: #a7a7ad;
+        --panel: #131316;
+        --panel-2: #0f0f12;
+        --border: #2a2a2f;
+        --border-2: #2a2a2f;
+        --input-bg: #0f0f12;
+        --input-text: #f2f2f4;
         --chip: rgba(255,255,255,0.08);
         --chip-text: rgba(255,255,255,0.78);
     }
@@ -183,14 +190,104 @@
         border: 1px solid var(--border);
         box-shadow: var(--shadow);
         width: 100%;
-        max-width: 450px;
+        max-width: 1400px;
     }
+
+    /* 3-COLUMN LAYOUT INSIDE MAIN CARD */
+    .panel-grid{
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+        align-items: stretch;
+        margin-top: 10px;
+    }
+
+    .panel-grid .col{
+        min-width: 0;
+        display: flex;
+    }
+
+    /* Keep headings tight inside columns */
+    .panel-grid h2{
+        margin-top: 0;
+    }
+
+    @media (max-width: 1100px){
+        .panel-grid{
+            grid-template-columns: 1fr;
+        }
+        .col-card{
+            height: auto;
+        }
+        #djNamesContainer.dj-list,
+        #results,
+        .preview-box{
+            overflow: visible;
+        }
+    }
+
 
     h1 {
         text-align: center;
         margin: 10px 0 20px 0;
         letter-spacing: 0.5px;
     }
+
+    /* ---------- PANEL HEADER (title left, logo right) ---------- */
+    .panel-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:16px;
+        margin: 6px 0 18px 0;
+    }
+    .panel-header h1{
+        text-align:left;
+        margin:0;
+    }
+    .panel-logo{
+        height: 44px;
+        width: auto;
+        max-width: 45%;
+        object-fit: contain;
+        flex: 0 0 auto;
+        display:block;
+        pointer-events:none;
+        user-select:none;
+    }
+
+    .panel-titlewrap{
+        display:flex;
+        flex-direction:column;
+        gap: 4px;
+        min-width: 0;
+    }
+    .panel-subtitle{
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--muted);
+        line-height: 1.2;
+    }
+
+    /* Each column gets its own card */
+    .col-card{
+        flex: 1;
+        background: var(--panel-2);
+        border: 1px solid var(--border-2);
+        border-radius: 14px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 8px 22px rgba(0,0,0,0.14);
+        height: var(--col-card-height);
+        min-width: 0;
+        min-height: 0; /* enables child overflow areas */
+    }
+
+    /* Ensure all column card content starts at the same height */
+    .col-card h2{ margin-top: 0; }
+    .col-card .preview-label{ margin-top: 0; }
+
 
     h2 {
         margin: 18px 0 10px 0;
@@ -286,20 +383,55 @@
         -moz-appearance: none;
         appearance: none;
 
+        /* Keep the custom arrow */
         background-image: url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="20" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><polygon points="5,7 15,7 10,12" /></svg>');
         background-repeat: no-repeat;
     }
 
-    /* Preset dropdown option text (expanded list) */
-    #presetSelect option {
-        color: #000000;
+    /* Ensure preset dropdown is DARK in dark theme (incl. opened list) */
+    html[data-theme="dark"] #presetSelect{
+        background-color: var(--input-bg);
+        color: var(--input-text);
+        border-color: var(--border);
+    }
+    html[data-theme="dark"] #presetSelect option{
+        background-color: #0f0f12; /* deterministic dark list background */
+        color: rgba(255,255,255,0.92);
     }
 
-    .dj-list {
+    /* Light theme defaults */
+    html[data-theme="light"] #presetSelect{
+        background-color: var(--input-bg);
+        color: var(--input-text);
+        border-color: var(--border);
+    }
+    html[data-theme="light"] #presetSelect option{
+        background-color: #ffffff;
+        color: #111111;
+    }.dj-list {
         display: flex;
         flex-direction: column;
         gap: 8px;
         margin-top: 10px;
+    }
+
+    /* Prevent card growth: scroll within content areas */
+    #djNamesContainer.dj-list{
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding-right: 4px;
+    }
+
+    #results{
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+    }
+
+    .preview-box{
+        overflow: auto;
+        min-height: 0;
     }
 
     .dj-item {
@@ -310,6 +442,7 @@
         border-radius: 10px;
         border: 1px solid var(--border-2);
         gap: 10px;
+        padding-top: 15px;
     }
 
     .drag-handle {
@@ -377,6 +510,14 @@
         filter: brightness(0.95);
     }
 
+    /* Actions pinned to bottom of column cards */
+    .actions-row{
+        margin-top: auto;     /* pin buttons to bottom of the card */
+        padding-top: 10px;    /* match button-to-button spacing */
+        display: flex;
+        gap: 10px;
+    }
+
     .result-row {
         display: flex;
         flex-direction: column;
@@ -425,7 +566,8 @@
         border: 1px solid var(--border);
         border-radius: 12px;
         padding: 10px;
-        font-size: 16px;
+                flex: 1;
+font-size: 16px;
         font-weight: 800;
         white-space: pre-line;
         min-height: 60px;
@@ -471,50 +613,70 @@
 
 <div class="panel">
 
-    <h1>Set Time Calculator</h1>
-
-    <div class="row">
-        <div style="flex:1;">
-            <label># of DJs?</label>
-            <input id="djCount" type="number" min="1" value="6">
+    <div class="panel-header">
+        <div class="panel-titlewrap">
+            <h1>Set Time Generator</h1>
+            <div class="panel-subtitle">Generates set times for easy editing, copying, and pasting</div>
         </div>
-
-        <div style="flex:1;">
-            <label>Presets</label>
-            <select id="presetSelect">
-                <option value="">None</option>
-                <option value="newstandard">New Standard</option>
-                <option value="legacy">Legacy</option>
-                <option value="latestart">Late Start (9PM)</option>
-            </select>
-        </div>
+        <img class="panel-logo" src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="XODIA Media Group Logo">
     </div>
 
-    <div class="row">
-        <div style="flex:1;">
-            <label>Show Start Time</label>
-            <input id="startTime" type="time" value="20:00" class="time-small">
+        <div class="panel-grid">
+            <div class="col col-1">
+                <div class="col-card">
+                <h2>Show Information</h2>
+        <div class="row">
+            <div style="flex:1;">
+                <label>Number of DJs</label>
+                <input id="djCount" type="number" min="1" value="6">
+            </div>
+
+            <div style="flex:1;">
+                <label>Presets</label>
+                <select id="presetSelect">
+                    <option value="">None</option>
+                    <option value="newstandard">New Standard</option>
+                    <option value="legacy">Legacy</option>
+                    <option value="latestart">Late Start (9PM)</option>
+                </select>
+            </div>
         </div>
-        <div style="flex:1;">
-            <label>Show End Time</label>
-            <input id="endTime" type="time" value="02:00" class="time-small">
+
+        <div class="row">
+            <div style="flex:1;">
+                <label>Show Start Time</label>
+                <input id="startTime" type="time" value="20:00" class="time-small">
+            </div>
+            <div style="flex:1;">
+                <label>Show End Time</label>
+                <input id="endTime" type="time" value="02:00" class="time-small">
+            </div>
         </div>
-    </div>
 
-    <label style="margin-top:12px;">DJ Lineup (drag to reorder)</label>
-    <div id="djNamesContainer" class="dj-list"></div>
+        <label style="margin-top:12px;">DJ Lineup (edit names & drag to reorder)</label>
+        <div id="djNamesContainer" class="dj-list"></div>
+                </div>
+            </div>
 
-    <h2>Edit Schedule</h2>
-    <div id="results"></div>
+            <div class="col col-2">
+                <div class="col-card">
+                <h2>Edit Schedule</h2>
+        <div id="results"></div>
+                </div>
+            </div>
 
-    <div class="preview-label">Schedule Preview</div>
-    <div id="previewBox" class="preview-box">Schedule preview will appear here.</div>
+            <div class="col col-3">
+                <div class="col-card">
+    <h2>Schedule Preview</h2>
+        <div id="previewBox" class="preview-box">Schedule preview will appear here.</div>
 
-    <div style="margin-top:15px; display:flex; gap:10px;">
-        <button id="copyBtnBottom" class="primary">Copy</button>
-        <button id="resetBtn" class="danger">Reset</button>
-    </div>
-
+        <div class="actions-row">
+            <button id="copyBtnBottom" class="primary">Copy</button>
+            <button id="resetBtn" class="danger">Reset</button>
+        </div>
+                </div>
+            </div>
+        </div>
 </div>
 
 <script>
