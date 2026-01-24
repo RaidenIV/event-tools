@@ -490,6 +490,16 @@
         textarea {
             max-width: 100%;
             width: 100%;
+            box-sizing: border-box;
+        }
+        
+        html[data-theme="dark"] input[type="time"] {
+            padding-right: 10px;
+            background-image: none;
+        }
+        
+        html[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator {
+            opacity: 1;
         }
     }
 </style>
