@@ -15,16 +15,17 @@
         --accent2: #00ffff;
         --top-ui-height: 48px;
 
-        /* Dark mode palette (default) */
-        --bg: #0b0c0f;
-        --panel: #12141a;
-        --panel-2: #161a22;
-        --text: #e8eaf0;
-        --muted: #a6adbb;
-        --border: #2a2f3a;
-        --input-bg: #0f1218;
-        --input-text: #e8eaf0;
-        --canvas-bg: #0b0c0f;
+        /* Dark mode palette (matching code_block_gen.html) */
+        --bg: #0b0b0c;
+        --panel: #131316;
+        --panel-2: #1b1b20;
+        --text: #f2f2f4;
+        --muted: #a7a7ad;
+        --border: #2a2a2f;
+        --line: #2a2a2f;
+        --input-bg: #0f0f12;
+        --input-text: #f2f2f4;
+        --canvas-bg: #0b0b0c;
         --shadow: 0 4px 14px rgba(0,0,0,0.45);
     }
 
@@ -142,73 +143,149 @@
         color: var(--text) !important;
         margin: 0 !important;
         padding: 0 !important;
-        min-height: 100vh !important;
+        height: 100vh !important;
         width: 100% !important;
+        overflow: hidden !important;
     }
 
+    @media (max-width: 900px) {
+        html, body {
+            height: auto !important;
+            overflow: auto !important;
+            min-height: 100vh !important;
+        }
+    }
+
+
+    .xmg-app-logo {
+        position: absolute !important;
+        top: 12px;
+        right: 12px;
+        width: 100px;
+        height: auto;
+        z-index: 10;
+        pointer-events: none;
+    }
+    
+    .xmg-app-logo img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
 
     #contest-wheel-app {
         background: var(--bg);
         color: var(--text);
-        padding: 24px;
+        padding: 20px;
         border-radius: 14px;
         border: 1px solid rgba(255,255,255,0.06);
-        max-width: 980px;
-        margin: 0 auto;
+        max-width: 1400px;
+        margin: 20px auto;
         position: relative;
+        max-height: calc(100vh - 40px);
+        overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+        #contest-wheel-app {
+            max-height: none;
+            overflow: visible;
+            margin: 40px auto 0 auto;
+        }
     }
 
     #contest-wheel-app h1 {
-        text-align: center;
-        font-size: 32px;
-        margin: 0 0 10px 0;
+        text-align: left;
+        font-size: 20px;
+        margin: 0 0 6px 0;
         font-weight: 700;
         color: var(--text);
     }
 
     #contest-wheel-app .subtitle {
-        text-align: center;
-        font-size: 14px;
-        margin: 0 0 24px 0;
+        text-align: left;
+        font-size: 13px;
+        margin: 0 0 16px 0;
         color: var(--muted);
+        line-height: 1.4;
     }
 #contest-wheel-app .layout {
         display: flex;
-        flex-direction: column;
-        gap: 20px;
-        align-items: center;
+        flex-direction: row;
+        gap: 16px;
+        align-items: stretch;
+        height: calc(100% - 80px);
+    }
+    
+    #contest-wheel-app .panel {
+        flex: 1;
+        overflow-y: auto;
+    }
+    
+    #contest-wheel-app .panel-input {
+        order: 1;
+    }
+    
+    #contest-wheel-app .panel-wheel {
+        order: 2;
+    }
+    
+    @media (max-width: 900px) {
+        #contest-wheel-app .layout {
+            flex-direction: column;
+            align-items: center;
+            height: auto;
+        }
+        
+        #contest-wheel-app .panel {
+            max-width: 900px;
+            overflow-y: visible;
+        }
+        
+        #contest-wheel-app .panel-input {
+            order: 2;
+        }
+        
+        #contest-wheel-app .panel-wheel {
+            order: 1;
+        }
     }
 
     #contest-wheel-app .panel {
         background: var(--panel);
-        padding: 18px;
-        border-radius: 12px;
+        padding: 16px;
+        border-radius: 14px;
         box-shadow: var(--shadow);
         width: 100%;
-        max-width: 900px;
-        border: 1px solid rgba(255,255,255,0.03);
+        border: 1px solid var(--line);
     }
 
     #contest-wheel-app label {
         display: block;
-        font-weight: 700;
-        font-size: 14px;
-        margin-bottom: 6px;
-        color: var(--text);
+        font-weight: 600;
+        font-size: 12px;
+        margin: 10px 0 6px;
+        color: var(--muted);
     }
 
     #contest-wheel-app textarea {
         width: 100%;
         background: var(--input-bg);
         color: var(--input-text);
-        height: 260px;
-        padding: 8px;
-        border-radius: 8px;
+        height: 280px;
+        padding: 10px;
+        border-radius: 10px;
         border: 1px solid var(--border);
         font-family: 'Rajdhani', monospace;
-        font-size: 16px;
+        font-size: 14px;
         resize: vertical;
-        font-weight: 600;
+        font-weight: 400;
+    }
+
+    @media (max-width: 900px) {
+        #contest-wheel-app textarea {
+            height: 350px;
+        }
     }
 
     #contest-wheel-app input[type="text"],
@@ -216,12 +293,18 @@
         width: 100%;
         background: var(--input-bg);
         color: var(--input-text);
-        padding: 6px 8px;
-        border-radius: 8px;
+        padding: 10px;
+        border-radius: 10px;
         border: 1px solid var(--border);
-        font-size: 16px;
+        font-size: 14px;
         margin-bottom: 8px;
-        font-weight: 600;
+        font-weight: 400;
+    }
+
+    #contest-wheel-app textarea::placeholder,
+    #contest-wheel-app input::placeholder {
+        color: rgba(167,167,173,0.55);
+        font-weight: 400;
     }
 
     #contest-wheel-app .hint {
@@ -240,10 +323,10 @@
     }
 
     #contest-wheel-app button {
-        padding: 8px 14px;
-        font-size: 14px;
+        padding: 10px 12px;
+        font-size: 13px;
         font-weight: 700;
-        border-radius: 8px;
+        border-radius: 10px;
         border: none;
         cursor: pointer;
         transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
@@ -269,7 +352,7 @@
         color: var(--text);
         border: 1px solid var(--border);
     }
-    #contest-wheel-app .btn-ghost:hover { background: #1b2030; }
+    #contest-wheel-app .btn-ghost:hover { background: #22222a; }
 
     #contest-wheel-app .options-row {
         display: flex;
@@ -408,11 +491,6 @@
         color: var(--text);
     }
 
-    #contest-wheel-app textarea::placeholder,
-    #contest-wheel-app input::placeholder {
-        color: rgba(232,234,240,0.55);
-    }
-
     #contest-wheel-app textarea:focus,
     #contest-wheel-app input[type="text"]:focus,
     #contest-wheel-app select:focus {
@@ -443,35 +521,14 @@
  </div>
 
 <div id="contest-wheel-app">
+    <div class="xmg-app-logo">
+        <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Xodia Media Group" />
+    </div>
     <h1>Contest Wheel</h1>
+    <p class="subtitle">Interactive prize wheel for giveaways</p>
 <div class="layout">
 
-    <!-- Wheel + winner panel (TOP) -->
-    <div class="panel panel-wheel">
-        <div class="spin-area">
-
-            <!-- Show title + prize (display above wheel) -->
-            <div class="show-info">
-                <div id="showTitleDisplay" class="show-title-display"></div>
-                <div id="prizeDisplay" class="prize-display"></div>
-            </div>
-
-            <canvas id="wheelCanvas" width="420" height="420"></canvas>
-            <button class="btn-primary spin-button" id="btnSpin">SPIN</button>
-            <div class="status-line" id="statusLine">Start typing names to update the wheel.</div>
-        </div>
-
-        <div class="winner-display" id="winnerDisplay"></div>
-
-        <div class="history">
-            <div class="history-title">Winners History</div>
-            <div class="history-list" id="historyList">
-                <div style="color:#999;font-size:12px;">No spins yet.</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Input / entries panel (BOTTOM) -->
+    <!-- Input / entries panel (LEFT) -->
     <div class="panel panel-input">
 
         <label for="showTitleInput">Show Title</label>
@@ -501,6 +558,31 @@
                     <option value="6000">Slow</option>
                 </select>
             </label>
+        </div>
+    </div>
+
+    <!-- Wheel + winner panel (RIGHT) -->
+    <div class="panel panel-wheel">
+        <div class="spin-area">
+
+            <!-- Show title + prize (display above wheel) -->
+            <div class="show-info">
+                <div id="showTitleDisplay" class="show-title-display"></div>
+                <div id="prizeDisplay" class="prize-display"></div>
+            </div>
+
+            <canvas id="wheelCanvas" width="420" height="420"></canvas>
+            <button class="btn-primary spin-button" id="btnSpin">SPIN</button>
+            <div class="status-line" id="statusLine">Start typing names to update the wheel.</div>
+        </div>
+
+        <div class="winner-display" id="winnerDisplay"></div>
+
+        <div class="history">
+            <div class="history-title">Winners History</div>
+            <div class="history-list" id="historyList">
+                <div style="color:#999;font-size:12px;">No spins yet.</div>
+            </div>
         </div>
     </div>
 
@@ -1013,5 +1095,3 @@ navLinks.forEach(link => {
     });
 });
 </script>
-
-
