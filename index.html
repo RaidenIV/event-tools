@@ -728,6 +728,25 @@
                         </svg>
                     </div>
                 </a>
+
+                <!-- Visualizer -->
+                <a href="javascript:void(0)" onclick="goToTool('visualizer')" class="tool-card">
+                    <div class="tool-icon">
+                        <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 5C7.58172 5 3.73964 7.82107 2 12C3.73964 16.1789 7.58172 19 12 19C16.4183 19 20.2604 16.1789 22 12C20.2604 7.82107 16.4183 5 12 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="tool-content">
+                        <h3 class="tool-title">Visualizer</h3>
+                        <p class="tool-desc">A particle simulation audio visualizer</p>
+                    </div>
+                    <div class="tool-arrow">
+                        <svg fill="none" viewBox="0 0 24 24">
+                            <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
@@ -771,7 +790,8 @@
                 'contest': base + "contest_wheel.html",
                 'ros': base + "ros_generator.html",
                 'notes': base + "notes.html",
-                'code_block': base + "event_code_block.html"
+                'code_block': base + "event_code_block.html",
+                'visualizer': base + "particle_vis.html"
             };
 
             if (routes[tool]) {
