@@ -428,18 +428,43 @@ input[type="date"]::-webkit-calendar-picker-indicator{
         const logoUrl = 'https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/7803d573-dd87-40ed-9570-0bc7c5ed8915/xodia_logo_black.png?format=750w';
 
         // Fetch remote image and convert to a DataURL so jsPDF can embed it reliably.
+        // Handles PNG transparency by drawing to canvas and converting to JPEG
         async function loadImageAsDataURL(url) {
             const res = await fetch(url, { mode: 'cors', cache: 'force-cache' });
             if (!res.ok) throw new Error('Failed to fetch logo: ' + res.status);
 
             const blob = await res.blob();
-            const dataUrl = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
+            
+            // Create an image element
+            const img = new Image();
+            const imgUrl = URL.createObjectURL(blob);
+            
+            return new Promise((resolve, reject) => {
+                img.onload = () => {
+                    // Create canvas to convert PNG to format jsPDF handles better
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Fill with white background (for transparency)
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw image on top
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Convert to JPEG data URL (better compatibility with jsPDF)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                    URL.revokeObjectURL(imgUrl);
+                    resolve(dataUrl);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(imgUrl);
+                    reject(new Error('Failed to load image'));
+                };
+                img.src = imgUrl;
             });
-            return dataUrl;
         }
 
         // Fixed venue/promoter data (customize as needed)
@@ -500,7 +525,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{
             }
 
             if (logoDataUrl) {
-                doc.addImage(logoDataUrl, 'PNG', 85, 5, 40, 15); // Same placement/size as before
+                doc.addImage(logoDataUrl, 'JPEG', 85, 5, 40, 15); // Changed to JPEG format
             }
             // Centered title
             doc.setFont('helvetica', 'bold');
