@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OFFER PDF Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
-    
+
 <!-- Theme bootstrap: default DARK, persist in localStorage -->
 <script>
 (function () {
@@ -362,7 +362,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 </style>
 </head>
 <body>
-    
+
 <!-- Navigation Dropdown -->
 <div class="nav-dropdown" id="navDropdown">
     <button class="nav-toggle" id="navToggle">Menu</button>
@@ -424,47 +424,80 @@ input[type="date"]::-webkit-calendar-picker-indicator{
             return `${month}/${day}/${year}`;
         }
 
-        // Base64 for your logo—replace with your actual encoded PNG
-        const logoUrl = 'https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/7803d573-dd87-40ed-9570-0bc7c5ed8915/xodia_logo_black.png?format=750w';
+        // PDF logo source (requested)
+        const pdfLogoUrl = 'https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/7803d573-dd87-40ed-9570-0bc7c5ed8915/xodia_logo_black.png?format=750w';
 
-        // Fetch remote image and convert to a DataURL so jsPDF can embed it reliably.
-        // Handles PNG transparency by drawing to canvas and converting to JPEG
-        async function loadImageAsDataURL(url) {
+        /*
+          Robust logo embed for jsPDF:
+          - Fetch the remote image
+          - Render it onto an *opaque* canvas (white background) to eliminate alpha-channel issues
+          - Export as PNG data URL and embed as PNG
+
+          This avoids the common "black block" symptom seen when a PDF renderer/jsPDF
+          struggles with PNG transparency / color profiles.
+        */
+        async function loadLogoDataUrlForPdf(url) {
             const res = await fetch(url, { mode: 'cors', cache: 'force-cache' });
             if (!res.ok) throw new Error('Failed to fetch logo: ' + res.status);
 
             const blob = await res.blob();
-            
-            // Create an image element
-            const img = new Image();
-            const imgUrl = URL.createObjectURL(blob);
-            
-            return new Promise((resolve, reject) => {
-                img.onload = () => {
-                    // Create canvas to convert PNG to format jsPDF handles better
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Fill with white background (for transparency)
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    // Draw image on top
-                    ctx.drawImage(img, 0, 0);
-                    
-                    // Convert to JPEG data URL (better compatibility with jsPDF)
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-                    URL.revokeObjectURL(imgUrl);
-                    resolve(dataUrl);
-                };
-                img.onerror = () => {
-                    URL.revokeObjectURL(imgUrl);
-                    reject(new Error('Failed to load image'));
-                };
-                img.src = imgUrl;
-            });
+
+            // Prefer createImageBitmap when available (more reliable decoding than <img> in some browsers)
+            let bitmap = null;
+            if (window.createImageBitmap) {
+                bitmap = await createImageBitmap(blob);
+            }
+
+            const MAX_PX = 900; // prevent excessively large embedded images
+            let srcW, srcH;
+
+            if (bitmap) {
+                srcW = bitmap.width;
+                srcH = bitmap.height;
+            } else {
+                // Fallback path: <img>
+                const img = new Image();
+                const objUrl = URL.createObjectURL(blob);
+                await new Promise((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.onerror = () => reject(new Error('Failed to decode image'));
+                    img.src = objUrl;
+                });
+                srcW = img.naturalWidth || img.width;
+                srcH = img.naturalHeight || img.height;
+
+                // Convert to bitmap-like by drawing from img below
+                bitmap = img;
+                // Clean up object URL after drawing
+                bitmap.__revokeUrl = objUrl;
+            }
+
+            const scale = Math.min(1, MAX_PX / Math.max(srcW, srcH));
+            const outW = Math.max(1, Math.round(srcW * scale));
+            const outH = Math.max(1, Math.round(srcH * scale));
+
+            // alpha:false ensures the backing store is opaque in supporting browsers
+            const canvas = document.createElement('canvas');
+            canvas.width = outW;
+            canvas.height = outH;
+            const ctx = canvas.getContext('2d', { alpha: false });
+
+            // Force solid white background to avoid transparency-related black blocks
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, outW, outH);
+
+            // Draw decoded image
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(bitmap, 0, 0, outW, outH);
+
+            // Revoke object URL if used
+            if (bitmap && bitmap.__revokeUrl) {
+                URL.revokeObjectURL(bitmap.__revokeUrl);
+            }
+
+            // Export as PNG (opaque)
+            return canvas.toDataURL('image/png');
         }
 
         // Fixed venue/promoter data (customize as needed)
@@ -515,18 +548,16 @@ input[type="date"]::-webkit-calendar-picker-indicator{
             // Generate PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            // Add logo (base64 for easy embedding)
-            let logoDataUrl = null;
+
+            // Add logo (same placement/size as before)
             try {
-                logoDataUrl = await loadImageAsDataURL(logoUrl);
+                const logoDataUrl = await loadLogoDataUrlForPdf(pdfLogoUrl);
+                doc.addImage(logoDataUrl, 'PNG', 85, 5, 40, 15); // keep same size/position
             } catch (err) {
-                // If the logo cannot be fetched (CORS/network), continue without it.
-                logoDataUrl = null;
+                // If the logo cannot be fetched/decoded (CORS/network), continue without it.
+                // Optional: console.warn(err);
             }
 
-            if (logoDataUrl) {
-                doc.addImage(logoDataUrl, 'JPEG', 85, 5, 40, 15); // Changed to JPEG format
-            }
             // Centered title
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(16);
