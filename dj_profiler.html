@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Profile Database</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #0b0b0c;
+            --panel: #131316;
+            --text: #f2f2f4;
+            --muted: #a7a7ad;
+            --line: #2a2a2f;
+            --accent: #0099ff;
+            --success: #9fe6b8;
+            --warning: #ffd38a;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html, body {
+            font-family: 'Rajdhani', ui-sans-serif, system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        body {
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding-top: 60px;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                padding-top: 0;
+            }
+        }
+        
+        .main-card {
+            background: #0d0d0e;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .main-card > * {
+            margin-bottom: 24px;
+        }
+        
+        .main-card > *:last-child {
+            margin-bottom: 0;
+        }
+        
+        .main-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            gap: 16px;
+        }
+        
+        .main-logo {
+            max-width: 150px;
+            height: auto;
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .main-logo {
+                max-width: 100px;
+            }
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 8px;
+            letter-spacing: 0.02em;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 400;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            border: 1px solid var(--line);
+            background: #1b1b20;
+            color: var(--text);
+            border-radius: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #22222a;
+        }
+        
+        button.primary {
+            background: var(--accent);
+            color: #ffffff;
+            border: none;
+        }
+        
+        button.primary:hover {
+            background: #0088ee;
+        }
+        
+        .search-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+        }
+        
+        .search-card-input {
+            display: block;
+        }
+        
+        .search-card-input .search-input {
+            margin: 0;
+        }
+        
+        .controls-row {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 16px;
+        }
+        
+        @media (max-width: 1024px) {
+            .controls-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .toggle-analytics {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        
+        .analytics-content {
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .analytics-content.hidden {
+            display: none;
+        }
+        
+        .chart-toggles {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text);
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+        
+        .checkbox-label:hover {
+            color: var(--accent);
+        }
+        
+        .search-input {
+            width: 100%;
+            border: 1px solid var(--line);
+            background: #0f0f12;
+            color: var(--text);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 14px;
+            outline: none;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        .search-input::placeholder {
+            color: var(--muted);
+        }
+        
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .graphs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .graph-container {
+            background: #0f0f12;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .graph-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text);
+            text-align: center;
+            width: 100%;
+        }
+        
+        canvas {
+            max-height: 300px;
+            width: 100% !important;
+        }
+        
+        select {
+            width: 100%;
+            border: 1px solid var(--line);
+            background: #0f0f12;
+            color: var(--text);
+            border-radius: 10px;
+            padding: 10px 30px 10px 10px;
+            font-size: 14px;
+            outline: none;
+            font-family: 'Rajdhani', sans-serif;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1" stroke="%23a7a7ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center right 10px;
+        }
+        
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
+        }
+        
+        .profiles-grid {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .profiles-grid.size-small {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+        
+        .profiles-grid.size-medium {
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        }
+        
+        .profiles-grid.size-large {
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        }
+        
+        .profile-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .profile-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 153, 255, 0.15);
+        }
+        
+        .profile-info {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .stage-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+        
+        .legal-name {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        
+        .profile-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            flex: 1;
+        }
+        
+        .profile-details + .divider {
+            margin-top: auto;
+        }
+        
+        .profile-detail {
+            display: flex;
+            gap: 8px;
+            word-break: break-word;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--muted);
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+        
+        .divider {
+            height: 1px;
+            background: var(--line);
+            margin: 12px 0;
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .profile-actions button {
+            flex: 1;
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+        
+        .empty-state {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        
+        .empty-state-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-hint {
+            font-size: 13px;
+            color: var(--muted);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 24px;
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .close {
+            font-size: 28px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: color 0.3s ease;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        
+        .close:hover {
+            color: var(--text);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            border: 1px solid var(--line);
+            background: #0f0f12;
+            color: var(--text);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 14px;
+            outline: none;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
+        }
+        
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .form-actions button {
+            flex: 1;
+        }
+        
+        /* Navigation Menu */
+        .nav-dropdown {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            z-index: 10000;
+        }
+        
+        .nav-toggle {
+            background: rgba(26, 26, 26, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            height: 48px;
+            padding: 0 16px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Rajdhani', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-toggle:hover {
+            background: rgba(36, 36, 36, 0.9);
+            border-color: var(--accent);
+        }
+        
+        .nav-menu {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            background: rgba(26, 26, 26, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-dropdown.active .nav-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .nav-menu a {
+            display: block;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-menu a:hover {
+            background: rgba(0, 153, 255, 0.12);
+            color: var(--accent);
+        }
+        
+        .status-message {
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        
+        .status-message.success {
+            color: var(--success);
+        }
+        
+        .status-message.warning {
+            color: var(--warning);
+        }
+        
+        @media (max-width: 768px) {
+            .profiles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .controls button {
+                width: 100%;
+            }
+            
+            .graphs-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <div class="nav-dropdown" id="navDropdown">
+        <button class="nav-toggle" id="navToggle">Menu</button>
+        <div class="nav-menu">
+            <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+            <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+            <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+            <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-card">
+            <div class="main-card-header">
+                <div>
+                    <h1>DJ Profile Database</h1>
+                    <div class="subtitle" id="profileCount">Manage and organize DJ profiles</div>
+                </div>
+                <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Xodia Media Group" class="main-logo">
+            </div>
+            
+            <div class="controls">
+                <button class="primary" onclick="openCreateModal()">Create Profile</button>
+                <button onclick="exportCSV()">Export CSV</button>
+                <button onclick="document.getElementById('csvImport').click()">Import CSV</button>
+            </div>
+            
+            <input type="file" id="csvImport" accept=".csv" onchange="importCSV(event)" style="display: none;">
+            
+            <div class="controls-row">
+                <div class="search-card search-card-input">
+                    <div style="width: 100%;">
+                        <label for="searchInput">Search Profiles</label>
+                        <input 
+                            type="text" 
+                            class="search-input" 
+                            id="searchInput" 
+                            placeholder="Search by stage name, name, city, state, email, or phone..."
+                            oninput="filterProfiles()"
+                        >
+                    </div>
+                </div>
+                
+                <div class="search-card">
+                    <div class="options-grid">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="sortBy">Sort By</label>
+                            <select id="sortBy" onchange="applyFilters()">
+                                <option value="stageName">Stage Name (A-Z)</option>
+                                <option value="stageName-desc">Stage Name (Z-A)</option>
+                                <option value="fullName">Full Name (A-Z)</option>
+                                <option value="fullName-desc">Full Name (Z-A)</option>
+                                <option value="age">Age Group</option>
+                                <option value="experience">Experience Level</option>
+                                <option value="city">City (A-Z)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="displayCount">Display Count</label>
+                            <select id="displayCount" onchange="applyFilters()">
+                                <option value="all">All Profiles</option>
+                                <option value="10">10 profiles</option>
+                                <option value="25">25 profiles</option>
+                                <option value="50">50 profiles</option>
+                                <option value="100">100 profiles</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="cardSize">Card Size</label>
+                            <select id="cardSize" onchange="updateCardSize()">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics Dashboard -->
+            <div class="search-card">
+                <div class="analytics-header">
+                    <div>
+                        <h2 style="font-size: 18px; margin-bottom: 4px; font-weight: 600;">Analytics Dashboard</h2>
+                        <p style="font-size: 12px; color: var(--muted); margin: 0;">Customize which charts to display</p>
+                    </div>
+                    <button onclick="toggleAnalytics()" class="toggle-analytics" id="toggleAnalyticsBtn">
+                        Hide Dashboard
+                    </button>
+                </div>
+                
+                <div id="analyticsContent" class="analytics-content">
+                    <div class="chart-toggles">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showExperience" checked onchange="updateChartVisibility()">
+                            <span>Experience Distribution</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showAge" checked onchange="updateChartVisibility()">
+                            <span>Age Distribution</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showLocation" checked onchange="updateChartVisibility()">
+                            <span>Location Distribution</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showReferral" checked onchange="updateChartVisibility()">
+                            <span>Referral Sources</span>
+                        </label>
+                    </div>
+                    
+                    <div class="graphs-grid">
+                        <div class="graph-container" id="experienceContainer">
+                            <h3 class="graph-title">Experience Distribution</h3>
+                            <canvas id="experienceChart"></canvas>
+                        </div>
+                        <div class="graph-container" id="ageContainer">
+                            <h3 class="graph-title">Age Distribution</h3>
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                        <div class="graph-container" id="locationContainer">
+                            <h3 class="graph-title">Location Distribution</h3>
+                            <canvas id="locationChart"></canvas>
+                        </div>
+                        <div class="graph-container" id="referralContainer">
+                            <h3 class="graph-title">Referral Sources</h3>
+                            <canvas id="referralChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="profilesContainer" class="profiles-grid size-medium"></div>
+        </div>
+    </div>
+    
+    <!-- Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Create Profile</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="profileForm" onsubmit="saveProfile(event)">
+                <input type="hidden" id="profileId">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="stageName">Stage Name *</label>
+                        <input type="text" id="stageName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fullName">Name (First & Last) *</label>
+                        <input type="text" id="fullName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" id="state">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="text" id="phoneNumber">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experienceLevel">Experience Level</label>
+                        <input type="text" id="experienceLevel" placeholder="e.g., 5 years +, 3 years, etc.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="age">Age *</label>
+                        <input type="text" id="age" required placeholder="e.g., 25-35, 18-25, 35+">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="text" id="email" required>
+                    </div>
+                    
+                    <div class="form-group form-group-full">
+                        <label for="socialMedia">Social Media Links</label>
+                        <input type="text" id="socialMedia" placeholder="Instagram, Facebook, SoundCloud, etc.">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="primary">Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Data storage
+        let profiles = [];
+        let currentEditId = null;
+        
+        // Load profiles on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadProfiles();
+            applyFilters();
+            updateCharts();
+            setupNavigation();
+        });
+        
+        function loadProfiles() {
+            const stored = localStorage.getItem('djProfiles');
+            if (stored) {
+                profiles = JSON.parse(stored);
+            }
+        }
+        
+        function saveToStorage() {
+            localStorage.setItem('djProfiles', JSON.stringify(profiles));
+        }
+        
+        function openCreateModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'Create Profile';
+            document.getElementById('profileForm').reset();
+            document.getElementById('profileId').value = '';
+            document.getElementById('profileModal').style.display = 'block';
+        }
+        
+        function openEditModal(id) {
+            currentEditId = id;
+            const profile = profiles.find(p => p.id === id);
+            if (!profile) return;
+            
+            document.getElementById('modalTitle').textContent = 'Update Profile';
+            document.getElementById('profileId').value = profile.id;
+            document.getElementById('stageName').value = profile.stageName;
+            document.getElementById('fullName').value = profile.fullName;
+            document.getElementById('city').value = profile.city || '';
+            document.getElementById('state').value = profile.state || '';
+            document.getElementById('phoneNumber').value = profile.phoneNumber || '';
+            document.getElementById('experienceLevel').value = profile.experienceLevel || '';
+            document.getElementById('age').value = profile.age;
+            document.getElementById('email').value = profile.email;
+            document.getElementById('socialMedia').value = profile.socialMedia || '';
+            
+            document.getElementById('profileModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+        
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                    `;
+                    document.getElementById('fileLabel').textContent = file.name;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function saveProfile(event) {
+            event.preventDefault();
+            
+            const stageName = document.getElementById('stageName').value.trim();
+            const fullName = document.getElementById('fullName').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const experienceLevel = document.getElementById('experienceLevel').value.trim();
+            const age = document.getElementById('age').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const socialMedia = document.getElementById('socialMedia').value.trim();
+            
+            // Check for duplicate profiles (same stage name and email)
+            const duplicate = profiles.find(p => 
+                p.id !== currentEditId && 
+                p.stageName.toLowerCase() === stageName.toLowerCase() && 
+                p.email.toLowerCase() === email.toLowerCase()
+            );
+            
+            if (duplicate) {
+                alert(`A profile with stage name "${stageName}" and email "${email}" already exists. Please use different values.`);
+                return;
+            }
+            
+            const profile = {
+                id: currentEditId || Date.now().toString(),
+                stageName,
+                fullName,
+                city,
+                state,
+                phoneNumber,
+                experienceLevel,
+                age,
+                email,
+                socialMedia,
+                heardAbout: '' // Keep for CSV compatibility
+            };
+            
+            if (currentEditId) {
+                const index = profiles.findIndex(p => p.id === currentEditId);
+                profiles[index] = profile;
+            } else {
+                profiles.push(profile);
+            }
+            
+            saveToStorage();
+            applyFilters();
+            updateCharts();
+            closeModal();
+        }
+        
+        function sortProfiles(profilesToSort, sortBy) {
+            const sorted = [...profilesToSort];
+            
+            switch(sortBy) {
+                case 'stageName':
+                    return sorted.sort((a, b) => a.stageName.toLowerCase().localeCompare(b.stageName.toLowerCase()));
+                case 'stageName-desc':
+                    return sorted.sort((a, b) => b.stageName.toLowerCase().localeCompare(a.stageName.toLowerCase()));
+                case 'fullName':
+                    return sorted.sort((a, b) => a.fullName.toLowerCase().localeCompare(b.fullName.toLowerCase()));
+                case 'fullName-desc':
+                    return sorted.sort((a, b) => b.fullName.toLowerCase().localeCompare(a.fullName.toLowerCase()));
+                case 'age':
+                    return sorted.sort((a, b) => (a.age || '').localeCompare(b.age || ''));
+                case 'experience':
+                    return sorted.sort((a, b) => (a.experienceLevel || '').localeCompare(b.experienceLevel || ''));
+                case 'city':
+                    return sorted.sort((a, b) => (a.city || '').toLowerCase().localeCompare((b.city || '').toLowerCase()));
+                default:
+                    return sorted;
+            }
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sortBy = document.getElementById('sortBy').value;
+            const displayCount = document.getElementById('displayCount').value;
+            
+            // Filter by search term
+            let filtered = profiles.filter(profile => 
+                profile.stageName.toLowerCase().includes(searchTerm) ||
+                profile.fullName.toLowerCase().includes(searchTerm) ||
+                (profile.city && profile.city.toLowerCase().includes(searchTerm)) ||
+                (profile.state && profile.state.toLowerCase().includes(searchTerm)) ||
+                (profile.email && profile.email.toLowerCase().includes(searchTerm)) ||
+                (profile.phoneNumber && profile.phoneNumber.toLowerCase().includes(searchTerm))
+            );
+            
+            // Sort profiles
+            filtered = sortProfiles(filtered, sortBy);
+            
+            // Limit display count
+            if (displayCount !== 'all') {
+                filtered = filtered.slice(0, parseInt(displayCount));
+            }
+            
+            displayProfiles(filtered);
+        }
+        
+        function updateCardSize() {
+            const size = document.getElementById('cardSize').value;
+            const container = document.getElementById('profilesContainer');
+            container.className = 'profiles-grid size-' + size;
+        }
+        
+        function toggleAnalytics() {
+            const content = document.getElementById('analyticsContent');
+            const btn = document.getElementById('toggleAnalyticsBtn');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                btn.textContent = 'Hide Dashboard';
+            } else {
+                content.classList.add('hidden');
+                btn.textContent = 'Show Dashboard';
+            }
+        }
+        
+        function updateChartVisibility() {
+            const showExperience = document.getElementById('showExperience').checked;
+            const showAge = document.getElementById('showAge').checked;
+            const showLocation = document.getElementById('showLocation').checked;
+            const showReferral = document.getElementById('showReferral').checked;
+            
+            document.getElementById('experienceContainer').style.display = showExperience ? 'block' : 'none';
+            document.getElementById('ageContainer').style.display = showAge ? 'block' : 'none';
+            document.getElementById('locationContainer').style.display = showLocation ? 'block' : 'none';
+            document.getElementById('referralContainer').style.display = showReferral ? 'block' : 'none';
+        }
+        
+        function updateCharts() {
+            if (profiles.length === 0) return;
+            
+            // Experience Distribution
+            const experienceCounts = {};
+            profiles.forEach(p => {
+                const exp = p.experienceLevel || 'Not specified';
+                experienceCounts[exp] = (experienceCounts[exp] || 0) + 1;
+            });
+            createChart('experienceChart', 'Experience Distribution', experienceCounts, 'bar');
+            
+            // Age Distribution
+            const ageCounts = {};
+            profiles.forEach(p => {
+                const age = p.age || 'Not specified';
+                ageCounts[age] = (ageCounts[age] || 0) + 1;
+            });
+            createChart('ageChart', 'Age Distribution', ageCounts, 'doughnut');
+            
+            // Location Distribution (Top 10 states)
+            const stateCounts = {};
+            profiles.forEach(p => {
+                if (p.state) {
+                    stateCounts[p.state] = (stateCounts[p.state] || 0) + 1;
+                }
+            });
+            const topStates = Object.entries(stateCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .reduce((obj, [key, val]) => ({ ...obj, [key]: val }), {});
+            createChart('locationChart', 'Top States', topStates, 'bar');
+            
+            // Referral Sources
+            const referralCounts = {};
+            profiles.forEach(p => {
+                if (p.heardAbout) {
+                    const sources = p.heardAbout.split(';');
+                    sources.forEach(source => {
+                        const cleaned = source.trim();
+                        if (cleaned) {
+                            referralCounts[cleaned] = (referralCounts[cleaned] || 0) + 1;
+                        }
+                    });
+                }
+            });
+            createChart('referralChart', 'Referral Sources', referralCounts, 'pie');
+        }
+        
+        let chartInstances = {};
+        
+        function createChart(canvasId, title, data, type) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            // Destroy existing chart if it exists
+            if (chartInstances[canvasId]) {
+                chartInstances[canvasId].destroy();
+            }
+            
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            
+            // Brighter, more traditional chart colors
+            const brightColors = [
+                'rgba(59, 130, 246, 0.8)',    // Bright Blue
+                'rgba(16, 185, 129, 0.8)',    // Emerald Green
+                'rgba(239, 68, 68, 0.8)',     // Red
+                'rgba(245, 158, 11, 0.8)',    // Amber
+                'rgba(168, 85, 247, 0.8)',    // Purple
+                'rgba(236, 72, 153, 0.8)',    // Pink
+                'rgba(6, 182, 212, 0.8)',     // Cyan
+                'rgba(132, 204, 22, 0.8)',    // Lime
+                'rgba(251, 146, 60, 0.8)',    // Orange
+                'rgba(99, 102, 241, 0.8)'     // Indigo
+            ];
+            
+            const borderColors = [
+                'rgba(59, 130, 246, 1)',
+                'rgba(16, 185, 129, 1)',
+                'rgba(239, 68, 68, 1)',
+                'rgba(245, 158, 11, 1)',
+                'rgba(168, 85, 247, 1)',
+                'rgba(236, 72, 153, 1)',
+                'rgba(6, 182, 212, 1)',
+                'rgba(132, 204, 22, 1)',
+                'rgba(251, 146, 60, 1)',
+                'rgba(99, 102, 241, 1)'
+            ];
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Configuration for centered bar charts
+            const isBarChart = type === 'bar';
+            const isCenteredChart = canvasId === 'experienceChart' || canvasId === 'locationChart';
+            
+            chartInstances[canvasId] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Count',
+                        data: values,
+                        backgroundColor: brightColors,
+                        borderColor: borderColors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    layout: {
+                        padding: isBarChart && isCenteredChart ? {
+                            left: 20,
+                            right: 20
+                        } : 0
+                    },
+                    plugins: {
+                        legend: {
+                            display: type !== 'bar',
+                            position: 'bottom',
+                            labels: {
+                                color: '#f2f2f4',
+                                font: {
+                                    family: 'Rajdhani',
+                                    size: 12
+                                },
+                                padding: 12
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: isBarChart ? {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#a7a7ad',
+                                font: {
+                                    family: 'Rajdhani',
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#2a2a2f'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#a7a7ad',
+                                font: {
+                                    family: 'Rajdhani',
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#2a2a2f'
+                            }
+                        }
+                    } : {}
+                }
+            });
+        }
+        
+        function deleteProfile(id) {
+            if (confirm('Are you sure you want to delete this profile?')) {
+                profiles = profiles.filter(p => p.id !== id);
+                saveToStorage();
+                applyFilters();
+                updateCharts();
+            }
+        }
+        
+        function displayProfiles(profilesToShow = profiles) {
+            const container = document.getElementById('profilesContainer');
+            
+            // Update profile count in header
+            const countEl = document.getElementById('profileCount');
+            if (profiles.length > 0) {
+                countEl.textContent = `${profiles.length} DJ profile${profiles.length !== 1 ? 's' : ''} loaded`;
+            } else {
+                countEl.textContent = 'Manage and organize DJ profiles';
+            }
+            
+            if (profilesToShow.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎧</div>
+                        <div class="empty-state-text">No DJ Profiles</div>
+                        <div class="empty-state-hint">Create your first profile or import a CSV file to get started</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = profilesToShow.map(profile => `
+                <div class="profile-card">
+                    <div class="profile-info">
+                        <div class="stage-name">${profile.stageName}</div>
+                        <div class="legal-name">${profile.fullName}</div>
+                        <div class="divider"></div>
+                        <div class="profile-details">
+                            ${profile.city || profile.state ? `
+                                <div class="profile-detail">
+                                    <span class="detail-label">Location:</span>
+                                    <span>${[profile.city, profile.state].filter(Boolean).join(', ') || 'N/A'}</span>
+                                </div>
+                            ` : ''}
+                            ${profile.phoneNumber ? `
+                                <div class="profile-detail">
+                                    <span class="detail-label">Phone:</span>
+                                    <span>${profile.phoneNumber}</span>
+                                </div>
+                            ` : ''}
+                            ${profile.experienceLevel ? `
+                                <div class="profile-detail">
+                                    <span class="detail-label">Experience:</span>
+                                    <span>${profile.experienceLevel}</span>
+                                </div>
+                            ` : ''}
+                            <div class="profile-detail">
+                                <span class="detail-label">Age:</span>
+                                <span>${profile.age}</span>
+                            </div>
+                            <div class="profile-detail">
+                                <span class="detail-label">Email:</span>
+                                <span>${profile.email}</span>
+                            </div>
+                            ${profile.socialMedia ? `
+                                <div class="profile-detail">
+                                    <span class="detail-label">Social:</span>
+                                    <span>${profile.socialMedia}</span>
+                                </div>
+                            ` : ''}
+                            ${profile.heardAbout ? `
+                                <div class="profile-detail">
+                                    <span class="detail-label">Source:</span>
+                                    <span>${profile.heardAbout}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="divider"></div>
+                        <div class="profile-actions">
+                            <button onclick="openEditModal('${profile.id}')">Update</button>
+                            <button onclick="deleteProfile('${profile.id}')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function filterProfiles() {
+            applyFilters();
+        }
+        
+        function exportCSV() {
+            if (profiles.length === 0) {
+                alert('No profiles to export!');
+                return;
+            }
+            
+            const csvData = profiles.map(p => ({
+                'Stage Name': p.stageName,
+                'Name (First & Last)': p.fullName,
+                'City': p.city || '',
+                'State': p.state || '',
+                'Phone Number': p.phoneNumber || '',
+                'Experience Level': p.experienceLevel || '',
+                'Age': p.age,
+                'Email': p.email,
+                'Social Media Links': p.socialMedia || '',
+                'How did you hear about us?': p.heardAbout || ''
+            }));
+            
+            const csv = Papa.unparse(csvData);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `dj-profiles-${Date.now()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.data.length === 0) {
+                        alert('CSV file is empty!');
+                        return;
+                    }
+                    
+                    // Map CSV columns to profile fields, handling various column name formats
+                    let imported = results.data
+                        .filter(row => {
+                            // Filter out rows that don't have a stage name
+                            const stageName = row['Stage Name:'] || row['Stage Name'] || row.stageName || '';
+                            return stageName.trim() !== '';
+                        })
+                        .map(row => ({
+                            id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+                            stageName: (row['Stage Name:'] || row['Stage Name'] || row.stageName || '').trim(),
+                            fullName: (row['Name (First & Last):'] || row['Name (First & Last)'] || row.fullName || '').trim(),
+                            city: (row['City'] || row.city || '').trim(),
+                            state: (row['State'] || row.state || '').trim(),
+                            phoneNumber: (row['Phone Number'] || row.phoneNumber || '').trim(),
+                            experienceLevel: (row['Experience Level:'] || row['Experience Level'] || row.experienceLevel || '').trim(),
+                            age: (row['Age'] || row.age || '').trim(),
+                            email: (row['Email:'] || row['Email'] || row.email || '').trim(),
+                            socialMedia: (row['Social Media Links:'] || row['Social Media Links'] || row.socialMedia || '').trim(),
+                            heardAbout: (row['How did you hear about us?'] || row.heardAbout || '').trim()
+                        }));
+                    
+                    if (imported.length === 0) {
+                        alert('No valid DJ profiles found in CSV. Make sure the file has a "Stage Name:" column.');
+                        return;
+                    }
+                    
+                    // Remove duplicates within the CSV itself (based on stage name + email)
+                    const seen = new Set();
+                    const uniqueImported = imported.filter(profile => {
+                        const key = `${profile.stageName.toLowerCase()}|${profile.email.toLowerCase()}`;
+                        if (seen.has(key)) {
+                            return false;
+                        }
+                        seen.add(key);
+                        return true;
+                    });
+                    
+                    const duplicatesInCSV = imported.length - uniqueImported.length;
+                    if (duplicatesInCSV > 0) {
+                        console.log(`Removed ${duplicatesInCSV} duplicate(s) from CSV file`);
+                    }
+                    
+                    // Check for duplicates against existing profiles
+                    const duplicatesWithExisting = uniqueImported.filter(importedProfile => 
+                        profiles.some(existingProfile => 
+                            existingProfile.stageName.toLowerCase() === importedProfile.stageName.toLowerCase() &&
+                            existingProfile.email.toLowerCase() === importedProfile.email.toLowerCase()
+                        )
+                    );
+                    
+                    let message = '';
+                    if (profiles.length > 0) {
+                        if (duplicatesWithExisting.length > 0) {
+                            message = `Found ${uniqueImported.length} DJs in the CSV.\n\n`;
+                            message += `WARNING: ${duplicatesWithExisting.length} profile(s) already exist in the database.\n\n`;
+                            message += `This import will REPLACE your existing ${profiles.length} profile(s).\n\n`;
+                            message += `Continue?`;
+                        } else {
+                            message = `Found ${uniqueImported.length} DJs in the CSV.\n\n`;
+                            message += `This will REPLACE your existing ${profiles.length} profile(s).\n\n`;
+                            message += `Continue?`;
+                        }
+                    } else {
+                        message = `Found ${uniqueImported.length} DJs in the CSV. Import all profiles?`;
+                    }
+                    
+                    if (duplicatesInCSV > 0) {
+                        message = `Note: Removed ${duplicatesInCSV} duplicate(s) from the CSV file.\n\n` + message;
+                    }
+                    
+                    if (confirm(message)) {
+                        profiles = uniqueImported;
+                        saveToStorage();
+                        applyFilters();
+                        updateCharts();
+                        alert(`Successfully imported ${uniqueImported.length} DJ profiles!`);
+                    }
+                },
+                error: function(error) {
+                    alert('Error parsing CSV file: ' + error.message);
+                }
+            });
+            
+            event.target.value = '';
+        }
+        
+        function setupNavigation() {
+            const navDropdown = document.getElementById('navDropdown');
+            const navToggle = document.getElementById('navToggle');
+            
+            navToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navDropdown.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!navDropdown.contains(e.target)) {
+                    navDropdown.classList.remove('active');
+                }
+            });
+        }
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('profileModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>
