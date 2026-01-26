@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+SQUARESPACE INSTALLATION INSTRUCTIONS:
+1. Go to your Squarespace page
+2. Click on the page settings (gear icon)
+3. Go to Advanced > Page Header Code Injection
+4. Paste this entire HTML file
+5. Save and view your page
+
+OR use a Code Block:
+1. Add a Code Block to your page
+2. Paste this entire HTML file
+3. Make sure the block takes up the full width/height of the section
+
+The visualizer will automatically fill the entire available space.
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Visualizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #000;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 1;
+        }
+
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            color: #fff;
+            min-width: 320px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 40px;
+            object-fit: contain;
+            opacity: 0.9;
+        }
+
+        .app-title {
+            font-family: 'Rajdhani', sans-serif !important;
+            font-size: 24px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.5px !important;
+            line-height: 1.1 !important;
+            margin: 0 !important;
+
+            /* Keep the original gradient look while avoiding theme overrides */
+            background: linear-gradient(135deg, #fff 0%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        button.primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+            background: linear-gradient(135deg, #333 0%, #222 100%);
+        }
+
+        button.play {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+        }
+
+        button.play:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        button.pause {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+        }
+
+        button.pause:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        button:disabled {
+            background: #333 !important;
+            color: #666 !important;
+            cursor: not-allowed;
+            opacity: 0.5;
+            transform: none !important;
+        }
+
+        .slider-container {
+            margin: 16px 0;
+        }
+
+        .slider-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-value {
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 12px rgba(59, 130, 246, 0.7);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 12px rgba(59, 130, 246, 0.7);
+        }
+
+        .info {
+            margin: 16px 0;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .info-value {
+            color: #fff;
+            font-weight: 600;
+            margin-top: 6px;
+            font-size: 13px;
+        }
+
+        .progress-container {
+            margin: 16px 0;
+        }
+
+        .progress-label {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .progress-bar:hover .progress-fill::after {
+            opacity: 1;
+        }
+
+        .time-display {
+            font-size: 11px;
+            color: #aaa;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #file-input {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+        }
+
+        .keyboard-shortcuts {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .shortcuts-title {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 6px 0;
+            font-size: 12px;
+        }
+
+        .shortcut-key {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .shortcut-desc {
+            color: #aaa;
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        #controls.hidden {
+            display: none;
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 768px) {
+            #controls {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                min-width: auto;
+                max-width: calc(100% - 20px);
+                padding: 16px;
+            }
+
+            .app-title {
+                font-size: 16px !important;
+            }
+
+            .logo {
+                width: 20px;
+                height: 30px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* Ensure proper sizing in embedded contexts */
+        .visualizer-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+    
+        /* --- Squarespace safety: enforce app font within the embed --- */
+        #controls, #controls * {
+            font-family: 'Rajdhani', sans-serif !important;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="visualizer-container">
+        <canvas id="canvas"></canvas>
+
+        <div id="controls">
+            <div class="header-container">
+                <div class="app-title">Particle Visualizer</div>
+                <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Logo" class="logo">
+            </div>
+            <div class="controls-content">
+            <button id="load-btn" class="primary">Load Audio File</button>
+            <button id="play-btn" class="play" disabled>▶ Play</button>
+            
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Volume</span>
+                    <span class="slider-value" id="volume-value">100%</span>
+                </div>
+                <input type="range" id="volume-slider" min="0" max="100" value="100">
+            </div>
+            
+            <div class="progress-container" id="progress-container" style="display: none;">
+                <div class="progress-label">
+                    <span class="time-display" id="current-time">0:00</span>
+                    <span class="time-display" id="duration-time">0:00</span>
+                </div>
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            
+            <div class="info">
+                <div class="stat-label">Audio File</div>
+                <div id="audio-name" class="info-value">No file loaded</div>
+            </div>
+            
+            <div class="keyboard-shortcuts">
+                <div class="shortcuts-title">Keyboard Shortcuts</div>
+                <div class="shortcut-item">
+                    <div class="shortcut-key">SPACE</div>
+                    <div class="shortcut-desc">Play / Pause</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-key">F</div>
+                    <div class="shortcut-desc">Fullscreen</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-key">H</div>
+                    <div class="shortcut-desc">Hide UI</div>
+                </div>
+            </div>
+            </div> <!-- End controls-content -->
+            <input type="file" id="file-input" accept="audio/*">
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        // ===== IMPORTS =====
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+
+        // ===== CONSTANTS =====
+        const MIN_PARTICLES = 800;
+        const MAX_PARTICLES = 35000;
+        const PARTICLE_SIZE = 0.15; // fixed size (world units) - doubled
+        
+        // Noise-based motion parameters (from cube_particles_motion_rules.md)
+        const DT = 0.0875;                  // time step
+        const DAMPING = 0.95;            // velocity damping
+        const NOISE_SCALE = 1.0;         // noise field scale
+        const AUDIO_FACTOR = 3.0;        // audio gain multiplier
+        const WORLD_BOUNDARY = 32;       // boundary for camera/rendering
+        const SPHERE_BOUNDARY = 1.0;     // particle confinement sphere radius
+const FREQ_BANDS = [
+            { name: 'Sub Bass', min: 20, max: 60 },
+            { name: 'Bass', min: 60, max: 250 },
+            { name: 'Low Mids', min: 250, max: 500 },
+            { name: 'Midrange', min: 500, max: 2000 },
+            { name: 'Upper Mids', min: 2000, max: 4000 },
+            { name: 'Presence', min: 4000, max: 6000 },
+            { name: 'Brilliance', min: 6000, max: 20000 }
+        ];
+
+        // ===== 4D OPENSIMPLEX NOISE =====
+        // Simplified 4D noise implementation for particle motion
+        class SimplexNoise {
+            constructor(seed = Math.random()) {
+                this.p = new Uint8Array(512);
+                this.perm = new Uint8Array(512);
+                
+                // Initialize permutation table with seed
+                for (let i = 0; i < 256; i++) {
+                    this.p[i] = i;
+                }
+                
+                // Shuffle
+                let n, q;
+                for (let i = 255; i > 0; i--) {
+                    n = Math.floor((seed + i) * 123456.789) % (i + 1);
+                    q = this.p[i];
+                    this.p[i] = this.p[n];
+                    this.p[n] = q;
+                }
+                
+                // Duplicate
+                for (let i = 0; i < 512; i++) {
+                    this.perm[i] = this.p[i & 255];
+                }
+            }
+            
+            // 4D Simplex noise
+            noise4D(x, y, z, w) {
+                const F4 = 0.309016994; // (Math.sqrt(5.0) - 1.0) / 4.0
+                const G4 = 0.138196601; // (5.0 - Math.sqrt(5.0)) / 20.0
+                
+                const s = (x + y + z + w) * F4;
+                const i = Math.floor(x + s);
+                const j = Math.floor(y + s);
+                const k = Math.floor(z + s);
+                const l = Math.floor(w + s);
+                
+                const t = (i + j + k + l) * G4;
+                const X0 = i - t;
+                const Y0 = j - t;
+                const Z0 = k - t;
+                const W0 = l - t;
+                
+                const x0 = x - X0;
+                const y0 = y - Y0;
+                const z0 = z - Z0;
+                const w0 = w - W0;
+                
+                // Simplex ranking
+                let rankx = 0;
+                let ranky = 0;
+                let rankz = 0;
+                let rankw = 0;
+                
+                if (x0 > y0) rankx++; else ranky++;
+                if (x0 > z0) rankx++; else rankz++;
+                if (x0 > w0) rankx++; else rankw++;
+                if (y0 > z0) ranky++; else rankz++;
+                if (y0 > w0) ranky++; else rankw++;
+                if (z0 > w0) rankz++; else rankw++;
+                
+                const i1 = rankx >= 3 ? 1 : 0;
+                const j1 = ranky >= 3 ? 1 : 0;
+                const k1 = rankz >= 3 ? 1 : 0;
+                const l1 = rankw >= 3 ? 1 : 0;
+                
+                const i2 = rankx >= 2 ? 1 : 0;
+                const j2 = ranky >= 2 ? 1 : 0;
+                const k2 = rankz >= 2 ? 1 : 0;
+                const l2 = rankw >= 2 ? 1 : 0;
+                
+                const i3 = rankx >= 1 ? 1 : 0;
+                const j3 = ranky >= 1 ? 1 : 0;
+                const k3 = rankz >= 1 ? 1 : 0;
+                const l3 = rankw >= 1 ? 1 : 0;
+                
+                const x1 = x0 - i1 + G4;
+                const y1 = y0 - j1 + G4;
+                const z1 = z0 - k1 + G4;
+                const w1 = w0 - l1 + G4;
+                
+                const x2 = x0 - i2 + 2 * G4;
+                const y2 = y0 - j2 + 2 * G4;
+                const z2 = z0 - k2 + 2 * G4;
+                const w2 = w0 - l2 + 2 * G4;
+                
+                const x3 = x0 - i3 + 3 * G4;
+                const y3 = y0 - j3 + 3 * G4;
+                const z3 = z0 - k3 + 3 * G4;
+                const w3 = w0 - l3 + 3 * G4;
+                
+                const x4 = x0 - 1 + 4 * G4;
+                const y4 = y0 - 1 + 4 * G4;
+                const z4 = z0 - 1 + 4 * G4;
+                const w4 = w0 - 1 + 4 * G4;
+                
+                const ii = i & 255;
+                const jj = j & 255;
+                const kk = k & 255;
+                const ll = l & 255;
+                
+                let n0, n1, n2, n3, n4;
+                
+                let t0 = 0.6 - x0*x0 - y0*y0 - z0*z0 - w0*w0;
+                if (t0 < 0) n0 = 0;
+                else {
+                    t0 *= t0;
+                    n0 = t0 * t0 * this.grad4(this.perm[ii + this.perm[jj + this.perm[kk + this.perm[ll]]]], x0, y0, z0, w0);
+                }
+                
+                let t1 = 0.6 - x1*x1 - y1*y1 - z1*z1 - w1*w1;
+                if (t1 < 0) n1 = 0;
+                else {
+                    t1 *= t1;
+                    n1 = t1 * t1 * this.grad4(this.perm[ii + i1 + this.perm[jj + j1 + this.perm[kk + k1 + this.perm[ll + l1]]]], x1, y1, z1, w1);
+                }
+                
+                let t2 = 0.6 - x2*x2 - y2*y2 - z2*z2 - w2*w2;
+                if (t2 < 0) n2 = 0;
+                else {
+                    t2 *= t2;
+                    n2 = t2 * t2 * this.grad4(this.perm[ii + i2 + this.perm[jj + j2 + this.perm[kk + k2 + this.perm[ll + l2]]]], x2, y2, z2, w2);
+                }
+                
+                let t3 = 0.6 - x3*x3 - y3*y3 - z3*z3 - w3*w3;
+                if (t3 < 0) n3 = 0;
+                else {
+                    t3 *= t3;
+                    n3 = t3 * t3 * this.grad4(this.perm[ii + i3 + this.perm[jj + j3 + this.perm[kk + k3 + this.perm[ll + l3]]]], x3, y3, z3, w3);
+                }
+                
+                let t4 = 0.6 - x4*x4 - y4*y4 - z4*z4 - w4*w4;
+                if (t4 < 0) n4 = 0;
+                else {
+                    t4 *= t4;
+                    n4 = t4 * t4 * this.grad4(this.perm[ii + 1 + this.perm[jj + 1 + this.perm[kk + 1 + this.perm[ll + 1]]]], x4, y4, z4, w4);
+                }
+                
+                return 27 * (n0 + n1 + n2 + n3 + n4);
+            }
+            
+            grad4(hash, x, y, z, w) {
+                const h = hash & 31;
+                const a = y, b = z, c = w;
+                switch (h >> 3) {
+                    case 1: return (h&1 ? -a : a) + (h&2 ? -b : b) + (h&4 ? -c : c);
+                    case 2: return (h&1 ? -x : x) + (h&2 ? -b : b) + (h&4 ? -c : c);
+                    case 3: return (h&1 ? -x : x) + (h&2 ? -a : a) + (h&4 ? -c : c);
+                    default: return (h&1 ? -x : x) + (h&2 ? -a : a) + (h&4 ? -b : b);
+                }
+            }
+        }
+        
+        const noise = new SimplexNoise(Math.random());
+
+        // ===== AUDIO =====
+        let audioContext = null;
+        let analyser = null;
+        let audioElement = null;
+        let audioSource = null;
+        let gainNode = null; // For volume control without affecting analysis
+        let audioLoaded = false;
+        let isPlaying = false;
+        let currentMagnitudes = new Array(7).fill(0);
+        let frozenMagnitudes = new Array(7).fill(0); // Store magnitudes when paused
+        let currentLowFreqMagnitude = 0; // 0-150Hz for sphere particles
+        let frozenLowFreqMagnitude = 0; // Frozen low freq magnitude when paused
+
+        // ===== THREE.JS SCENE =====
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 15000);
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas, 
+            antialias: true, 
+            alpha: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        camera.position.set(0, 0, 50);
+
+        // ===== SELECTIVE BLOOM (TUNNEL ONLY) =====
+        // The tunnel stays crisp and small, while audio magnitude drives bloom on tunnel particles only.
+        const BLOOM_LAYER = 1;
+
+        // Bloom composer renders only objects on BLOOM_LAYER
+        const bloomComposer = new EffectComposer(renderer);
+        bloomComposer.renderToScreen = false;
+        const bloomRenderPass = new RenderPass(scene, camera);
+        bloomComposer.addPass(bloomRenderPass);
+
+        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            0.9,   // strength (driven by audio in animate)
+            0.45,  // radius (slightly wider glow)
+            0.45   // threshold: include sphere particles too
+        );
+        bloomComposer.addPass(bloomPass);
+
+        // Final composer: render full scene + add the bloom texture
+        const finalComposer = new EffectComposer(renderer);
+        const finalRenderPass = new RenderPass(scene, camera);
+        finalComposer.addPass(finalRenderPass);
+
+        const finalPass = new ShaderPass(
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    baseTexture: { value: null },
+                    bloomTexture: { value: bloomComposer.renderTarget2.texture }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform sampler2D baseTexture;
+                    uniform sampler2D bloomTexture;
+                    varying vec2 vUv;
+                    void main() {
+                        vec4 base  = texture2D(baseTexture, vUv);
+                        vec4 bloom = texture2D(bloomTexture, vUv);
+                        gl_FragColor = base + bloom;
+                    }
+                `,
+                transparent: true
+            }),
+            "baseTexture"
+        );
+        finalComposer.addPass(finalPass);
+
+        // Dynamic background
+        scene.background = new THREE.Color(0x000000);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1.0, 100);
+        pointLight.position.set(0, 0, 20);
+        scene.add(pointLight);
+        // ===== ENDLESS TUNNEL BACKGROUND (WHITE PARTICLE LIGHTS) =====
+        // A camera-locked particle tunnel: perspective remains fixed; only particles scroll.
+        const TUNNEL_RADIUS = 400;
+        const TUNNEL_LENGTH = 16000;
+        const TUNNEL_COUNT  = 5000;
+
+        
+
+        // Gap from the camera to the first visible tunnel particles (keeps the tunnel start away from the sphere)
+        const TUNNEL_START = 220;
+        const tunnelGroup = new THREE.Group();
+        scene.add(tunnelGroup);
+
+        const tunnelGeo = new THREE.BufferGeometry();
+        const tunnelPositions = new Float32Array(TUNNEL_COUNT * 3);
+        const tunnelColors    = new Float32Array(TUNNEL_COUNT * 3);
+        const tunnelWeights   = new Float32Array(TUNNEL_COUNT);
+
+        for (let i = 0; i < TUNNEL_COUNT; i++) {
+            // Distribute points near the tunnel wall (slight radial jitter inward)
+            const a = Math.random() * Math.PI * 2.0;
+            const r = TUNNEL_RADIUS - (Math.random() * 26.0); // 374..400
+
+            const x = Math.cos(a) * r;
+            const y = Math.sin(a) * r;
+
+            // Camera looks down -Z; make tunnel extend forward (negative Z)
+            const z = -(TUNNEL_START + (Math.random() * TUNNEL_LENGTH));
+
+            const idx = i * 3;
+            tunnelPositions[idx + 0] = x;
+            tunnelPositions[idx + 1] = y;
+            tunnelPositions[idx + 2] = z;
+
+            // per-particle brightness weight (keeps some variance)
+            tunnelWeights[i] = 0.55 + Math.random() * 0.85;
+
+            // initial white
+            tunnelColors[idx + 0] = 1.0;
+            tunnelColors[idx + 1] = 1.0;
+            tunnelColors[idx + 2] = 1.0;
+        }
+
+        tunnelGeo.setAttribute('position', new THREE.BufferAttribute(tunnelPositions, 3));
+        tunnelGeo.setAttribute('color',    new THREE.BufferAttribute(tunnelColors, 3));
+
+        const tunnelMat = new THREE.PointsMaterial({
+            size: 0.85,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.50,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+
+        const tunnelParticles = new THREE.Points(tunnelGeo, tunnelMat);
+        tunnelGroup.add(tunnelParticles);
+        // Optional single vanishing-point "spark" (kept subtle)
+        const vpGeo = new THREE.BufferGeometry();
+        const vpPos = new Float32Array([0, 0, -(TUNNEL_START + TUNNEL_LENGTH)]);
+        const vpCol = new Float32Array([1, 1, 1]);
+        vpGeo.setAttribute('position', new THREE.BufferAttribute(vpPos, 3));
+        vpGeo.setAttribute('color',    new THREE.BufferAttribute(vpCol, 3));
+
+        const vpMat = new THREE.PointsMaterial({
+            size: 2.0,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.25,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+
+        const vanishingPoint = new THREE.Points(vpGeo, vpMat);
+        tunnelGroup.add(vanishingPoint);
+
+        // Far-end "cap" disk: fills the outer ring so you don't see a black circle around the core.
+        // This is a sparse particle disk sitting at the far end of the tunnel.
+        const CAP_COUNT = 9000;
+        const CAP_Z     = -(TUNNEL_START + TUNNEL_LENGTH);
+
+        const capGeo = new THREE.BufferGeometry();
+        const capPositions = new Float32Array(CAP_COUNT * 3);
+        const capColors    = new Float32Array(CAP_COUNT * 3);
+        const capWeights   = new Float32Array(CAP_COUNT);
+
+        for (let i = 0; i < CAP_COUNT; i++) {
+            const a = Math.random() * Math.PI * 2.0;
+
+            // Bias toward outer radii to specifically fill the ring region
+            // Fill the entire disk area (avoids a mid-radius 'black ring')
+            const rr = TUNNEL_RADIUS * Math.sqrt(Math.random());
+
+            const x = Math.cos(a) * rr;
+            const y = Math.sin(a) * rr;
+            const z = CAP_Z;
+
+            const idx = i * 3;
+            capPositions[idx + 0] = x;
+            capPositions[idx + 1] = y;
+            capPositions[idx + 2] = z;
+
+            capWeights[i] = 0.55 + Math.random() * 0.95;
+
+            capColors[idx + 0] = 1.0;
+            capColors[idx + 1] = 1.0;
+            capColors[idx + 2] = 1.0;
+        }
+
+        capGeo.setAttribute('position', new THREE.BufferAttribute(capPositions, 3));
+        capGeo.setAttribute('color',    new THREE.BufferAttribute(capColors, 3));
+
+        const capMat = new THREE.PointsMaterial({
+            size: 1.05,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.22,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+
+        const capParticles = new THREE.Points(capGeo, capMat);
+        tunnelGroup.add(capParticles);
+
+        // Far-end glow billboard: fills any remaining empty disk at the vanishing point.
+        // This is the "failsafe" that guarantees there is never a pure black circle.
+        const glowCanvas = document.createElement('canvas');
+        glowCanvas.width = 128;
+        glowCanvas.height = 128;
+        const gctx = glowCanvas.getContext('2d');
+
+        const grad = gctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+        grad.addColorStop(0.0, 'rgba(255,255,255,0.85)');
+        grad.addColorStop(0.25, 'rgba(255,255,255,0.40)');
+        grad.addColorStop(0.55, 'rgba(255,255,255,0.14)');
+        grad.addColorStop(1.0, 'rgba(255,255,255,0.00)');
+        gctx.fillStyle = grad;
+        gctx.fillRect(0, 0, 128, 128);
+
+        const glowTex = new THREE.CanvasTexture(glowCanvas);
+        glowTex.minFilter = THREE.LinearFilter;
+        glowTex.magFilter = THREE.LinearFilter;
+
+        const glowMat = new THREE.SpriteMaterial({
+            map: glowTex,
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.22,
+            depthWrite: false,
+            depthTest: false,
+            blending: THREE.AdditiveBlending
+        });
+
+        const glowSprite = new THREE.Sprite(glowMat);
+        glowSprite.position.set(0, 0, CAP_Z - 6.0);
+        glowSprite.scale.set(TUNNEL_RADIUS * 2.5, TUNNEL_RADIUS * 2.5, 1);
+        tunnelGroup.add(glowSprite);
+
+        // Put tunnel elements on the bloom layer (they still render in the base layer too)
+        tunnelParticles.layers.enable(BLOOM_LAYER);
+        capParticles.layers.enable(BLOOM_LAYER);
+        vanishingPoint.layers.enable(BLOOM_LAYER);
+        glowSprite.layers.enable(BLOOM_LAYER);
+
+
+        // Keep the tunnel locked to camera pose so the perspective does not change
+        let _tunnelLastT = 0;
+// ===== PARTICLE SWARM =====
+        // Particle swarm using 4D noise field motion (from cube_particles_motion_rules.md)
+        // Motion is driven by coherent noise, not particle-to-particle interactions
+        class Particle {
+            constructor() {
+                this.reset(true);
+            }
+
+            reset(randomizePosition = true) {
+                if (randomizePosition) {
+                    // Initialize uniformly within sphere of radius SPHERE_BOUNDARY
+                    // Use cube root for uniform volume distribution
+                    const r = Math.cbrt(Math.random()) * SPHERE_BOUNDARY;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos((Math.random() * 2) - 1);
+                    
+                    this.position = new THREE.Vector3(
+                        r * Math.sin(phi) * Math.cos(theta),
+                        r * Math.sin(phi) * Math.sin(theta),
+                        r * Math.cos(phi)
+                    );
+                } else if (!this.position) {
+                    this.position = new THREE.Vector3();
+                }
+
+                // Initial velocity is zero
+                this.velocity = new THREE.Vector3(0, 0, 0);
+                this.color = new THREE.Color(1, 1, 1);
+            }
+
+            update(t, amp, noiseScale, sphereBoundary) {
+                const x = this.position.x;
+                const y = this.position.y;
+                const z = this.position.z;
+
+                // 4D noise acceleration with axis decorrelation offsets
+                // noiseScale varies with audio magnitude for turbulence
+                const ax = noise.noise4D(x * noiseScale, y * noiseScale, z * noiseScale, t);
+                const ay = noise.noise4D((x + 100) * noiseScale, (y + 100) * noiseScale, (z + 100) * noiseScale, t);
+                const az = noise.noise4D((x + 200) * noiseScale, (y + 200) * noiseScale, (z + 200) * noiseScale, t);
+
+                // Audio-scaled gain: baseline 25%, max 50% of original values
+                // No audio: 0.25x, Full audio: 2.0x
+                const gain = DT * (0.25 + amp * 1.75);
+
+                // Velocity update: v = v * damping + a * gain
+                this.velocity.x = this.velocity.x * DAMPING + ax * gain;
+                this.velocity.y = this.velocity.y * DAMPING + ay * gain;
+                this.velocity.z = this.velocity.z * DAMPING + az * gain;
+
+                // Position update: p += v * dt
+                this.position.x += this.velocity.x * DT;
+                this.position.y += this.velocity.y * DT;
+                this.position.z += this.velocity.z * DT;
+
+                // Sphere boundary reflection (perfect elastic reflection)
+                // Use dynamic sphere boundary
+                const distSq = this.position.x * this.position.x + 
+                               this.position.y * this.position.y + 
+                               this.position.z * this.position.z;
+                const dist = Math.sqrt(distSq);
+                
+                if (dist > sphereBoundary) {
+                    // Normalize position to sphere surface
+                    const factor = sphereBoundary / dist;
+                    this.position.x *= factor;
+                    this.position.y *= factor;
+                    this.position.z *= factor;
+                    
+                    // Reflect velocity: v' = v - 2(v·n)n where n is surface normal
+                    const nx = this.position.x / sphereBoundary;
+                    const ny = this.position.y / sphereBoundary;
+                    const nz = this.position.z / sphereBoundary;
+                    
+                    const dotProduct = this.velocity.x * nx + this.velocity.y * ny + this.velocity.z * nz;
+                    
+                    this.velocity.x -= 2 * dotProduct * nx;
+                    this.velocity.y -= 2 * dotProduct * ny;
+                    this.velocity.z -= 2 * dotProduct * nz;
+                }
+            }
+        }
+
+        // Initialize particles (max pool)
+
+        const particles = [];
+        for (let i = 0; i < MAX_PARTICLES; i++) {
+            particles.push(new Particle());
+        }
+
+        // Active particle count (audio controls amount)
+        let activeCount = MIN_PARTICLES;
+
+        const particleGeometry = new THREE.BufferGeometry();
+        const particleMaterial = new THREE.PointsMaterial({
+            size: PARTICLE_SIZE,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            sizeAttenuation: true
+        });
+        const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particleSystem);
+
+        // Enable bloom for the sphere swarm as well (selective bloom layer)
+        particleSystem.layers.enable(BLOOM_LAYER);
+
+        // Pre-allocate geometry buffers for performance and dynamic count
+        const positions = new Float32Array(MAX_PARTICLES * 3);
+        const colors = new Float32Array(MAX_PARTICLES * 3);
+
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        particleGeometry.setDrawRange(0, activeCount);
+
+        function updateParticleGeometry() {
+            // Scale factor to make particles visible (from [-1,1] to [-20,20])
+            const renderScale = 20.0;
+            
+            for (let i = 0; i < activeCount; i++) {
+                const p = particles[i];
+                positions[i * 3]     = p.position.x * renderScale;
+                positions[i * 3 + 1] = p.position.y * renderScale;
+                positions[i * 3 + 2] = p.position.z * renderScale;
+
+                colors[i * 3]     = p.color.r;
+                colors[i * 3 + 1] = p.color.g;
+                colors[i * 3 + 2] = p.color.b;
+            }
+
+            particleGeometry.attributes.position.needsUpdate = true;
+            particleGeometry.attributes.color.needsUpdate = true;
+            particleGeometry.setDrawRange(0, activeCount);
+        }
+
+        // ===== ANIMATION =====
+        // Cycling colormaps (audio influences bloom and color brightness)
+        const COLORMAPS = [
+            { name: 'Turbo', stops: [
+                [0.00, [0.19,0.07,0.23]],
+                [0.25, [0.10,0.55,0.95]],
+                [0.50, [0.30,0.95,0.55]],
+                [0.75, [0.98,0.86,0.20]],
+                [1.00, [0.93,0.20,0.10]],
+            ]},
+            { name: 'Viridis', stops: [
+                [0.00, [0.27,0.00,0.33]],
+                [0.33, [0.13,0.57,0.55]],
+                [0.66, [0.37,0.79,0.38]],
+                [1.00, [0.99,0.91,0.11]],
+            ]},
+            { name: 'Inferno', stops: [
+                [0.00, [0.00,0.00,0.04]],
+                [0.33, [0.42,0.04,0.33]],
+                [0.66, [0.92,0.35,0.13]],
+                [1.00, [0.99,0.99,0.75]],
+            ]},
+            { name: 'Magma', stops: [
+                [0.00, [0.00,0.00,0.04]],
+                [0.25, [0.28,0.13,0.45]],
+                [0.50, [0.72,0.21,0.47]],
+                [0.75, [0.99,0.52,0.38]],
+                [1.00, [0.99,0.99,0.75]],
+            ]},
+            { name: 'Plasma', stops: [
+                [0.00, [0.05,0.03,0.53]],
+                [0.33, [0.62,0.15,0.69]],
+                [0.66, [0.96,0.45,0.41]],
+                [1.00, [0.94,0.98,0.13]],
+            ]},
+            { name: 'Cool', stops: [
+                [0.00, [0.00,1.00,1.00]],
+                [0.50, [0.50,0.50,1.00]],
+                [1.00, [1.00,0.00,1.00]],
+            ]},
+            { name: 'Hot', stops: [
+                [0.00, [0.04,0.00,0.00]],
+                [0.33, [1.00,0.00,0.00]],
+                [0.66, [1.00,1.00,0.00]],
+                [1.00, [1.00,1.00,1.00]],
+            ]},
+            { name: 'Twilight', stops: [
+                [0.00, [0.89,0.80,0.85]],
+                [0.25, [0.55,0.42,0.69]],
+                [0.50, [0.18,0.24,0.32]],
+                [0.75, [0.55,0.42,0.69]],
+                [1.00, [0.89,0.80,0.85]],
+            ]},
+            { name: 'Greyscale', stops: [
+                [0.00, [0.00,0.00,0.00]],
+                [0.50, [0.50,0.50,0.50]],
+                [1.00, [1.00,1.00,1.00]],
+            ]},
+            { name: 'Cividis', stops: [
+                [0.00, [0.00,0.13,0.30]],
+                [0.33, [0.31,0.38,0.42]],
+                [0.66, [0.77,0.58,0.32]],
+                [1.00, [1.00,0.85,0.16]],
+            ]},
+        ];
+
+        function sampleColormap(stops, t){
+            t = Math.max(0, Math.min(1, t));
+            for (let i=0;i<stops.length-1;i++){
+                const [t0,c0] = stops[i];
+                const [t1,c1] = stops[i+1];
+                if (t >= t0 && t <= t1){
+                    const u = (t - t0) / Math.max(1e-6, (t1 - t0));
+                    return [
+                        c0[0] + (c1[0]-c0[0]) * u,
+                        c0[1] + (c1[1]-c0[1]) * u,
+                        c0[2] + (c1[2]-c0[2]) * u,
+                    ];
+                }
+            }
+            return stops[stops.length-1][1];
+        }
+
+        let cmapA = 0, cmapB = 1, cmapMix = 0;
+
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Only increment time when playing
+            if (isPlaying) {
+                time += 0.016;
+            }
+
+            // Use frozen magnitudes when paused, current magnitudes when playing
+            const activeMagnitudes = isPlaying ? currentMagnitudes : frozenMagnitudes;
+            const avgMagnitude = activeMagnitudes.reduce((a, b) => a + b, 0) / activeMagnitudes.length;
+            
+            // Use low frequency magnitude (0-150Hz) for sphere particles only
+            const activeLowFreqMag = isPlaying ? currentLowFreqMagnitude : frozenLowFreqMagnitude;
+            const sphereMagnitude = activeLowFreqMag; // Sphere reacts only to 0-150Hz
+
+                        // Drive tunnel motion/brightness with audio (subtle when paused)
+            const tNow = time;
+            const dt = (_tunnelLastT === 0) ? 0.016 : Math.min(0.05, Math.max(0.001, tNow - _tunnelLastT));
+            _tunnelLastT = tNow;
+
+            // Speed + intensity mapping (kept conservative to avoid blowout)
+            const mag = Math.max(0.0, Math.min(1.0, avgMagnitude));
+            const speed = (audioLoaded && isPlaying) ? (260.0 + mag * 3600.0) : 0; // Freeze when paused
+            const intensity = (audioLoaded && isPlaying) ? (0.22 + mag * 0.85) : 0.18;
+
+            // Only update tunnel when playing
+            if (isPlaying || !audioLoaded) {
+                // Update particle positions (scroll toward camera and wrap)
+                const pos = tunnelGeo.attributes.position.array;
+                const col = tunnelGeo.attributes.color.array;
+
+                for (let i = 0; i < TUNNEL_COUNT; i++) {
+                    const idx = i * 3;
+
+                    let z = pos[idx + 2];
+                    z += speed * dt;              // move toward camera (z -> 0)
+                    if (z > -TUNNEL_START) z = -(TUNNEL_START + (Math.random() * TUNNEL_LENGTH)); // wrap back to far end
+                    pos[idx + 2] = z;
+
+                    // Depth fade (brighter near camera, dimmer far)
+                    const along = Math.max(0.0, Math.min(1.0, ((-z - TUNNEL_START) / TUNNEL_LENGTH)));
+
+                    // Fade OUT near the tunnel start (near-start should be less visible)
+                    // along=0 at start => low; along=1 at far => full
+                    const startFade = 0.01 + 1.0 * Math.pow(1.0 - along, 9.2);
+
+
+ // 0 near-start .. 1 far
+                    const depth01 = 1.0 - along; // 0 far .. 1 near
+
+                    // Fade OUT near the tunnel start (near-start should be less visible)
+                    // along=0 at start => low; along=1 at far => full
+
+                    // Keep both near and far end visible (prevents a dark ring at the tunnel end)
+                    const near = Math.max(0.0, Math.min(1.0, depth01));      // 0 far .. 1 near
+                    const far  = 1.0 - near;                                // 1 far .. 0 near
+                    const fade = 0.20 + 0.80 * near + 0.25 * far;           // lift far end slightly
+
+                    // Subtle twinkle to avoid flatness
+                    const twinkle = 0.78 + 0.22 * Math.sin(tNow * 2.0 + i * 0.013);
+
+                    const b = Math.max(0.0, Math.min(1.0, intensity * fade * twinkle * tunnelWeights[i] * startFade));
+
+                    col[idx + 0] = b;
+                    col[idx + 1] = b;
+                    col[idx + 2] = b;
+                }
+
+                tunnelGeo.attributes.position.needsUpdate = true;
+                tunnelGeo.attributes.color.needsUpdate = true;
+            }
+            // Only update far cap when playing
+            if (isPlaying || !audioLoaded) {
+                // Update far cap brightness (cap is static in Z; only twinkles with audio)
+                const capCol = capGeo.attributes.color.array;
+                for (let i = 0; i < CAP_COUNT; i++) {
+                    const idx = i * 3;
+
+                    // Emphasize the cap when audio is stronger, but keep it subtle
+                    const tw = 0.84 + 0.16 * Math.sin(tNow * 1.10 + i * 0.019);
+                    const b  = Math.max(0.0, Math.min(1.0, (0.16 + intensity * 0.62) * tw * capWeights[i]));
+
+                    capCol[idx + 0] = b;
+                    capCol[idx + 1] = b;
+                    capCol[idx + 2] = b;
+                }
+                capGeo.attributes.color.needsUpdate = true;
+            }
+
+            // Material response to magnitude (size/opacity)
+            tunnelMat.size = (audioLoaded && isPlaying) ? (0.70 + mag * 1.10) : 0.75;
+            tunnelMat.opacity = (audioLoaded && isPlaying) ? (0.30 + mag * 0.40) : 0.28;
+
+            // Keep the vanishing point subtle but present
+            vpMat.size = (audioLoaded && isPlaying) ? (1.1 + mag * 1.4) : 1.25;
+            vpMat.opacity = (audioLoaded && isPlaying) ? (0.10 + mag * 0.22) : 0.12;
+
+            capMat.size = (audioLoaded && isPlaying) ? (0.01 + mag * 0.01) : 0.92;
+            capMat.opacity = (audioLoaded && isPlaying) ? (0.14 + mag * 0.22) : 0.14;
+
+            // Far glow: subtle at rest, blooms with magnitude (removes any remaining black disk)
+            glowMat.opacity = (audioLoaded && isPlaying) ? (0.10 + mag * 0.35) : 0.12;
+            const glowScale = (audioLoaded && isPlaying) ? (TUNNEL_RADIUS * (2.6 + mag * 1.0)) : (TUNNEL_RADIUS * 2.75);
+            glowSprite.scale.set(glowScale, glowScale, 1);
+
+            // Keep tunnel centered and aligned with camera (no rotation drift)
+            tunnelGroup.position.copy(camera.position);
+            tunnelGroup.quaternion.copy(camera.quaternion);
+
+            // Particle count: constant at maximum
+            activeCount = MAX_PARTICLES;
+
+            // Speed: sphere particles react to 0-150Hz only
+            const speedMultiplier = (audioLoaded && isPlaying)
+                ? (5.6+ sphereMagnitude * 25.6)
+                : 0.7;
+
+            // Color: cycle through colormaps; sphere reacts to 0-150Hz only
+            const cycleSpeed = (audioLoaded && isPlaying) ? (0.08 + sphereMagnitude * 0.42) : 0.06;
+            
+            // Only cycle colors when playing
+            if (isPlaying) {
+                cmapMix += 0.016 * cycleSpeed;
+                if (cmapMix >= 1) {
+                    cmapMix = 0;
+                    cmapA = cmapB;
+                    cmapB = (cmapB + 1) % COLORMAPS.length;
+                }
+            }
+
+            const brightness = (audioLoaded && isPlaying) ? (0.25 + sphereMagnitude * 0.95) : 0.25;
+
+            // Update swarm using 4D noise field (no inter-particle interactions)
+            // Sphere particles react to 0-150Hz only
+            const amp = Math.max(0, Math.min(1, sphereMagnitude));
+            
+            // Noise scale varies with low frequency magnitude for turbulence
+            // Higher magnitude = more turbulent/chaotic noise field
+            // Baseline (no audio): 0.125x, Maximum (full audio): 1.25x
+            const dynamicNoiseScale = NOISE_SCALE * (0.125 + sphereMagnitude * 1.125);
+            
+            // Dynamic sphere boundary - pulsates with low frequencies
+            // Baseline (no audio): 1.0, Maximum (full audio): 2.0
+            const dynamicSphereBoundary = SPHERE_BOUNDARY * (1.0 + sphereMagnitude * 0.70);
+            
+            // Only animate particles when audio is loaded and playing
+            if (audioLoaded && isPlaying) {
+                for (let i = 0; i < activeCount; i++) {
+                    const p = particles[i];
+                    p.update(time, amp, dynamicNoiseScale, dynamicSphereBoundary);
+                    
+                    // Color based on distance from sphere center
+                    const distFromCenter = Math.sqrt(
+                        p.position.x * p.position.x +
+                        p.position.y * p.position.y +
+                        p.position.z * p.position.z
+                    );
+                    const normalizedDist = Math.min(distFromCenter / dynamicSphereBoundary, 1.0);
+                    
+                    // Sample both colormaps at this distance
+                    const cA = sampleColormap(COLORMAPS[cmapA].stops, normalizedDist);
+                    const cB = sampleColormap(COLORMAPS[cmapB].stops, normalizedDist);
+                    
+                    // Mix between the two colormaps
+                    const c = [
+                        cA[0] + (cB[0] - cA[0]) * cmapMix,
+                        cA[1] + (cB[1] - cA[1]) * cmapMix,
+                        cA[2] + (cB[2] - cA[2]) * cmapMix,
+                    ];
+                    
+                    p.color.setRGB(c[0] * brightness, c[1] * brightness, c[2] * brightness);
+                }
+            }
+            // When paused, don't update particles at all - keep visualization frozen            // Background is fixed (no magnitude-driven color changes)
+            // Update progress bar
+            if (audioLoaded && audioElement) {
+                const progressPercent = (audioElement.currentTime / audioElement.duration) * 100;
+                document.getElementById('progress-fill').style.width = progressPercent + '%';
+                
+                // Update time displays
+                const currentMinutes = Math.floor(audioElement.currentTime / 60);
+                const currentSeconds = Math.floor(audioElement.currentTime % 60);
+                const durationMinutes = Math.floor(audioElement.duration / 60);
+                const durationSeconds = Math.floor(audioElement.duration % 60);
+                
+                document.getElementById('current-time').textContent = 
+                    `${currentMinutes}:${currentSeconds.toString().padStart(2, '0')}`;
+                document.getElementById('duration-time').textContent = 
+                    `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
+            }
+
+            updateParticleGeometry();
+            // Camera fixed (no motion)
+            camera.lookAt(0, 0, 0);
+
+            // Update bloom strength based on audio magnitude (maintains strength when paused)
+            // Conservative range to avoid artifacts
+            bloomPass.strength = audioLoaded ? (0.60 + avgMagnitude * 3.20) : 0.55;
+
+            // Render bloom from tunnel-only layer, then composite over full scene
+            camera.layers.set(BLOOM_LAYER);
+            bloomComposer.render();
+            camera.layers.set(0);
+            finalComposer.render();
+}
+
+        // ===== AUDIO ANALYSIS =====
+        function analyzeAudio() {
+            requestAnimationFrame(analyzeAudio);
+
+            if (analyser && audioLoaded && isPlaying) {
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(dataArray);
+
+                const sampleRate = audioContext.sampleRate;
+                const binCount = analyser.frequencyBinCount;
+
+                // Calculate all frequency bands for tunnel
+                FREQ_BANDS.forEach((band, index) => {
+                    const minBin = Math.floor((band.min / (sampleRate / 2)) * binCount);
+                    const maxBin = Math.floor((band.max / (sampleRate / 2)) * binCount);
+
+                    let sum = 0;
+                    for (let i = minBin; i < maxBin; i++) {
+                        sum += dataArray[i];
+                    }
+                    currentMagnitudes[index] = sum / (maxBin - minBin) / 255;
+                });
+
+                // Calculate low frequency magnitude (0-150Hz) for sphere particles
+                const lowFreqMinBin = Math.floor((0 / (sampleRate / 2)) * binCount);
+                const lowFreqMaxBin = Math.floor((150 / (sampleRate / 2)) * binCount);
+                let lowFreqSum = 0;
+                for (let i = lowFreqMinBin; i < lowFreqMaxBin; i++) {
+                    lowFreqSum += dataArray[i];
+                }
+                currentLowFreqMagnitude = lowFreqSum / (lowFreqMaxBin - lowFreqMinBin) / 255;
+            } else {
+                // Reset when not playing
+                currentMagnitudes.fill(0);
+                currentLowFreqMagnitude = 0;
+            }
+        }
+
+        // ===== UI CONTROLS =====
+        const loadBtn = document.getElementById('load-btn');
+        const playBtn = document.getElementById('play-btn');
+        const fileInput = document.getElementById('file-input');
+        const audioNameEl = document.getElementById('audio-name');
+
+        loadBtn.addEventListener('click', () => {
+            console.log('Load button clicked');
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) {
+                console.log('No file selected');
+                return;
+            }
+
+            console.log('Loading file:', file.name, file.type);
+            loadBtn.textContent = 'Loading...';
+            loadBtn.disabled = true;
+
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                if (!analyser) {
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 4096;
+                    analyser.smoothingTimeConstant = 0.8;
+                }
+
+                if (!gainNode) {
+                    gainNode = audioContext.createGain();
+                    gainNode.gain.value = volumeSlider.value / 100;
+                }
+
+                // Stop and cleanup previous audio
+                if (audioElement) {
+                    audioElement.pause();
+                    audioElement.currentTime = 0;
+                }
+                
+                // Disconnect old source if it exists
+                if (audioSource) {
+                    try {
+                        audioSource.disconnect();
+                    } catch (e) {
+                        console.log('Source already disconnected');
+                    }
+                    audioSource = null;
+                }
+
+                // Create new audio element
+                audioElement = new Audio();
+                audioElement.crossOrigin = "anonymous";
+                
+                // Create object URL
+                const url = URL.createObjectURL(file);
+                console.log('Created URL:', url);
+                
+                // Wait for the audio to be loadable
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Audio load timeout'));
+                    }, 10000);
+
+                    audioElement.addEventListener('loadedmetadata', () => {
+                        clearTimeout(timeout);
+                        console.log('Audio metadata loaded');
+                        resolve();
+                    }, { once: true });
+
+                    audioElement.addEventListener('error', (e) => {
+                        clearTimeout(timeout);
+                        console.error('Audio error:', e, audioElement.error);
+                        reject(new Error('Failed to load audio'));
+                    }, { once: true });
+
+                    audioElement.src = url;
+                    audioElement.load();
+                });
+
+                // Connect audio graph: source -> analyser (for visualization) and source -> gain -> destination (for playback)
+                audioSource = audioContext.createMediaElementSource(audioElement);
+                audioSource.connect(analyser);
+                audioSource.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                console.log('Audio source connected to analyser and gain node');
+
+                // Mark as loaded
+                audioLoaded = true;
+                playBtn.disabled = false;
+                audioNameEl.textContent = file.name;
+                
+                // Show progress bar
+                document.getElementById('progress-container').style.display = 'block';
+
+                // Add event listener for when audio ends
+                audioElement.addEventListener('ended', () => {
+                    isPlaying = false;
+                    playBtn.textContent = '▶ Play';
+                    playBtn.className = 'play';
+                });
+
+                console.log('Audio loaded successfully!');
+                loadBtn.textContent = 'Load Audio File';
+                loadBtn.disabled = false;
+
+            } catch (error) {
+                console.error('Failed to load audio:', error);
+                audioNameEl.textContent = 'Load failed - try again';
+                loadBtn.textContent = 'Load Audio File';
+                loadBtn.disabled = false;
+            }
+        });
+
+        playBtn.addEventListener('click', async () => {
+            if (!audioLoaded) return;
+
+            if (isPlaying) {
+                audioElement.pause();
+                isPlaying = false;
+                // Store current magnitudes to freeze visualization
+                frozenMagnitudes = [...currentMagnitudes];
+                frozenLowFreqMagnitude = currentLowFreqMagnitude;
+                playBtn.textContent = '▶ Play';
+                playBtn.className = 'play';
+            } else {
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                await audioElement.play();
+                isPlaying = true;
+                playBtn.textContent = '⏸ Pause';
+                playBtn.className = 'pause';
+            }
+        });
+
+        // Progress bar scrub functionality
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.addEventListener('click', (e) => {
+            if (!audioLoaded || !audioElement) return;
+            
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percentage = clickX / rect.width;
+            const newTime = percentage * audioElement.duration;
+            
+            audioElement.currentTime = newTime;
+        });
+
+        // Volume control
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeValue = document.getElementById('volume-value');
+        
+        volumeSlider.addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            if (gainNode) {
+                gainNode.gain.value = volume;
+            }
+            volumeValue.textContent = e.target.value + '%';
+        });
+
+        // Fullscreen functionality with 'F' key
+        const visualizerContainer = document.querySelector('.visualizer-container');
+        const controlsPanel = document.getElementById('controls');
+        
+        document.addEventListener('keydown', (e) => {
+            // Fullscreen toggle with F key
+            if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                if (!document.fullscreenElement) {
+                    visualizerContainer.requestFullscreen().catch(err => {
+                        console.error('Error attempting to enable fullscreen:', err);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+            
+            // Play/Pause with spacebar
+            if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();
+                if (audioLoaded) {
+                    playBtn.click();
+                }
+            }
+            
+            // Hide/Show GUI with H key
+            if (e.key === 'h' || e.key === 'H') {
+                e.preventDefault();
+                controlsPanel.classList.toggle('hidden');
+            }
+        });
+
+        // ===== START =====
+        animate();
+        analyzeAudio();
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+            bloomComposer.setSize(width, height);
+            finalComposer.setSize(width, height);
+            
+            // Update bloom resolution
+            bloomPass.resolution = new THREE.Vector2(width, height);
+        });
+    </script>
+    </div> <!-- End visualizer-container -->
+</body>
+</html>
