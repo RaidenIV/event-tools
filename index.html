@@ -780,6 +780,7 @@
         function goToTool(tool) {
             const base = "https://raideniv.github.io/event-tools/";
             const base2 = "https://budgetapp-production-c754.up.railway.app/";
+            const base3 = "djdatabase-production.up.railway.app"
 
             const routes = {
                 'sheet': base + "google_sheet.html",
@@ -793,7 +794,7 @@
                 'ros': base + "ros_generator.html",
                 'notes': base + "notes.html",
                 'code_block': base + "event_code_block.html",
-                'database': base + "dj_profiler.html"
+                'database': base3
             };
 
             if (routes[tool]) {
@@ -803,3 +804,4 @@
     </script>
 </body>
 </html>
+
