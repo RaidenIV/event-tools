@@ -7,21 +7,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
-/* SQUARESPACE OVERRIDE STYLES */
-        #page, .sqs-layout, .page-section, .content-wrapper, .content, .sqs-block {
-            padding: 0 !important;
-            margin: 0 !important;
+        /* GLOBAL FONT ENFORCEMENT */
+        #event-tools-dashboard, 
+        #event-tools-dashboard *, 
+        #event-tools-dashboard button, 
+        #event-tools-dashboard h1, 
+        #event-tools-dashboard h3, 
+        #event-tools-dashboard p, 
+        #event-tools-dashboard a {
+            font-family: 'Rajdhani', sans-serif !important;
         }
 
-        html, body {
-            overflow: hidden !important;
-            height: 100vh !important;
-            max-height: 100vh !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            background: #1a1a1a !important; /* Neomorphic base color */
-        }
-
+        /* SQUARESPACE OVERRIDE STYLES */
         #event-tools-dashboard {
             --bg: #1a1a1a;
             --light-shadow: rgba(255, 255, 255, 0.05);
@@ -31,29 +28,64 @@
             
             background: var(--bg) !important;
             color: #ffffff !important;
-            height: 100vh !important;
             padding: 10px 20px !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
-            justify-content: flex-start !important; /* Move content to top */
-            font-family: 'Rajdhani', sans-serif !important;
+            justify-content: flex-start !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+        }
+
+        /* DESKTOP: Fixed one-page layout */
+        @media (min-width: 900px) {
+            html, body {
+                overflow: hidden !important;
+                height: 100vh !important;
+            }
+            #event-tools-dashboard {
+                height: 100vh !important;
+                overflow: hidden !important;
+            }
+        }
+
+        /* MOBILE: Refined scrolling to stop at last card */
+        @media (max-width: 899px) {
+            html, body, 
+            #page, .page-section, .content-wrapper, 
+            .sqs-layout, .sqs-block {
+                background-color: #1a1a1a !important;
+                margin-bottom: 0 !important;
+                padding-bottom: 0 !important;
+                height: auto !important; 
+            }
+
+            #event-tools-dashboard {
+                min-height: 100vh !important;
+                height: auto !important; 
+                padding-top: 60px !important;
+                padding-bottom: 20px !important; 
+                overflow-y: visible !important;
+            }
+
+            footer, #footer-sections {
+                display: none !important;
+            }
         }
 
         .tools-container {
             max-width: 1400px !important;
             width: 100% !important;
-            margin-top: 10px !important; /* High position to save room */
+            margin-top: 10px !important;
         }
 
-        /* HEADER - Tightened for no-scroll */
         .tools-header {
             text-align: center !important;
             margin-bottom: 15px !important;
         }
 
         .tools-logo {
-            width: 100px !important; /* Smaller logo */
+            width: 100px !important;
             height: auto !important;
             margin: 0 auto 5px auto !important;
             display: block !important;
@@ -61,7 +93,7 @@
         }
 
         .tools-title {
-            font-size: 2.2rem !important; /* Reduced size */
+            font-size: 2.2rem !important;
             font-weight: 700 !important;
             margin: 0 !important;
             color: #ffffff !important;
@@ -75,43 +107,43 @@
         }
 
         /* NAVIGATION */
-.nav-dropdown { position: fixed; top: 18px; left: 18px; z-index: 9999; }
-        .nav-toggle {
+        #event-tools-dashboard .nav-dropdown { position: fixed; top: 18px; left: 18px; z-index: 9999; }
+        #event-tools-dashboard .nav-toggle {
             display: flex; align-items: center; justify-content: center;
             width: 44px; height: 44px; border-radius: 12px; border: 0; cursor: pointer;
             background: var(--bg); color: #fff;
             box-shadow: 4px 4px 10px var(--dark-shadow), -2px -2px 8px var(--light-shadow);
             transition: 0.2s;
         }
-        .nav-toggle:active { transform: scale(0.95); }
-        .nav-toggle-icon { position: relative; width: 18px; height: 2px; background: currentColor; transition: 0.3s; }
+        #event-tools-dashboard .nav-toggle-icon { position: relative; width: 18px; height: 2px; background: currentColor; transition: 0.3s; }
         .nav-toggle-icon::before, .nav-toggle-icon::after { content: ""; position: absolute; width: 18px; height: 2px; background: currentColor; left: 0; transition: 0.3s; }
         .nav-toggle-icon::before { top: -6px; }
         .nav-toggle-icon::after { top: 6px; }
-        .active .nav-toggle-icon { background: transparent; }
-        .active .nav-toggle-icon::before { top: 0; transform: rotate(45deg); }
-        .active .nav-toggle-icon::after { top: 0; transform: rotate(-45deg); }
-
-        .nav-menu {
+        #event-tools-dashboard .active .nav-toggle-icon { background: transparent; }
+        #event-tools-dashboard .active .nav-toggle-icon::before { top: 0; transform: rotate(45deg); }
+        #event-tools-dashboard .active .nav-toggle-icon::after { top: 0; transform: rotate(-45deg); }
+        #event-tools-dashboard .nav-menu {
             position: absolute; top: 55px; left: 0; background: var(--bg);
             border-radius: 12px; padding: 8px; min-width: 200px;
             box-shadow: 10px 10px 25px rgba(0,0,0,0.5);
             display: none;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .active .nav-menu { display: block; animation: fadeInUp 0.2s ease; }
+        #event-tools-dashboard .active .nav-menu { display: block; animation: fadeInUp 0.2s ease; }
         .nav-menu a { display: block; padding: 12px; color: #ccc; text-decoration: none; border-radius: 8px; font-weight: 600; transition: 0.2s; }
         .nav-menu a:hover { background: rgba(0, 153, 255, 0.1); color: var(--primary); }
 
-/* GRID - Adjusted for common desktop heights */
+        /* GRID */
         .tools-grid {
             display: grid !important;
-            grid-template-columns: repeat(4, 1fr) !important;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
             gap: 12px !important;
             list-style: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        /* NEOMORPHIC CARD */
+        /* CARD STYLES */
         .tool-card {
             background: var(--bg) !important;
             border-radius: 15px !important;
@@ -122,21 +154,17 @@
             gap: 12px !important;
             transition: all 0.3s ease !important;
             box-shadow: 6px 6px 12px var(--dark-shadow), -3px -3px 10px var(--light-shadow) !important;
-            height: 90px !important; /* Fixed height for consistency */
+            height: 110px !important;
             border: 1px solid rgba(255,255,255,0.02) !important;
+            box-sizing: border-box !important;
         }
 
         .tool-card:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 8px 8px 16px var(--dark-shadow), -4px -4px 12px var(--light-shadow) !important;
+            transform: translateY(-4px) !important;
+            border-color: var(--primary) !important;
+            box-shadow: 8px 8px 18px var(--dark-shadow), -4px -4px 12px var(--light-shadow), 0 0 10px var(--primary-glow) !important;
         }
 
-        .tool-card:active {
-            box-shadow: inset 5px 5px 10px var(--dark-shadow), inset -3px -3px 8px var(--light-shadow) !important;
-            transform: translateY(1px) !important;
-        }
-
-        /* NEOMORPHIC ICON WELL */
         .tool-icon {
             width: 42px !important;
             height: 42px !important;
@@ -148,9 +176,11 @@
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            flex-shrink: 0 !important;
         }
 
-        .tool-content { flex: 1 !important; overflow: hidden !important; }
+        .tool-icon svg { width: 100%; height: 100%; }
+        .tool-content { flex: 1 !important; min-width: 0 !important; }
 
         .tool-title {
             font-size: 1.25rem !important;
@@ -167,38 +197,24 @@
             color: rgba(255, 255, 255, 0.5) !important;
             line-height: 1.2 !important;
             margin: 0 !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
         }
 
         .tool-arrow {
             width: 16px !important;
             color: rgba(255, 255, 255, 0.1) !important;
             transition: 0.3s !important;
+            flex-shrink: 0 !important;
         }
 
         .tool-card:hover .tool-arrow { color: var(--primary) !important; }
 
-        /* RESPONSIVE */
-        @media (max-width: 1100px) { .tools-grid { grid-template-columns: repeat(3, 1fr) !important; } }
-        @media (max-width: 850px) { .tools-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-        @media (max-width: 600px) {
-            html, body { overflow-y: auto !important; height: auto !important; }
-            #event-tools-dashboard { height: auto !important; padding-top: 60px !important; }
-            .tools-grid { grid-template-columns: 1fr !important; }
-        }
-.nav-dropdown.active .nav-menu { display: block !important; }
-
-
-        /* ============================================================
-           NEO GLOW HOVER (thin blue outline + glow) - from neo_glow.html
-           ============================================================ */
-        .tool-card{
-            border: 1px solid rgba(255,255,255,0.03) !important;
-        }
-
-        .tool-card:hover{
-            transform: translateY(-4px) !important;
-            border-color: var(--primary) !important;
-            box-shadow: 8px 8px 18px var(--dark-shadow), -4px -4px 12px var(--light-shadow), 0 0 10px var(--primary-glow) !important;
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -223,7 +239,6 @@
             </div>
 
             <div class="tools-grid">
-<!-- To Do List -->
                 <a href="javascript:void(0)" onclick="goToTool('sheet')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -242,7 +257,6 @@
                     </div>
                 </a>
 
-                <!-- Master Sheet -->
                 <a href="javascript:void(0)" onclick="goToTool('master')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -262,7 +276,6 @@
                     </div>
                 </a>
 
-                <!-- Guest List Generator -->
                 <a href="javascript:void(0)" onclick="goToTool('guest_list')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -283,7 +296,6 @@
                     </div>
                 </a>
 
-                <!-- Set Times Generator -->
                 <a href="javascript:void(0)" onclick="goToTool('set_times')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -302,7 +314,6 @@
                     </div>
                 </a>
 
-                <!-- Contest Wheel -->
                 <a href="javascript:void(0)" onclick="goToTool('contest')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -325,7 +336,6 @@
                     </div>
                 </a>
 
-                <!-- Offer PDF Generator -->
                 <a href="javascript:void(0)" onclick="goToTool('pdf')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -347,7 +357,6 @@
                     </div>
                 </a>
 
-                <!-- Budget Calculator -->
                 <a href="javascript:void(0)" onclick="goToTool('budget')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -366,7 +375,6 @@
                     </div>
                 </a>
 
-                <!-- Invoice Generator -->
                 <a href="javascript:void(0)" onclick="goToTool('invoice')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -388,7 +396,6 @@
                     </div>
                 </a>
 
-                <!-- Advance Email Generator -->
                 <a href="javascript:void(0)" onclick="goToTool('ros')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -407,7 +414,6 @@
                     </div>
                 </a>
 
-                <!-- XMG Notes -->
                 <a href="javascript:void(0)" onclick="goToTool('notes')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -428,7 +434,6 @@
                     </div>
                 </a>
 
-                <!-- Code Block Generator -->
                 <a href="javascript:void(0)" onclick="goToTool('code_block')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -448,7 +453,6 @@
                     </div>
                 </a>
 
-                <!-- DJ Database -->
                 <a href="javascript:void(0)" onclick="goToTool('database')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -468,8 +472,7 @@
                         </svg>
                     </div>
                 </a>
-            
-                <!-- Project Tracker -->
+
                 <a href="javascript:void(0)" onclick="goToTool('project_tracker')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -480,7 +483,7 @@
                     </div>
                     <div class="tool-content">
                         <h3 class="tool-title">Project Tracker</h3>
-                        <p class="tool-desc">A "To Do" style app designed to track code projects</p>
+                        <p class="tool-desc">Track and organize code projects</p>
                     </div>
                     <div class="tool-arrow">
                         <svg fill="none" viewBox="0 0 24 24">
@@ -488,14 +491,11 @@
                         </svg>
                     </div>
                 </a>
-</div>
-        </div>
             </div>
         </div>
     </div>
 
     <script>
-/* ======= NAV DROPDOWN ======= */
         const navDropdown = document.getElementById('navDropdown');
         const navToggle = document.getElementById('navToggle');
 
@@ -510,19 +510,11 @@
             }
         });
 
-        const navLinks = document.querySelectorAll('.nav-menu a');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function () {
-                navDropdown.classList.remove('active');
-            });
-        });
-
-        /* ======= TOOL NAVIGATION ======= */
         function goToTool(tool) {
             const base = "https://raideniv.github.io/event-tools/";
             const base2 = "https://budgetapp-production-c754.up.railway.app/";
             const base3 = "https://djdatabase-production.up.railway.app/";
-            const base4 = "https://projecttracker-production-19db.up.railway.app/"
+            const base4 = "https://projecttracker-production-19db.up.railway.app/";
 
             const routes = {
                 'sheet': base + "google_sheet.html",
