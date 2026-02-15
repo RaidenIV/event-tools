@@ -511,6 +511,37 @@
                         </svg>
                     </div>
                 </a>
+
+                <!-- QR Code Generator -->
+                <a href="javascript:void(0)" onclick="goToTool('qr_code')" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" rx="1"/>
+                            <rect x="5" y="5" width="3" height="3" fill="currentColor"/>
+                            <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" rx="1"/>
+                            <rect x="16" y="5" width="3" height="3" fill="currentColor"/>
+                            <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" rx="1"/>
+                            <rect x="5" y="16" width="3" height="3" fill="currentColor"/>
+                            <rect x="14" y="14" width="2" height="2" fill="currentColor"/>
+                            <rect x="17" y="14" width="2" height="2" fill="currentColor"/>
+                            <rect x="20" y="14" width="1" height="2" fill="currentColor"/>
+                            <rect x="14" y="17" width="2" height="2" fill="currentColor"/>
+                            <rect x="17" y="17" width="2" height="2" fill="currentColor"/>
+                            <rect x="20" y="17" width="1" height="4" fill="currentColor"/>
+                            <rect x="14" y="20" width="2" height="1" fill="currentColor"/>
+                            <rect x="17" y="20" width="2" height="1" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="tool-content">
+                        <h3 class="tool-title">QR Code Generator</h3>
+                        <p class="tool-desc">Generates custom QR codes</p>
+                    </div>
+                    <div class="tool-arrow">
+                        <svg fill="none" viewBox="0 0 24 24">
+                            <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
@@ -550,7 +581,8 @@
                 'code_block': base + "event_code_block.html",
                 'database': base3,
                 'project_tracker': base4,
-                'gallery': "/gallery"
+                'gallery': "/gallery",
+                'qr_code': base + "qr_code_generator.html"
             };
 
             if (routes[tool]) {
