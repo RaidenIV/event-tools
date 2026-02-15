@@ -491,6 +491,26 @@
                         </svg>
                     </div>
                 </a>
+
+                                <!-- Gallery -->
+                <a href="javascript:void(0)" onclick="goToTool('gallery')" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                          <circle cx="8.5" cy="8.5" r="1.5"/>
+                          <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                    </div>
+                    <div class="tool-content">
+                        <h3 class="tool-title">Gallery</h3>
+                        <p class="tool-desc">Flyers, logos, and other image assets</p>
+                    </div>
+                    <div class="tool-arrow">
+                        <svg fill="none" viewBox="0 0 24 24">
+                            <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
@@ -529,7 +549,8 @@
                 'notes': base + "notes.html",
                 'code_block': base + "event_code_block.html",
                 'database': base3,
-                'project_tracker': base4
+                'project_tracker': base4,
+                'gallery': "/gallery"
             };
 
             if (routes[tool]) {
