@@ -27,6 +27,15 @@
     --light: #ffffff;
 }
 
+/* --- Three.js background layer --- */
+#three-bg{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #000; /* fallback */
+}
+
 
 /* Navigation Dropdown */
 .nav-dropdown {
@@ -102,7 +111,7 @@
     right: 0;
     bottom: 0;
     font-family: 'Rajdhani', sans-serif !important;
-    background: var(--darker);
+    background: rgba(0, 0, 0, 0.55);
     color: var(--light);
     overflow: hidden;
     display: flex;
@@ -110,7 +119,7 @@
     align-items: center;
     justify-content: flex-start;
     padding: 4rem 5%;
-    z-index: 9999;
+    z-index: 10;
 }
 
 #contact-container * {
@@ -482,11 +491,67 @@
   }
 }
 
+
+/* --- Responsive desktop height tuning (1366x768, 1440x900, etc.) --- */
+/* Keep the design consistent across common desktop sizes WITHOUT scaling the whole page. */
+#contact-container{
+  /* Was: padding: 4rem 5%; */
+  padding: clamp(24px, 4vh, 64px) 5%;
+}
+
+/* Scale key vertical spacing gently (no layout breakage) */
+.logo-container{
+  margin-bottom: clamp(16px, 2.5vh, 40px);
+}
+
+.logo{
+  width: clamp(120px, 12vw, 200px);
+}
+
+.page-title{
+  font-size: clamp(2.4rem, 3.2vw, 3.5rem);
+  margin-bottom: clamp(16px, 2.5vh, 40px);
+}
+
+.forms-container{
+  gap: clamp(12px, 1.6vw, 24px);
+  margin-bottom: clamp(12px, 2vh, 28px);
+}
+
+.social-container{
+  margin-top: clamp(10px, 2vh, 24px);
+}
+
+/* 1440x900 is a common "short-ish" desktop height: tighten spacing, but don't introduce a scroll container */
+@media (max-height: 900px){
+  #contact-container{
+    padding: 2.5rem 5%;
+    overflow: hidden;          /* preserve existing visual effects */
+  }
+}
+
+/* Very short desktop heights (e.g., 1366x768): allow scrolling so nothing gets clipped */
+@media (max-height: 800px){
+  #contact-container{
+    padding: 1.5rem 5%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .social-container{
+    margin-bottom: 0 !important;
+  }
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Three.js Background Container -->
+<div id="three-bg"></div>
 
 <div id="contact-container">
 
@@ -700,4 +765,204 @@ navLinks.forEach(link => {
         navDropdown.classList.remove('active');
     });
 });
+</script>
+
+<script type="module">
+  import * as THREE from "https://unpkg.com/three@0.160.1/build/three.module.js";
+
+  const mount = document.getElementById("three-bg");
+  if (!mount) throw new Error("three-bg mount not found");
+
+  // Basic WebGL support check
+  const canvas = document.createElement("canvas");
+  const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+  if (!gl) {
+    mount.style.background = "#000";
+  } else {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    mount.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x000000, 40, 100); // Add subtle fog for depth
+
+    const camera = new THREE.PerspectiveCamera(
+      12.5,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      200
+    );
+    camera.position.set(0, 18, 28);
+    camera.lookAt(0, 0, 0);
+
+    // Lights
+    const key = new THREE.DirectionalLight(0xffffff, 4.0); // Main key light    
+    key.position.set(10, 30, 10);
+    key.castShadow = true;
+    key.shadow.mapSize.width = 2048;
+    key.shadow.mapSize.height = 2048;
+    key.shadow.camera.left = -30;
+    key.shadow.camera.right = 30;
+    key.shadow.camera.top = 30;
+    key.shadow.camera.bottom = -30;
+    key.shadow.camera.near = 0.5;
+    key.shadow.camera.far = 100;
+    key.shadow.bias = -0.0001;
+    scene.add(key);
+
+    const rim = new THREE.DirectionalLight(0xffffff, 2.5); // Rim light
+    rim.position.set(-20, 15, -10);
+    rim.castShadow = true;
+    rim.shadow.mapSize.width = 2048;
+    rim.shadow.mapSize.height = 2048;
+    rim.shadow.camera.left = -30;
+    rim.shadow.camera.right = 30;
+    rim.shadow.camera.top = 30;
+    rim.shadow.camera.bottom = -30;
+    scene.add(rim);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.3));// Base ambient light - reduced to make shadows more visible
+
+    // Hex tiles (instanced)
+    const HEX_R = 0.65; // Hexagon radius (distance from center to vertex)
+    const HEX_H = 4.5; // Hexagon height
+
+    const hexGeo = new THREE.CylinderGeometry(HEX_R, HEX_R, 1, 6, 1, false);
+    hexGeo.rotateY(Math.PI / 6); //
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x242424, // Lighter grey
+      roughness: 0.0, // Smooth, reflective surface
+      metalness: 0.9, // Highly metallic for strong reflections
+      emissive: 0x000000,     // No emissive color
+      emissiveIntensity: 0.0      // No emissive glow
+    });
+
+    const isMobile = matchMedia("(max-width: 768px)").matches;
+    const GRID = isMobile ? 34 : 52; // Number of hexes along the width, reduced for mobile to maintain performance
+    const rows = Math.round(GRID * 0.72*2); // Adjust rows based on grid width for a balanced layout
+    const count = GRID * rows; // Total number of hex tiles
+
+    const mesh = new THREE.InstancedMesh(hexGeo, mat, count);
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+
+    // Ground plane to receive shadows
+    const groundGeo = new THREE.PlaneGeometry(100, 100);
+    const groundMat = new THREE.MeshStandardMaterial({ 
+      color: 0x0a0a0a,
+      roughness: 0.8,
+      metalness: 0.2
+    });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -2.5;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const xStep = HEX_R * 1.5;
+    const zStep = HEX_R * Math.sqrt(3);
+
+    const tile = new Array(count);
+    let k = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < GRID; c++) {
+        const x = (c - GRID / 2) * xStep;
+        const z = (r - rows / 2) * zStep + (c % 2 ? zStep * 0.5 : 0);
+        tile[k++] = { x, z };
+      }
+    }
+
+    // Fast layered trig "noise"
+    function fBm(x, z, t) {
+      let a = 1.0, f = 0.12, sum = 0.0;
+      for (let i = 0; i < 4; i++) {
+        sum += a * Math.sin((x * f + t * 0.35) + Math.cos(z * f - t * 0.25));
+        sum += a * Math.cos((z * f - t * 0.30) + Math.sin(x * f + t * 0.20));
+        a *= 0.5;
+        f *= 2.05;
+      }
+      return sum * 0.55;
+    }
+
+    // Subtle parallax
+    const pointer = { x: 0, y: 0 };
+    window.addEventListener("mousemove", (e) => {
+      pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+      pointer.y = (e.clientY / window.innerHeight) * 2 - 1;
+    }, { passive: true });
+
+    const dummy = new THREE.Object3D();
+    const baseY = -2.0;
+
+    // Movement reversal tracking with smooth transitions
+    let currentDirection = 1; // Current direction (smoothly animated)
+    let targetDirection = 1;  // Target direction (1 or -1)
+    let lastHoveredCard = -1;
+    let animationTime = 0; // Separate time tracking that can go forward/backward
+
+    // Add hover listeners to FORM CARDS
+    const formCards = document.querySelectorAll('.form-card');
+    formCards.forEach((card, index) => {
+      card.addEventListener('mouseenter', () => {
+        // Only reverse if hovering over a different card
+        if (lastHoveredCard !== index) {
+          targetDirection *= -1; // Flip target direction
+          lastHoveredCard = index;
+        }
+      });
+    });
+
+    let lastFrameTime = 0;
+
+    function animate(tMs) {
+      // Calculate delta time
+      const deltaTime = lastFrameTime === 0 ? 0 : (tMs - lastFrameTime) * 0.001;
+      lastFrameTime = tMs;
+
+      // Smoothly transition current direction toward target direction
+      currentDirection = THREE.MathUtils.lerp(currentDirection, targetDirection, 0.05);
+      
+      // Update animation time based on current direction (maintains constant speed)
+      animationTime += deltaTime * currentDirection;
+
+      const px = pointer.x * 1.6;
+      const py = pointer.y * 0.9;
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, px, 0.04);
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 18 + (-py), 0.04);
+      camera.lookAt(0, 0, 0);
+
+      for (let i = 0; i < count; i++) {
+        const { x, z } = tile[i];
+
+        const n = fBm(x, z, animationTime);
+        const h = THREE.MathUtils.clamp((n + 1.25) * 0.55, 0.1, 1.0);
+
+        dummy.position.set(x, baseY + h * (HEX_H * 0.35), z);
+        dummy.scale.set(1, h * HEX_H, 1);
+        dummy.rotation.y = 0.10 * Math.sin(animationTime * 0.35 + (x + z) * 0.05);
+
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }, { passive: true });
+  }
 </script>
