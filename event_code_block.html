@@ -106,78 +106,91 @@
     .small { font-size: 12px; }
     .divider { height:1px; background: var(--line); margin: 14px 0; }
     
-    /* ======= MENU NAV ======= */
+    /* ======= MENU NAV (Hamburger Style) ======= */
     .nav-dropdown {
         position: fixed;
         top: 18px;
         left: 18px;
-        z-index: 10000;
+        z-index: 9999;
     }
 
     .nav-toggle {
-        background: rgba(26, 26, 26, 0.9);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        height: 48px;
-        padding: 0 16px;
-        color: #ffffff;
-        font-size: 16px;
-        font-weight: 600;
-        font-family: 'Rajdhani', sans-serif;
-        cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 0;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        border: 0;
+        cursor: pointer;
+        background: var(--bg);
+        color: #fff;
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.6), -2px -2px 8px rgba(255, 255, 255, 0.05);
+        transition: 0.2s;
     }
 
-    .nav-toggle:hover {
-        background: rgba(36, 36, 36, 0.9);
-        border-color: #0099ff;
+    .nav-toggle-icon {
+        position: relative;
+        width: 18px;
+        height: 2px;
+        background: currentColor;
+        transition: 0.3s;
     }
+
+    .nav-toggle-icon::before,
+    .nav-toggle-icon::after {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 2px;
+        background: currentColor;
+        left: 0;
+        transition: 0.3s;
+    }
+
+    .nav-toggle-icon::before { top: -6px; }
+    .nav-toggle-icon::after { top: 6px; }
+
+    .active .nav-toggle-icon { background: transparent; }
+    .active .nav-toggle-icon::before { top: 0; transform: rotate(45deg); }
+    .active .nav-toggle-icon::after { top: 0; transform: rotate(-45deg); }
 
     .nav-menu {
         position: absolute;
-        top: 60px;
+        top: 55px;
         left: 0;
-        background: rgba(26, 26, 26, 0.95);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: var(--bg);
         border-radius: 12px;
         padding: 8px;
-        min-width: 180px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        min-width: 200px;
+        box-shadow: 10px 10px 25px rgba(0, 0, 0, 0.5);
+        display: none;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .nav-dropdown.active .nav-menu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
+    .active .nav-menu {
+        display: block;
+        animation: fadeInUp 0.2s ease;
     }
 
     .nav-menu a {
         display: block;
-        width: 100%;
-        text-align: left;
-        padding: 12px 16px;
-        color: rgba(255, 255, 255, 0.8);
+        padding: 12px;
+        color: #ccc;
         text-decoration: none;
-        font-size: 15px;
-        font-weight: 500;
-        font-family: 'Rajdhani', sans-serif;
         border-radius: 8px;
-        transition: all 0.3s ease;
+        font-weight: 600;
+        transition: 0.2s;
     }
 
     .nav-menu a:hover {
-        background: rgba(0, 153, 255, 0.12);
+        background: rgba(0, 153, 255, 0.1);
         color: #0099ff;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 .music-section-title {
       font-size: 14px;
@@ -217,14 +230,14 @@
 <body>
   <!-- Navigation Dropdown -->
   <div class="nav-dropdown" id="navDropdown">
-    <button class="nav-toggle" id="navToggle">
-      Menu
+    <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu">
+        <span class="nav-toggle-icon"></span>
     </button>
     <div class="nav-menu">
-      <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
-      <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
-      <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
-      <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
+        <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+        <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+        <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+        <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
     </div>
   </div>
 
@@ -567,54 +580,56 @@
     
     const musicSection = musicBlocks ? `<div class="${ns}__music"><div class="${ns}__musicGrid">${musicBlocks}${promoCard}</div></div>` : "";
 
-    return `<!-- ${ns}: paste into a Squarespace Code Block -->
-<div class="${ns}" data-event-iso="${escapeHtml(eventISO)}" data-tz-label="${tzLabel}">
-  <div class="${ns}__container">
-<div class="${ns}__name">${eventName}</div>
-    <div class="${ns}__countdown" aria-live="polite">
-      <div class="${ns}__countRow">
-        <div class="${ns}__countItem"><div class="${ns}__countNum" data-unit="days">--</div><div class="${ns}__countTxt">Days</div></div>
-        <div class="${ns}__countItem"><div class="${ns}__countNum" data-unit="hours">--</div><div class="${ns}__countTxt">Hours</div></div>
-        <div class="${ns}__countItem"><div class="${ns}__countNum" data-unit="mins">--</div><div class="${ns}__countTxt">Mins</div></div>
-        <div class="${ns}__countItem"><div class="${ns}__countNum" data-unit="secs">--</div><div class="${ns}__countTxt">Secs</div></div>
-      </div>
-      <div class="${ns}__countMeta" data-meta></div>
-    </div>
-    ${venueHtml}
-    <div class="${ns}__topContent">
-      ${flyerHtml}
-      <div class="${ns}__rightContent">
-        ${descriptionHtml}
-      </div>
-    </div>
-    ${ticketHtml}
-    ${musicSection}
-  </div>
-</div>
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${eventName}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700;900&display=swap');
-.${ns}{background:#000;color:#fff;width:100%;padding:10px 20px;font-family:'Rajdhani',sans-serif;position:relative;min-height:auto;height:auto;overflow:visible;display:block;float:none;margin-left:auto;margin-right:auto;box-sizing:border-box}
-.${ns}__container{max-width:1200px;margin:0 auto;width:100%}
-.${ns}__name{font-size:72px;font-weight:900;text-align:center;margin:0 0 30px;letter-spacing:1px;line-height:1.1}
-.${ns}__countdown{margin-bottom:40px}
-.${ns}__countRow{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:15px}
-.${ns}__countItem{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:12px;padding:20px 25px;min-width:120px;text-align:center}
-.${ns}__countNum{font-size:42px;font-weight:900;line-height:1;color:#FFD700}
-.${ns}__countNum.urgent{color:#FF4444}
-.${ns}__countTxt{font-size:14px;color:rgba(255,255,255,0.7);margin-top:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
-.${ns}__countMeta{font-size:24px;font-weight:400;color:rgba(255,255,255,0.9);text-align:center}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
+#three-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:#000}
+.nav-dropdown{position:fixed;top:18px;left:18px;z-index:10000}
+.nav-toggle{background:rgba(26,26,26,0.9);border:1px solid rgba(255,255,255,0.2);border-radius:12px;height:48px;width:52px;padding:0 14px;color:#ffffff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.nav-toggle:hover{background:rgba(36,36,36,0.9);border-color:#0099ff}
+.nav-toggle-icon{position:relative;width:18px;height:2px;background:currentColor;border-radius:2px;transition:0.3s}
+.nav-toggle-icon::before,.nav-toggle-icon::after{content:"";position:absolute;width:18px;height:2px;background:currentColor;left:0;border-radius:2px;transition:0.3s}
+.nav-toggle-icon::before{top:-6px}
+.nav-toggle-icon::after{top:6px}
+.nav-dropdown.active .nav-toggle-icon{background:transparent}
+.nav-dropdown.active .nav-toggle-icon::before{top:0;transform:rotate(45deg)}
+.nav-dropdown.active .nav-toggle-icon::after{top:0;transform:rotate(-45deg)}
+.nav-menu{position:absolute;top:60px;left:0;background:rgba(26,26,26,0.95);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:8px;min-width:200px;opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.nav-dropdown.active .nav-menu{opacity:1;visibility:visible;transform:translateY(0)}
+.nav-menu a{display:block;width:100%;text-align:left;padding:12px 16px;color:rgba(255,255,255,0.8);text-decoration:none;font-size:15px;font-weight:600;border-radius:8px;transition:all 0.3s ease}
+.nav-menu a:hover{background:rgba(0,153,255,0.12);color:#0099ff}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.${ns}{max-width:1200px;margin:0 auto;padding:30px 20px;position:relative;z-index:1}
+.${ns}__logo{text-align:center;margin-bottom:15px}
+.${ns}__logo img{width:100px;height:auto}
+.${ns}__name{text-align:center;font-size:72px;font-weight:900;margin-bottom:10px;color:#fff;line-height:1.1;letter-spacing:1px}
+.${ns}__description{text-align:center;font-size:20px;color:rgba(255,255,255,0.8);margin-bottom:30px;line-height:1.6}
+.${ns}__countdown{display:flex;justify-content:center;gap:8px;margin-bottom:20px;font-size:72px;font-weight:900}
+.${ns}__countNum{color:#ffff00;transition:color 0.3s ease}
+.${ns}__countNum.urgent{color:#ff0000}
+.${ns}__countSep{color:rgba(255,255,255,0.6)}
+.${ns}__countMeta{font-size:24px;font-weight:400;color:rgba(255,255,255,0.9);text-align:center;margin-bottom:20px}
 .${ns}__venue{text-align:center;margin-bottom:40px}
-.${ns}__venueName{font-size:24px;font-weight:400;color:rgba(255,255,255,0.9);margin-bottom:5px}
-.${ns}__venueAddress{font-size:24px;font-weight:400;color:rgba(255,255,255,0.9)}
-.${ns}__topContent{display:grid;grid-template-columns:500px 1fr;gap:40px;align-items:stretch;margin-bottom:40px}
-.${ns}__flyer img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:16px;display:block;border:2px solid rgba(255,255,255,0.2)}
+.${ns}__venueName{font-size:20px;font-weight:400;color:rgba(255,255,255,0.9);margin-bottom:5px}
+.${ns}__venueAddress{font-size:20px;font-weight:400;color:rgba(255,255,255,0.9)}
+.${ns}__topContent{display:grid;grid-template-columns:500px 1fr;gap:40px;align-items:start;margin-bottom:40px}
+.${ns}__flyer img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:16px;display:block}
 .${ns}__flyer--empty{width:100%;aspect-ratio:1/1;border-radius:16px;border:2px dashed rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5)}
-.${ns}__rightContent{display:flex;flex-direction:column;height:100%}
-.${ns}__description{color:#fff;line-height:1.6;font-size:24px;font-weight:400;padding:20px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);flex:1;display:flex;align-items:center;justify-content:center;text-align:center;overflow:auto}
-.${ns}__tickets{margin:0 auto 40px auto;max-width:800px}
-.${ns}__tickets iframe{width:100%;min-height:600px;border:2px solid rgba(255,255,255,0.2);border-radius:12px;background:#fff}
+.${ns}__tickets{width:100%;height:100%}
+.${ns}__tickets iframe{width:100%;height:100%;min-height:500px;border:2px solid rgba(255,255,255,0.2);border-radius:12px;background:#fff}
 .${ns}__tickets--posh{background:#000}
 .${ns}__tickets--posh iframe{min-height:250px!important;max-height:250px!important;height:250px!important;background:#000}
+.${ns}__btn{display:inline-block;text-decoration:none;background:#fff;color:#000;padding:16px 32px;border-radius:12px;font-weight:800;font-size:18px;border:2px solid #fff;transition:all 0.3s ease}
+.${ns}__btn:hover{background:rgba(255,255,255,0.9);transform:translateY(-2px)}
 .${ns}__promoCard{position:relative;background:linear-gradient(135deg,rgba(26,26,26,0.8) 0%,rgba(20,20,20,0.9) 100%);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:30px;display:block;text-decoration:none;color:#fff;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);max-width:400px;cursor:pointer}
 .${ns}__promoCard::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(0,153,255,0.1) 50%,transparent 100%);transition:left 0.6s ease}
 .${ns}__promoCard:hover::before{left:100%}
@@ -626,8 +641,6 @@
 .${ns}__promoCard p{font-size:16px;margin:0 0 15px 0;color:rgba(255,255,255,0.8);line-height:1.5}
 .${ns}__promoCardArrow{display:inline-block;font-size:24px;color:#0099ff;transition:transform 0.3s ease}
 .${ns}__promoCard:hover .${ns}__promoCardArrow{transform:translateX(5px)}
-.${ns}__btn{display:inline-block;text-decoration:none;background:#fff;color:#000;padding:16px 32px;border-radius:12px;font-weight:800;font-size:18px;border:2px solid #fff;transition:all 0.3s ease}
-.${ns}__btn:hover{background:rgba(255,255,255,0.9);transform:translateY(-2px)}
 .${ns}__music{margin-top:60px;padding-top:40px;border-top:2px solid rgba(255,255,255,0.2)}
 .${ns}__musicGrid{display:grid;grid-template-columns:1fr 400px;gap:40px;align-items:start}
 .${ns}__embedWrap{border:2px solid rgba(255,255,255,0.2);border-radius:14px;overflow:hidden;background:#000;margin-bottom:20px}
@@ -640,19 +653,190 @@
 .${ns}__musicGrid{grid-template-columns:1fr}
 .${ns}__flyer{max-width:500px;margin:0 auto}
 .${ns}__promoCard{max-width:100%;margin:0 auto}
-.${ns}__name{font-size:48px}}
+.${ns}__name{font-size:48px}
+.${ns}__countdown{font-size:56px}}
 @media (max-width:600px){
 .${ns}{padding:30px 15px}
 .${ns}__name{font-size:32px;margin-bottom:20px}
-.${ns}__description{font-size:20px}
+.${ns}__description{font-size:16px}
 .${ns}__countMeta{font-size:18px}
-.${ns}__countItem{min-width:80px;padding:15px 10px}
-.${ns}__countNum{font-size:32px}
-.${ns}__countTxt{font-size:11px}}
+.${ns}__countdown{font-size:36px}}
 </style>
+</head>
+<body>
+<div id="three-bg"></div>
+<div class="nav-dropdown" id="navDropdown">
+  <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu">
+    <span class="nav-toggle-icon" aria-hidden="true"></span>
+  </button>
+  <div class="nav-menu" role="menu" aria-label="Site navigation">
+    <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+    <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+    <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+    <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
+  </div>
+</div>
+<div class="${ns}" data-event-iso="${escapeHtml(eventISO)}" data-tz-label="${tzLabel}">
+  <div class="${ns}__logo">
+    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Xodia Media Group">
+  </div>
+  <div class="${ns}__name">${eventName}</div>
+  ${descriptionHtml}
+  <div class="${ns}__countdown">
+    <span data-unit="days">0</span><span class="${ns}__countSep">:</span><span data-unit="hours">00</span><span class="${ns}__countSep">:</span><span data-unit="mins">00</span><span class="${ns}__countSep">:</span><span data-unit="secs">00</span>
+  </div>
+  <div class="${ns}__countMeta" data-meta></div>
+  ${venueHtml}
+  <div class="${ns}__topContent">
+    ${flyerHtml}
+    ${ticketHtml}
+  </div>
+  ${musicSection}
+</div>
 <scr`+`ipt>
-(function(){var r=document.currentScript&&document.currentScript.previousElementSibling;if(!r||!r.classList||!r.classList.contains("${ns}")){var n=document.querySelectorAll(".${ns}");r=n[n.length-1]}if(!r||r.__${ns}Init)return;r.__${ns}Init=true;var iso=r.getAttribute("data-event-iso")||"";var tz=r.getAttribute("data-tz-label")||"";var m=r.querySelector("[data-meta]");var d=r.querySelector('[data-unit="days"]');var h=r.querySelector('[data-unit="hours"]');var mi=r.querySelector('[data-unit="mins"]');var s=r.querySelector('[data-unit="secs"]');function pad(n){return String(n).padStart(2,"0")}function setM(t){if(m)m.textContent=t||""}if(!iso){setM("Set event date/time to enable countdown.");return}var tgt=new Date(iso);if(isNaN(tgt.getTime())){setM("Invalid event date/time.");return}function tick(){var now=new Date();var diff=tgt.getTime()-now.getTime();var ended=diff<=0;if(ended)diff=0;var sec=Math.floor(diff/1000);var days=Math.floor(sec/86400);var rem=sec%86400;var hrs=Math.floor(rem/3600);rem=rem%3600;var mins=Math.floor(rem/60);var secs=rem%60;var urgent=diff<86400000;if(d){d.textContent=days;d.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(h){h.textContent=pad(hrs);h.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(mi){mi.textContent=pad(mins);mi.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(s){s.textContent=pad(secs);s.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}var ds=tgt.toLocaleString(undefined,{year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"});setM((ended?"Event started: ":"Event starts: ")+ds+(tz?" "+tz:""));if(ended){clearInterval(r.__${ns}Tmr);r.__${ns}Tmr=null}}tick();r.__${ns}Tmr=setInterval(tick,1000)})();
-</scr`+`ipt>`;
+(function(){
+var navDropdown=document.getElementById('navDropdown');
+var navToggle=document.getElementById('navToggle');
+navToggle.addEventListener('click',function(e){
+e.stopPropagation();
+navDropdown.classList.toggle('active');
+});
+document.addEventListener('click',function(e){
+if(!navDropdown.contains(e.target)){
+navDropdown.classList.remove('active');
+}
+});
+var r=document.querySelector(".${ns}");if(!r||r.__${ns}Init)return;r.__${ns}Init=true;var iso=r.getAttribute("data-event-iso")||"";var tz=r.getAttribute("data-tz-label")||"";var m=r.querySelector("[data-meta]");var d=r.querySelector('[data-unit="days"]');var h=r.querySelector('[data-unit="hours"]');var mi=r.querySelector('[data-unit="mins"]');var s=r.querySelector('[data-unit="secs"]');function pad(n){return String(n).padStart(2,"0")}function setM(t){if(m)m.textContent=t||""}if(!iso){setM("Set event date/time to enable countdown.");return}var tgt=new Date(iso);if(isNaN(tgt.getTime())){setM("Invalid event date/time.");return}function tick(){var now=new Date();var diff=tgt.getTime()-now.getTime();var ended=diff<=0;if(ended)diff=0;var sec=Math.floor(diff/1000);var days=Math.floor(sec/86400);var rem=sec%86400;var hrs=Math.floor(rem/3600);rem=rem%3600;var mins=Math.floor(rem/60);var secs=rem%60;var urgent=diff<86400000;if(d){d.textContent=days;d.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(h){h.textContent=pad(hrs);h.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(mi){mi.textContent=pad(mins);mi.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(s){s.textContent=pad(secs);s.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}var ds=tgt.toLocaleString(undefined,{year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"});setM((ended?"Event started: ":"Event starts: ")+ds+(tz?" "+tz:""));if(ended){clearInterval(r.__${ns}Tmr);r.__${ns}Tmr=null}}tick();r.__${ns}Tmr=setInterval(tick,1000)
+})();
+</scr`+`ipt>
+<scr`+`ipt type="module">
+import*as THREE from"https://unpkg.com/three@0.160.1/build/three.module.js";
+const mount=document.getElementById("three-bg");
+if(!mount)throw new Error("three-bg mount not found");
+const canvas=document.createElement("canvas");
+const gl=canvas.getContext("webgl")||canvas.getContext("experimental-webgl");
+if(!gl){mount.style.background="#000"}else{
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setClearColor(0x000000,1);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+mount.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0x000000,40,100);
+const camera=new THREE.PerspectiveCamera(12.5,window.innerWidth/window.innerHeight,0.1,200);
+camera.position.set(0,18,28);
+camera.lookAt(0,0,0);
+const key=new THREE.DirectionalLight(0xffffff,4.0);
+key.position.set(10,30,10);
+key.castShadow=true;
+key.shadow.mapSize.width=2048;
+key.shadow.mapSize.height=2048;
+key.shadow.camera.left=-30;
+key.shadow.camera.right=30;
+key.shadow.camera.top=30;
+key.shadow.camera.bottom=-30;
+key.shadow.camera.near=0.5;
+key.shadow.camera.far=100;
+key.shadow.bias=-0.0001;
+scene.add(key);
+const rim=new THREE.DirectionalLight(0xffffff,2.5);
+rim.position.set(-20,15,-10);
+rim.castShadow=true;
+rim.shadow.mapSize.width=2048;
+rim.shadow.mapSize.height=2048;
+rim.shadow.camera.left=-30;
+rim.shadow.camera.right=30;
+rim.shadow.camera.top=30;
+rim.shadow.camera.bottom=-30;
+scene.add(rim);
+scene.add(new THREE.AmbientLight(0xffffff,0.3));
+const HEX_R=0.65;
+const HEX_H=4.5;
+const hexGeo=new THREE.CylinderGeometry(HEX_R,HEX_R,1,6,1,false);
+hexGeo.rotateY(Math.PI/6);
+const mat=new THREE.MeshStandardMaterial({color:0x242424,roughness:0.0,metalness:0.9,emissive:0x000000,emissiveIntensity:0.0});
+const isMobile=matchMedia("(max-width: 768px)").matches;
+const GRID=isMobile?34:52;
+const rows=Math.round(GRID*0.72*2);
+const count=GRID*rows;
+const mesh=new THREE.InstancedMesh(hexGeo,mat,count);
+mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+mesh.castShadow=true;
+mesh.receiveShadow=true;
+scene.add(mesh);
+const groundGeo=new THREE.PlaneGeometry(100,100);
+const groundMat=new THREE.MeshStandardMaterial({color:0x0a0a0a,roughness:0.8,metalness:0.2});
+const ground=new THREE.Mesh(groundGeo,groundMat);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-2.5;
+ground.receiveShadow=true;
+scene.add(ground);
+const xStep=HEX_R*1.5;
+const zStep=HEX_R*Math.sqrt(3);
+const tile=new Array(count);
+let k=0;
+for(let r=0;r<rows;r++){
+for(let c=0;c<GRID;c++){
+const x=(c-GRID/2)*xStep;
+const z=(r-rows/2)*zStep+(c%2?zStep*0.5:0);
+tile[k++]={x,z};
+}
+}
+function fBm(x,z,t){
+let a=1.0,f=0.12,sum=0.0;
+for(let i=0;i<4;i++){
+sum+=a*Math.sin((x*f+t*0.35)+Math.cos(z*f-t*0.25));
+sum+=a*Math.cos((z*f-t*0.30)+Math.sin(x*f+t*0.20));
+a*=0.5;
+f*=2.05;
+}
+return sum*0.55;
+}
+const pointer={x:0,y:0};
+window.addEventListener("mousemove",(e)=>{
+pointer.x=(e.clientX/window.innerWidth)*2-1;
+pointer.y=(e.clientY/window.innerHeight)*2-1;
+},{passive:true});
+const dummy=new THREE.Object3D();
+const baseY=-2.0;
+let animationTime=0;
+let lastFrameTime=0;
+function animate(tMs){
+const deltaTime=lastFrameTime===0?0:(tMs-lastFrameTime)*0.001;
+lastFrameTime=tMs;
+animationTime+=deltaTime;
+const px=pointer.x*1.6;
+const py=pointer.y*0.9;
+camera.position.x=THREE.MathUtils.lerp(camera.position.x,px,0.04);
+camera.position.y=THREE.MathUtils.lerp(camera.position.y,18+(-py),0.04);
+camera.lookAt(0,0,0);
+for(let i=0;i<count;i++){
+const{x,z}=tile[i];
+const n=fBm(x,z,animationTime);
+const h=THREE.MathUtils.clamp((n+1.25)*0.55,0.1,1.0);
+dummy.position.set(x,baseY+h*(HEX_H*0.35),z);
+dummy.scale.set(1,h*HEX_H,1);
+dummy.rotation.y=0.10*Math.sin(animationTime*0.35+(x+z)*0.05);
+dummy.updateMatrix();
+mesh.setMatrixAt(i,dummy.matrix);
+}
+mesh.instanceMatrix.needsUpdate=true;
+renderer.render(scene,camera);
+requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+window.addEventListener("resize",()=>{
+camera.aspect=window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
+renderer.setSize(window.innerWidth,window.innerHeight);
+},{passive:true});
+}
+</scr`+`ipt>
+</body>
+</html>`;
   }
 
   $("generateBtn").addEventListener("click", () => {
