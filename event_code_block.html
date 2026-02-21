@@ -592,7 +592,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
-#three-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:#000}
+#threejs-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;pointer-events:none}
 .nav-dropdown{position:fixed;top:18px;left:18px;z-index:10000}
 .nav-toggle{background:rgba(26,26,26,0.9);border:1px solid rgba(255,255,255,0.2);border-radius:12px;height:48px;width:52px;padding:0 14px;color:#ffffff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .nav-toggle:hover{background:rgba(36,36,36,0.9);border-color:#0099ff}
@@ -664,7 +664,7 @@ body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
 </style>
 </head>
 <body>
-<div id="three-bg"></div>
+<canvas id="threejs-bg"></canvas>
 <div class="nav-dropdown" id="navDropdown">
   <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu">
     <span class="nav-toggle-icon" aria-hidden="true"></span>
@@ -709,131 +709,58 @@ navDropdown.classList.remove('active');
 var r=document.querySelector(".${ns}");if(!r||r.__${ns}Init)return;r.__${ns}Init=true;var iso=r.getAttribute("data-event-iso")||"";var tz=r.getAttribute("data-tz-label")||"";var m=r.querySelector("[data-meta]");var d=r.querySelector('[data-unit="days"]');var h=r.querySelector('[data-unit="hours"]');var mi=r.querySelector('[data-unit="mins"]');var s=r.querySelector('[data-unit="secs"]');function pad(n){return String(n).padStart(2,"0")}function setM(t){if(m)m.textContent=t||""}if(!iso){setM("Set event date/time to enable countdown.");return}var tgt=new Date(iso);if(isNaN(tgt.getTime())){setM("Invalid event date/time.");return}function tick(){var now=new Date();var diff=tgt.getTime()-now.getTime();var ended=diff<=0;if(ended)diff=0;var sec=Math.floor(diff/1000);var days=Math.floor(sec/86400);var rem=sec%86400;var hrs=Math.floor(rem/3600);rem=rem%3600;var mins=Math.floor(rem/60);var secs=rem%60;var urgent=diff<86400000;if(d){d.textContent=days;d.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(h){h.textContent=pad(hrs);h.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(mi){mi.textContent=pad(mins);mi.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(s){s.textContent=pad(secs);s.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}var ds=tgt.toLocaleString(undefined,{year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"});setM((ended?"Event started: ":"Event starts: ")+ds+(tz?" "+tz:""));if(ended){clearInterval(r.__${ns}Tmr);r.__${ns}Tmr=null}}tick();r.__${ns}Tmr=setInterval(tick,1000)
 })();
 </scr`+`ipt>
-<scr`+`ipt type="module">
-import*as THREE from"https://unpkg.com/three@0.160.1/build/three.module.js";
-const mount=document.getElementById("three-bg");
-if(!mount)throw new Error("three-bg mount not found");
-const canvas=document.createElement("canvas");
-const gl=canvas.getContext("webgl")||canvas.getContext("experimental-webgl");
-if(!gl){mount.style.background="#000"}else{
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
+<scr`+`ipt src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></scr`+`ipt>
+<scr`+`ipt>
+(function(){
+var canvas=document.getElementById('threejs-bg');
+var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.setClearColor(0x000000,1);
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-mount.appendChild(renderer.domElement);
-const scene=new THREE.Scene();
-scene.fog=new THREE.Fog(0x000000,40,100);
-const camera=new THREE.PerspectiveCamera(12.5,window.innerWidth/window.innerHeight,0.1,200);
-camera.position.set(0,18,28);
-camera.lookAt(0,0,0);
-const key=new THREE.DirectionalLight(0xffffff,4.0);
-key.position.set(10,30,10);
-key.castShadow=true;
-key.shadow.mapSize.width=2048;
-key.shadow.mapSize.height=2048;
-key.shadow.camera.left=-30;
-key.shadow.camera.right=30;
-key.shadow.camera.top=30;
-key.shadow.camera.bottom=-30;
-key.shadow.camera.near=0.5;
-key.shadow.camera.far=100;
-key.shadow.bias=-0.0001;
-scene.add(key);
-const rim=new THREE.DirectionalLight(0xffffff,2.5);
-rim.position.set(-20,15,-10);
-rim.castShadow=true;
-rim.shadow.mapSize.width=2048;
-rim.shadow.mapSize.height=2048;
-rim.shadow.camera.left=-30;
-rim.shadow.camera.right=30;
-rim.shadow.camera.top=30;
-rim.shadow.camera.bottom=-30;
-scene.add(rim);
-scene.add(new THREE.AmbientLight(0xffffff,0.3));
-const HEX_R=0.65;
-const HEX_H=4.5;
-const hexGeo=new THREE.CylinderGeometry(HEX_R,HEX_R,1,6,1,false);
-hexGeo.rotateY(Math.PI/6);
-const mat=new THREE.MeshStandardMaterial({color:0x242424,roughness:0.0,metalness:0.9,emissive:0x000000,emissiveIntensity:0.0});
-const isMobile=matchMedia("(max-width: 768px)").matches;
-const GRID=isMobile?34:52;
-const rows=Math.round(GRID*0.72*2);
-const count=GRID*rows;
-const mesh=new THREE.InstancedMesh(hexGeo,mat,count);
-mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-mesh.castShadow=true;
-mesh.receiveShadow=true;
-scene.add(mesh);
-const groundGeo=new THREE.PlaneGeometry(100,100);
-const groundMat=new THREE.MeshStandardMaterial({color:0x0a0a0a,roughness:0.8,metalness:0.2});
-const ground=new THREE.Mesh(groundGeo,groundMat);
-ground.rotation.x=-Math.PI/2;
-ground.position.y=-2.5;
-ground.receiveShadow=true;
-scene.add(ground);
-const xStep=HEX_R*1.5;
-const zStep=HEX_R*Math.sqrt(3);
-const tile=new Array(count);
-let k=0;
-for(let r=0;r<rows;r++){
-for(let c=0;c<GRID;c++){
-const x=(c-GRID/2)*xStep;
-const z=(r-rows/2)*zStep+(c%2?zStep*0.5:0);
-tile[k++]={x,z};
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,2000);
+camera.position.z=500;
+var PARTICLE_COUNT=1800;
+var positions=new Float32Array(PARTICLE_COUNT*3);
+var colors=new Float32Array(PARTICLE_COUNT*3);
+var speeds=new Float32Array(PARTICLE_COUNT);
+var palette=[new THREE.Color(0x0099ff),new THREE.Color(0x00ffff),new THREE.Color(0xffffff),new THREE.Color(0x66ccff)];
+for(var i=0;i<PARTICLE_COUNT;i++){
+positions[i*3]=(Math.random()-0.5)*2000;
+positions[i*3+1]=(Math.random()-0.5)*2000;
+positions[i*3+2]=(Math.random()-0.5)*1200;
+var c=palette[Math.floor(Math.random()*palette.length)];
+var brightness=c.equals(palette[2])?0.4+Math.random()*0.3:0.6+Math.random()*0.4;
+colors[i*3]=c.r*brightness;colors[i*3+1]=c.g*brightness;colors[i*3+2]=c.b*brightness;
+speeds[i]=0.08+Math.random()*0.18;
 }
+var geometry=new THREE.BufferGeometry();
+geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
+geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
+var material=new THREE.PointsMaterial({size:1.0,vertexColors:true,transparent:true,opacity:0.85,sizeAttenuation:true,depthWrite:false});
+var particles=new THREE.Points(geometry,material);
+scene.add(particles);
+var mouseX=0,mouseY=0;
+document.addEventListener('mousemove',function(e){mouseX=(e.clientX/window.innerWidth-0.5)*2;mouseY=(e.clientY/window.innerHeight-0.5)*2;});
+window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+var pos=geometry.attributes.position.array;
+var time=0;
+function animate(){
+requestAnimationFrame(animate);
+time+=0.001;
+for(var i=0;i<PARTICLE_COUNT;i++){
+pos[i*3+1]+=speeds[i];
+pos[i*3]+=Math.sin(time+i*0.5)*0.04;
+if(pos[i*3+1]>1000)pos[i*3+1]=-1000;
 }
-function fBm(x,z,t){
-let a=1.0,f=0.12,sum=0.0;
-for(let i=0;i<4;i++){
-sum+=a*Math.sin((x*f+t*0.35)+Math.cos(z*f-t*0.25));
-sum+=a*Math.cos((z*f-t*0.30)+Math.sin(x*f+t*0.20));
-a*=0.5;
-f*=2.05;
-}
-return sum*0.55;
-}
-const pointer={x:0,y:0};
-window.addEventListener("mousemove",(e)=>{
-pointer.x=(e.clientX/window.innerWidth)*2-1;
-pointer.y=(e.clientY/window.innerHeight)*2-1;
-},{passive:true});
-const dummy=new THREE.Object3D();
-const baseY=-2.0;
-let animationTime=0;
-let lastFrameTime=0;
-function animate(tMs){
-const deltaTime=lastFrameTime===0?0:(tMs-lastFrameTime)*0.001;
-lastFrameTime=tMs;
-animationTime+=deltaTime;
-const px=pointer.x*1.6;
-const py=pointer.y*0.9;
-camera.position.x=THREE.MathUtils.lerp(camera.position.x,px,0.04);
-camera.position.y=THREE.MathUtils.lerp(camera.position.y,18+(-py),0.04);
-camera.lookAt(0,0,0);
-for(let i=0;i<count;i++){
-const{x,z}=tile[i];
-const n=fBm(x,z,animationTime);
-const h=THREE.MathUtils.clamp((n+1.25)*0.55,0.1,1.0);
-dummy.position.set(x,baseY+h*(HEX_H*0.35),z);
-dummy.scale.set(1,h*HEX_H,1);
-dummy.rotation.y=0.10*Math.sin(animationTime*0.35+(x+z)*0.05);
-dummy.updateMatrix();
-mesh.setMatrixAt(i,dummy.matrix);
-}
-mesh.instanceMatrix.needsUpdate=true;
+geometry.attributes.position.needsUpdate=true;
+camera.position.x+=(mouseX*40-camera.position.x)*0.03;
+camera.position.y+=(-mouseY*40-camera.position.y)*0.03;
+particles.rotation.y=time*0.05;
 renderer.render(scene,camera);
-requestAnimationFrame(animate);
 }
-requestAnimationFrame(animate);
-window.addEventListener("resize",()=>{
-camera.aspect=window.innerWidth/window.innerHeight;
-camera.updateProjectionMatrix();
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
-renderer.setSize(window.innerWidth,window.innerHeight);
-},{passive:true});
-}
+animate();
+})();
 </scr`+`ipt>
 </body>
 </html>`;
