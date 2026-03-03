@@ -446,6 +446,12 @@
     return /<iframe[\s>]/i.test(t) || /<script[\s>]/i.test(t) || /<blockquote[\s>]/i.test(t);
   }
 
+  function looksLikeUrl(s) {
+    const t = (s || "").trim();
+    if (!t) return false;
+    return /^https?:\/\//i.test(t);
+  }
+
   function normalizeMaybeEmbed(input, labelIfLink) {
     const t = (input || "").trim();
     if (!t) return "";
@@ -550,10 +556,17 @@
 
     let ticketHtml = "";
     if (data.ticketMode === "embed") {
-      const embed = (data.ticketEmbed || "").trim();
-      if (embed) {
-        const isPosh = /posh\.vip/i.test(embed);
-        ticketHtml = `<div class="${ns}__tickets${isPosh ? ' ' + ns + '__tickets--posh' : ''}">${embed}</div>`;
+      const embedRaw = (data.ticketEmbed || "").trim();
+      if (embedRaw) {
+        // If they paste an actual embed, render it.
+        if (looksLikeIframeOrEmbedCode(embedRaw)) {
+          const isPosh = /posh\.vip/i.test(embedRaw);
+          ticketHtml = `<div class="${ns}__tickets${isPosh ? ' ' + ns + '__tickets--posh' : ''}">${embedRaw}</div>`;
+        }
+        // If they paste a URL into the embed field, fall back to a big "Buy Tickets Here" button (iframe checkouts often block embedding).
+        else if (looksLikeUrl(embedRaw)) {
+          ticketHtml = `<div class="${ns}__tickets"><a class="${ns}__btn ${ns}__btn--xl" href="${escapeHtml(embedRaw)}" target="_blank" rel="noopener noreferrer">Buy Tickets Here</a></div>`;
+        }
       }
     } else {
       const url = (data.ticketUrl || "").trim();
@@ -630,6 +643,7 @@ body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
 .${ns}__tickets--posh iframe{min-height:250px!important;max-height:250px!important;height:250px!important;background:#000}
 .${ns}__btn{display:inline-block;text-decoration:none;background:#fff;color:#000;padding:16px 32px;border-radius:12px;font-weight:800;font-size:18px;border:2px solid #fff;transition:all 0.3s ease}
 .${ns}__btn:hover{background:rgba(255,255,255,0.9);transform:translateY(-2px)}
+.${ns}__btn--xl{display:block;width:100%;text-align:center;padding:22px 32px;border-radius:16px;font-size:24px;letter-spacing:0.5px}
 .${ns}__promoCard{position:relative;background:linear-gradient(135deg,rgba(26,26,26,0.8) 0%,rgba(20,20,20,0.9) 100%);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:30px;display:block;text-decoration:none;color:#fff;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);max-width:400px;cursor:pointer}
 .${ns}__promoCard::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(0,153,255,0.1) 50%,transparent 100%);transition:left 0.6s ease}
 .${ns}__promoCard:hover::before{left:100%}
