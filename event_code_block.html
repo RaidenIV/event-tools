@@ -571,9 +571,21 @@
     } else {
       const url = (data.ticketUrl || "").trim();
       if (url) {
-        ticketHtml = `<div class="${ns}__tickets"><a class="${ns}__btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.ticketBtnText || "Get Tickets")}</a></div>`;
+        ticketHtml = `<div class="${ns}__tickets"><a class="${ns}__btn ${ns}__btn--xl" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.ticketBtnText || "Get Tickets")}</a></div>`;
       }
     }
+
+    
+    const topContentHtml = (data.ticketMode === "button")
+      ? `<div class="${ns}__topContent ${ns}__topContent--stack">
+           ${flyerHtml}
+           ${ticketHtml}
+         </div>`
+      : `<div class="${ns}__topContent">
+           ${flyerHtml}
+           ${ticketHtml}
+         </div>`;
+
 
     const spotifyHtml = normalizeMaybeEmbed(data.spotifyInput, "Open Spotify");
     const soundcloudHtml = normalizeMaybeEmbed(data.soundcloudInput, "Open SoundCloud");
@@ -635,6 +647,10 @@ body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
 .${ns}__venueName{font-size:20px;font-weight:400;color:rgba(255,255,255,0.9);margin-bottom:5px}
 .${ns}__venueAddress{font-size:20px;font-weight:400;color:rgba(255,255,255,0.9)}
 .${ns}__topContent{display:grid;grid-template-columns:500px 1fr;gap:40px;align-items:start;margin-bottom:40px}
+.${ns}__topContent--stack{grid-template-columns:1fr;justify-items:center}
+.${ns}__topContent--stack .${ns}__flyer{max-width:500px;width:100%}
+.${ns}__topContent--stack .${ns}__tickets{max-width:500px;width:100%}
+
 .${ns}__flyer img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:16px;display:block}
 .${ns}__flyer--empty{width:100%;aspect-ratio:1/1;border-radius:16px;border:2px dashed rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5)}
 .${ns}__tickets{width:100%;height:100%}
@@ -701,10 +717,7 @@ body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
   </div>
   <div class="${ns}__countMeta" data-meta></div>
   ${venueHtml}
-  <div class="${ns}__topContent">
-    ${flyerHtml}
-    ${ticketHtml}
-  </div>
+  ${topContentHtml}
   ${musicSection}
 </div>
 <scr`+`ipt>
