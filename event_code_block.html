@@ -653,11 +653,14 @@ body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
 
 .${ns}__flyer img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:16px;display:block}
 .${ns}__flyer--empty{width:100%;aspect-ratio:1/1;border-radius:16px;border:2px dashed rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5)}
-.${ns}__tickets{width:100%;height:100%}
-.${ns}__tickets{align-self:center}
-.${ns}__topContent--stack .${ns}__tickets{align-self:stretch}
+.${ns}__tickets{width:100%}
 
-.${ns}__tickets iframe{width:100%;height:100%;min-height:500px;border:2px solid rgba(255,255,255,0.2);border-radius:12px;background:#fff}
+.${ns}__topContent .${ns}__tickets{display:flex;align-items:center;justify-content:center}
+.${ns}__topContent .${ns}__tickets iframe{align-self:center}
+.${ns}__topContent--stack .${ns}__tickets{display:block}
+
+
+.${ns}__tickets iframe{width:100%;min-height:500px;border:2px solid rgba(255,255,255,0.2);border-radius:12px;background:#fff}
 .${ns}__tickets--posh{background:#000}
 .${ns}__tickets--posh iframe{min-height:250px!important;max-height:250px!important;height:250px!important;background:#000}
 .${ns}__btn{display:inline-block;text-decoration:none;background:#fff;color:#000;padding:16px 32px;border-radius:12px;font-weight:800;font-size:18px;border:2px solid #fff;transition:all 0.3s ease}
