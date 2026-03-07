@@ -387,7 +387,7 @@ body.splash-active {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--light);
+    color: var(--primary);
     transition: all 0.4s ease;
     font-size: 2.5rem;
 }
@@ -1059,7 +1059,7 @@ window.addEventListener('load', function() {
 
         const c = colorPalette[Math.floor(Math.random() * colorPalette.length)];
         // White particles are dimmer; colored ones brighter
-        const brightness = c.equals(colorPalette[2]) ? 0.4 + Math.random() * 0.3 : 0.6 + Math.random() * 0.4;
+        const brightness = c.equals(colorPalette[2]) ? 0.65 + Math.random() * 0.35 : 0.85 + Math.random() * 0.15;
         colors[i * 3]     = c.r * brightness;
         colors[i * 3 + 1] = c.g * brightness;
         colors[i * 3 + 2] = c.b * brightness;
@@ -1071,13 +1071,31 @@ window.addEventListener('load', function() {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
 
+    // Create a circular (sphere-like) canvas texture for particles
+    const spriteCanvas = document.createElement('canvas');
+    spriteCanvas.width = 64;
+    spriteCanvas.height = 64;
+    const ctx = spriteCanvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0,   'rgba(255,255,255,1)');
+    gradient.addColorStop(0.4, 'rgba(255,255,255,0.9)');
+    gradient.addColorStop(0.7, 'rgba(255,255,255,0.4)');
+    gradient.addColorStop(1,   'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(32, 32, 32, 0, Math.PI * 2);
+    ctx.fill();
+    const spriteTexture = new THREE.CanvasTexture(spriteCanvas);
+
     const material = new THREE.PointsMaterial({
         size: 1.0,
         vertexColors: true,
         transparent: true,
-        opacity: 0.85,
+        opacity: 1.0,
         sizeAttenuation: true,
         depthWrite: false,
+        map: spriteTexture,
+        alphaTest: 0.01,
     });
 
     const particles = new THREE.Points(geometry, material);
