@@ -32,9 +32,7 @@
     html,body{ height:100%; }
     body{
       margin:0;
-      background: radial-gradient(1200px 600px at 20% 15%, rgba(0,170,255,0.10), transparent 55%),
-                  radial-gradient(900px 500px at 80% 10%, rgba(255,255,255,0.06), transparent 50%),
-                  var(--bg);
+      background: #000;
       color: var(--text);
       font-family: "Rajdhani", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       letter-spacing: 0.2px;
@@ -96,7 +94,7 @@
       gap: 12px;
     }
 
-    label{
+    label:not(.radio){
       display:block;
       font-size: 12px;
       font-weight: 900;
@@ -106,7 +104,7 @@
       letter-spacing: 0.08em;
     }
 
-    input[type="text"], input[type="url"], select{
+    input[type="text"], input[type="url"]{
       width:100%;
       border-radius: 14px;
       border: 1px solid var(--line);
@@ -116,11 +114,94 @@
       font-family: inherit;
       font-size: 14px;
       outline:none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input[type="text"]:focus, input[type="url"]:focus{
+      border-color: rgba(0,170,255,0.5);
+      box-shadow: 0 0 0 3px rgba(0,170,255,0.12);
     }
     input::placeholder{ color: rgba(255,255,255,0.35); }
 
+    /* Select with custom arrow */
+    select{
+      width:100%;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 12px 36px 12px 12px;
+      font-family: inherit;
+      font-size: 14px;
+      outline:none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.5)' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    select:focus{
+      border-color: rgba(0,170,255,0.5);
+      box-shadow: 0 0 0 3px rgba(0,170,255,0.12);
+    }
+
+    /* Color picker pair: swatch + hex input */
+    .color-pair{
+      display:flex;
+      align-items:stretch;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow:hidden;
+      background: var(--input-bg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .color-pair:focus-within{
+      border-color: rgba(0,170,255,0.5);
+      box-shadow: 0 0 0 3px rgba(0,170,255,0.12);
+    }
+    .color-pair input[type="color"]{
+      width: 44px;
+      border: none;
+      border-right: 1px solid var(--line);
+      background: transparent;
+      padding: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      outline: none;
+    }
+    .color-pair input[type="color"]::-webkit-color-swatch-wrapper{ padding: 0; }
+    .color-pair input[type="color"]::-webkit-color-swatch{ border: none; border-radius: 6px; }
+    .color-pair input[type="text"]{
+      flex:1;
+      width:auto;
+      border:none;
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
+      padding-left: 10px;
+    }
+    .color-pair input[type="text"]:focus{
+      border:none;
+      box-shadow:none;
+    }
+
     .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 980px){ .row{ grid-template-columns: 1fr; } }
+
+    /* Collapsible rows — animate via grid-template-rows */
+    .collapse-wrap{
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 0.22s ease, opacity 0.18s ease;
+    }
+    .collapse-wrap.open{
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    .collapse-inner{ overflow: hidden; }
+    .collapse-inner > *{ padding-bottom: 2px; }
 
     .radio-grid{
       display:grid;
@@ -137,15 +218,27 @@
       gap: 10px;
       cursor:pointer;
       user-select:none;
+      transition: border-color 0.15s, background 0.15s;
     }
-    .radio input{ margin:0; transform: translateY(-0.5px); }
+    .radio:hover{ border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.05); }
+    .radio input{ margin:0; transform: translateY(-0.5px); flex-shrink:0; }
     .radio b{ font-size: 14px; font-weight: 900; color: var(--text); }
     .radio small{ display:block; margin-top:2px; font-size: 12px; color: var(--muted); font-weight: 700; }
 
+    /* Small color swatch inside each radio */
+    .radio-swatch{
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
     .btnrow{
       display:flex;
-      gap: 10px;
+      gap: 8px;
       margin-top: 6px;
+      flex-wrap: wrap;
     }
     button{
       border: 1px solid var(--line);
@@ -157,12 +250,23 @@
       font-size: 14px;
       font-weight: 900;
       cursor:pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s, opacity 0.15s;
     }
+    button:not(:disabled):hover{ background: rgba(255,255,255,0.11); border-color: rgba(255,255,255,0.22); }
+    button:not(:disabled):active{ transform: scale(0.97); }
     button.primary{
       background: linear-gradient(180deg, rgba(0,170,255,0.20), rgba(0,170,255,0.08));
       border-color: rgba(0,170,255,0.42);
     }
-    button:disabled{ opacity:0.5; cursor:not-allowed; }
+    button.primary:not(:disabled):hover{
+      background: linear-gradient(180deg, rgba(0,170,255,0.32), rgba(0,170,255,0.16));
+      border-color: rgba(0,170,255,0.6);
+    }
+    button:disabled{ opacity:0.4; cursor:not-allowed; }
+
+    /* Flash on download */
+    @keyframes btnflash{ 0%,100%{ opacity:1; } 40%{ opacity:0.55; } }
+    .btn-flash{ animation: btnflash 0.45s ease; }
 
     .hint{
       font-size: 12px;
@@ -186,7 +290,7 @@
     }
     .mono{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 12px;
+      font-size: 11px;
       white-space: pre-wrap;
       color: rgba(255,255,255,0.75);
       margin:0;
@@ -215,6 +319,15 @@
       background: rgba(255,255,255,0.02);
       overflow:hidden;
       position:relative;
+      transition: background 0.3s;
+    }
+
+    /* Checkered pattern visible when QR has transparent background */
+    .viewport.checker{
+      background-image:
+        repeating-conic-gradient(rgba(255,255,255,0.055) 0% 25%, transparent 0% 50%);
+      background-size: 18px 18px;
+      background-color: transparent;
     }
 
     .canvas-wrap{
@@ -250,8 +363,31 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
+    }
+
+    /* Meta info key-value grid */
+    .meta-grid{
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 14px;
+    }
+    .meta-key{
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      line-height: 1.6;
+    }
+    .meta-val{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.72);
+      word-break: break-all;
+      line-height: 1.6;
     }
 
     .warn{ color: rgba(255,210,100,0.92); }
@@ -284,6 +420,7 @@
             <div class="radio-grid" role="radiogroup" aria-label="Color options">
               <label class="radio">
                 <input type="radio" name="colorMode" value="wb" checked>
+                <span class="radio-swatch" style="background: linear-gradient(135deg, #fff 50%, #000 50%);"></span>
                 <div>
                   <b>White BG</b>
                   <small>Black QR on white</small>
@@ -292,6 +429,7 @@
 
               <label class="radio">
                 <input type="radio" name="colorMode" value="bw">
+                <span class="radio-swatch" style="background: linear-gradient(135deg, #000 50%, #fff 50%);"></span>
                 <div>
                   <b>Black BG</b>
                   <small>White QR on black</small>
@@ -300,6 +438,7 @@
 
               <label class="radio">
                 <input type="radio" name="colorMode" value="transparent">
+                <span class="radio-swatch" style="background: repeating-conic-gradient(#999 0% 25%, #ddd 0% 50%) 0 0 / 8px 8px; border-radius: 6px;"></span>
                 <div>
                   <b>Transparent BG</b>
                   <small>Choose black/white QR</small>
@@ -308,6 +447,7 @@
 
               <label class="radio">
                 <input type="radio" name="colorMode" value="custom">
+                <span class="radio-swatch" style="background: conic-gradient(from 0deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);"></span>
                 <div>
                   <b>Custom</b>
                   <small>Pick colors</small>
@@ -316,30 +456,40 @@
             </div>
           </div>
 
-          <div class="row" id="transparentRow" style="display:none;">
-            <div>
-              <label for="transparentColor">Transparent QR color</label>
-              <select id="transparentColor">
-                <option value="black" selected>Black</option>
-                <option value="white">White</option>
-              </select>
-            </div>
-            <div>
-              <label>&nbsp;</label>
-              <div class="hint">Background stays fully transparent in the downloaded PNG.</div>
+          <!-- Transparent options (collapsible) -->
+          <div class="collapse-wrap" id="transparentRow">
+            <div class="collapse-inner">
+              <div>
+                <label for="transparentColor">QR Color</label>
+                <select id="transparentColor">
+                  <option value="black" selected>Black</option>
+                  <option value="white">White</option>
+                </select>
+                <div class="hint" style="margin-top:6px;">Background stays fully transparent in the downloaded PNG.</div>
+              </div>
             </div>
           </div>
 
-          <div class="row" id="customRow" style="display:none;">
-            <div>
-              <label for="fgPicker">QR (Foreground)</label>
-              <input id="fgPicker" type="text" value="#000000" />
-              <div class="hint">Hex like <span class="mono">#000000</span></div>
-            </div>
-            <div>
-              <label for="bgPicker">Background</label>
-              <input id="bgPicker" type="text" value="#ffffff" />
-              <div class="hint">Use <span class="mono">transparent</span> for alpha background</div>
+          <!-- Custom color options (collapsible) -->
+          <div class="collapse-wrap" id="customRow">
+            <div class="collapse-inner">
+              <div class="row">
+                <div>
+                  <label for="fgPicker">QR (Foreground)</label>
+                  <div class="color-pair">
+                    <input type="color" id="fgColor" value="#000000" tabindex="-1" aria-hidden="true">
+                    <input id="fgPicker" type="text" value="#000000" placeholder="#000000" />
+                  </div>
+                </div>
+                <div>
+                  <label for="bgPicker">Background</label>
+                  <div class="color-pair">
+                    <input type="color" id="bgColor" value="#ffffff" tabindex="-1" aria-hidden="true">
+                    <input id="bgPicker" type="text" value="#ffffff" placeholder="#fff or transparent" />
+                  </div>
+                  <div class="hint" style="margin-top:6px;">Use <span class="mono">transparent</span> for alpha</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -347,7 +497,7 @@
             <div>
               <label for="filenameInput">File name</label>
               <input id="filenameInput" type="text" value="qr_code" />
-              <div class="hint">PNG download (500×500).</div>
+              <div class="hint" style="margin-top:6px;">PNG download (500×500).</div>
             </div>
             <div>
               <label>Actions</label>
@@ -363,7 +513,7 @@
             <ul style="margin:8px 0 0 18px; padding:0;">
               <li>Long URLs are supported (QR versions auto-expand up to 40).</li>
               <li>Preview auto-sizes to your window; no zoom controls.</li>
-              <li>If the preview warns about low “pixels per module,” the code may be hard to scan at small on-screen sizes, but the 500×500 download will usually scan fine.</li>
+              <li>If the preview warns about low "pixels per module," the code may be hard to scan at small on-screen sizes, but the 500×500 download will usually scan fine.</li>
             </ul>
           </div>
         </div>
@@ -392,8 +542,9 @@
             <div class="pill" id="scanPill">—</div>
             <div class="pill">Quiet zone: 4 modules</div>
             <div class="pill">EC level: M</div>
+            <button id="copyBtn" type="button" disabled style="margin-left:auto;">Copy PNG</button>
           </div>
-          <pre class="mono" id="metaText"></pre>
+          <div class="meta-grid" id="metaGrid"></div>
         </div>
       </section>
 
@@ -403,28 +554,50 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
-  const urlInput = $("urlInput");
-  const urlHint = $("urlHint");
-  const statusPill = $("statusPill");
-  const metaPill = $("metaPill");
-  const scanPill = $("scanPill");
-  const metaText = $("metaText");
+  const urlInput      = $("urlInput");
+  const urlHint       = $("urlHint");
+  const statusPill    = $("statusPill");
+  const metaPill      = $("metaPill");
+  const scanPill      = $("scanPill");
+  const metaGrid      = $("metaGrid");
 
-  const transparentRow = $("transparentRow");
+  const transparentRow   = $("transparentRow");
   const transparentColor = $("transparentColor");
-  const customRow = $("customRow");
-  const fgPicker = $("fgPicker");
-  const bgPicker = $("bgPicker");
+  const customRow        = $("customRow");
+  const fgPicker         = $("fgPicker");
+  const fgColor          = $("fgColor");
+  const bgPicker         = $("bgPicker");
+  const bgColor          = $("bgColor");
 
-  const qrCanvas = $("qrCanvas");
-  const viewport = $("viewport");
-  const downloadBtn = $("downloadBtn");
-  const clearBtn = $("clearBtn");
+  const qrCanvas     = $("qrCanvas");
+  const viewport     = $("viewport");
+  const downloadBtn  = $("downloadBtn");
+  const copyBtn      = $("copyBtn");
+  const clearBtn     = $("clearBtn");
   const filenameInput = $("filenameInput");
 
-  const QUIET = 4;           // modules
-  const DOWNLOAD_PX = 500;   // fixed by request
+  const QUIET = 4;
+  const DOWNLOAD_PX = 500;
 
+  // Track last successful render for copy
+  let lastQr = null, lastOpts = null;
+
+  // ── Color picker ↔ hex text sync ─────────────────────────────────────────
+  fgColor.addEventListener("input", () => { fgPicker.value = fgColor.value; renderAll(); });
+  bgColor.addEventListener("input", () => { bgPicker.value = bgColor.value; renderAll(); });
+
+  fgPicker.addEventListener("input", () => {
+    const h = sanitizeHexOrTransparent(fgPicker.value, null);
+    if (h && h !== "transparent") fgColor.value = h;
+    renderAll();
+  });
+  bgPicker.addEventListener("input", () => {
+    const h = sanitizeHexOrTransparent(bgPicker.value, null);
+    if (h && h !== "transparent") bgColor.value = h;
+    renderAll();
+  });
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
   function getColorMode(){
     const el = document.querySelector('input[name="colorMode"]:checked');
     return el ? el.value : "wb";
@@ -434,55 +607,47 @@
     const s = String(v || "").trim();
     if (!s) return fallback;
     if (s.toLowerCase() === "transparent") return "transparent";
-    // Accept #RGB or #RRGGBB
     if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(s)) return s;
     return fallback;
   }
 
   function getOptions(){
     const mode = getColorMode();
+    let fg = "#000000", bg = "#ffffff", transparent = false;
 
-    let fg = "#000000";
-    let bg = "#ffffff";
-    let transparent = false;
-
-    if (mode === "wb"){ fg = "#000000"; bg = "#ffffff"; transparent = false; }
-    if (mode === "bw"){ fg = "#ffffff"; bg = "#000000"; transparent = false; }
-
+    if (mode === "wb"){ fg = "#000000"; bg = "#ffffff"; }
+    if (mode === "bw"){ fg = "#ffffff"; bg = "#000000"; }
     if (mode === "transparent"){
-      transparent = true;
-      bg = "transparent";
+      transparent = true; bg = "transparent";
       fg = (transparentColor.value === "white") ? "#ffffff" : "#000000";
     }
-
     if (mode === "custom"){
       fg = sanitizeHexOrTransparent(fgPicker.value, "#000000");
       bg = sanitizeHexOrTransparent(bgPicker.value, "#ffffff");
       transparent = (bg.toLowerCase && bg.toLowerCase() === "transparent");
     }
-
     return { fg, bg, transparent, mode };
   }
 
   function setModeVisibility(){
     const mode = getColorMode();
-    transparentRow.style.display = (mode === "transparent") ? "" : "none";
-    customRow.style.display = (mode === "custom") ? "" : "none";
+    transparentRow.classList.toggle("open", mode === "transparent");
+    customRow.classList.toggle("open", mode === "custom");
+    // Show checkered background when output has transparent BG
+    const isTransparentBg = (mode === "transparent") ||
+      (mode === "custom" && sanitizeHexOrTransparent(bgPicker.value, "") === "transparent");
+    viewport.classList.toggle("checker", isTransparentBg);
   }
 
   function normalizeUrl(raw){
     const s = String(raw || "").trim();
     if (!s) return { ok:false, normalized:"", reason:"Empty" };
-
-    // If user forgot scheme, assume https://
     let candidate = s;
     if (!/^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//.test(candidate)){
       candidate = "https://" + candidate;
     }
-
     try{
       const u = new URL(candidate);
-      // Basic allowlist: http(s)
       if (!/^https?:$/.test(u.protocol)) return { ok:false, normalized:candidate, reason:"Only http/https supported" };
       return { ok:true, normalized:u.toString(), reason:"OK" };
     }catch(e){
@@ -491,10 +656,9 @@
   }
 
   function makeQr(data){
-    // 0 => auto version
     const qr = qrcode(0, "M");
     qr.addData(data);
-    qr.make(); // may throw if data too large even for v40
+    qr.make();
     return qr;
   }
 
@@ -507,17 +671,13 @@
     const ctx = canvas.getContext("2d", { alpha:true });
     const moduleCount = qr.getModuleCount();
     const totalModules = moduleCount + QUIET*2;
-
-    // pixels per module (integer for crispness)
     const ppm = Math.max(1, Math.floor(targetPx / totalModules));
     const usedPx = ppm * totalModules;
     const margin = Math.floor((targetPx - usedPx) / 2);
 
-    // set exact canvas output size
     canvas.width = targetPx;
     canvas.height = targetPx;
 
-    // background
     if (!opts.transparent){
       ctx.fillStyle = opts.bg;
       ctx.fillRect(0, 0, targetPx, targetPx);
@@ -525,7 +685,6 @@
       ctx.clearRect(0, 0, targetPx, targetPx);
     }
 
-    // draw modules
     ctx.fillStyle = opts.fg;
     for (let r=0; r<moduleCount; r++){
       for (let c=0; c<moduleCount; c++){
@@ -535,22 +694,18 @@
         ctx.fillRect(x, y, ppm, ppm);
       }
     }
-
     return { moduleCount, totalModules, ppm, usedPx, margin };
   }
 
   function computePreviewSize(){
-    // Fit square inside viewport with padding already applied in CSS
     const rect = viewport.getBoundingClientRect();
     const size = Math.floor(Math.min(rect.width, rect.height));
-    // ensure a minimum (avoids 0px during initial layout)
     return Math.max(128, size);
   }
 
   function downloadPng(qr, opts){
     const c = document.createElement("canvas");
     renderQrToCanvas(qr, c, DOWNLOAD_PX, opts);
-
     const nameRaw = (filenameInput.value || "qr_code").trim() || "qr_code";
     const safe = nameRaw.replace(/[\\/:*?"<>|]+/g, "_");
     const a = document.createElement("a");
@@ -559,6 +714,11 @@
     document.body.appendChild(a);
     a.click();
     a.remove();
+    // Button flash feedback
+    downloadBtn.classList.remove("btn-flash");
+    void downloadBtn.offsetWidth; // reflow to restart
+    downloadBtn.classList.add("btn-flash");
+    downloadBtn.addEventListener("animationend", () => downloadBtn.classList.remove("btn-flash"), { once:true });
   }
 
   function setPill(el, text, cls){
@@ -566,6 +726,13 @@
     el.className = "pill" + (cls ? (" " + cls) : "");
   }
 
+  function setMetaGrid(rows){
+    metaGrid.innerHTML = rows.map(([k, v]) =>
+      `<span class="meta-key">${k}</span><span class="meta-val">${v}</span>`
+    ).join("");
+  }
+
+  // ── Main render ───────────────────────────────────────────────────────────
   function renderAll(){
     setModeVisibility();
 
@@ -574,11 +741,13 @@
 
     if (!urlState.ok){
       downloadBtn.disabled = true;
+      copyBtn.disabled = true;
+      lastQr = null;
       urlHint.textContent = urlInput.value.trim() ? `Invalid URL: ${urlState.reason}` : "Enter a URL to generate a QR code.";
       setPill(statusPill, urlInput.value.trim() ? "Invalid URL" : "Waiting for URL", urlInput.value.trim() ? "warn" : "");
       setPill(metaPill, "—");
       setPill(scanPill, "—");
-      metaText.textContent = "";
+      setMetaGrid([]);
       clearCanvas(qrCanvas);
       return;
     }
@@ -588,57 +757,69 @@
 
     try{
       const qr = makeQr(urlState.normalized);
+      lastQr = qr; lastOpts = opts;
 
       const previewPx = computePreviewSize();
       const stats = renderQrToCanvas(qr, qrCanvas, previewPx, opts);
 
-      // Download always 500x500
       downloadBtn.disabled = false;
+      copyBtn.disabled = false;
       downloadBtn.onclick = () => downloadPng(qr, opts);
 
-      const ppmNote = (stats.ppm >= 4) ? "ok" : (stats.ppm >= 3 ? "warn" : "warn");
+      const ppmNote = (stats.ppm >= 4) ? "ok" : "warn";
       const ppmLabel = (stats.ppm >= 4)
         ? `Preview scan-quality: OK (${stats.ppm}px/module)`
         : `Preview may be hard to scan (${stats.ppm}px/module) — download is 500×500`;
-
       setPill(scanPill, ppmLabel, ppmNote);
 
-      // qrcode-generator doesn't expose version directly; infer from module count:
-      // Version = (moduleCount - 17) / 4
       const ver = Math.round((stats.moduleCount - 17) / 4);
       setPill(metaPill, `v${ver} • ${stats.moduleCount}×${stats.moduleCount} modules`);
 
-      metaText.textContent =
-`Normalized URL:
-${urlState.normalized}
-
-Preview:
-canvas: ${previewPx}×${previewPx}px
-modules: ${stats.moduleCount}×${stats.moduleCount}
-quiet: ${QUIET} modules
-pixels/module: ${stats.ppm}
-used area: ${stats.usedPx}×${stats.usedPx}px
-margin: ${stats.margin}px
-
-Download:
-${DOWNLOAD_PX}×${DOWNLOAD_PX}px (fixed)
-`;
+      setMetaGrid([
+        ["URL",      urlState.normalized],
+        ["Version",  `${ver}`],
+        ["Modules",  `${stats.moduleCount}×${stats.moduleCount}`],
+        ["Preview",  `${previewPx}×${previewPx}px · ${stats.ppm}px/module`],
+        ["Download", `${DOWNLOAD_PX}×${DOWNLOAD_PX}px (fixed)`],
+      ]);
 
     }catch(err){
       downloadBtn.disabled = true;
+      copyBtn.disabled = true;
+      lastQr = null;
       clearCanvas(qrCanvas);
       setPill(statusPill, "QR generation failed", "warn");
       setPill(metaPill, "—");
       setPill(scanPill, "—");
-      metaText.textContent = `Error: ${String(err && err.message ? err.message : err)}`;
+      setMetaGrid([["Error", String(err && err.message ? err.message : err)]]);
     }
   }
 
-  // Events
+  // ── Copy QR to clipboard ──────────────────────────────────────────────────
+  copyBtn.addEventListener("click", () => {
+    if (!lastQr) return;
+    const c = document.createElement("canvas");
+    renderQrToCanvas(lastQr, c, DOWNLOAD_PX, lastOpts);
+    c.toBlob(async (blob) => {
+      const orig = copyBtn.textContent;
+      try{
+        await navigator.clipboard.write([new ClipboardItem({"image/png": blob})]);
+        copyBtn.textContent = "Copied!";
+      }catch(e){
+        copyBtn.textContent = "Failed";
+      }
+      setTimeout(() => { copyBtn.textContent = orig; }, 1600);
+    }, "image/png");
+  });
+
+  // ── Events ────────────────────────────────────────────────────────────────
   urlInput.addEventListener("input", renderAll);
+  // Enter key triggers download when a valid QR is ready
+  urlInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !downloadBtn.disabled) downloadBtn.click();
+  });
+
   transparentColor.addEventListener("change", renderAll);
-  fgPicker.addEventListener("input", renderAll);
-  bgPicker.addEventListener("input", renderAll);
 
   document.querySelectorAll('input[name="colorMode"]').forEach(r => {
     r.addEventListener("change", renderAll);
