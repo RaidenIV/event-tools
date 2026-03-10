@@ -27,7 +27,6 @@
     --secondary: #00ffff;
     --darker: #000000;
     --light: #ffffff;
-    /* Shared top UI height (Menu button + top logo) */
     --top-ui-height: 48px;
 }
 
@@ -35,7 +34,6 @@
     font-family: 'Rajdhani', sans-serif;
 }
 
-/* Force Rajdhani for headings (Squarespace can override h1/h2/h3) */
 #homepage-container h1,
 #homepage-container h2,
 #homepage-container h3,
@@ -47,13 +45,15 @@
     font-weight: 900 !important;
 }
 
-/* --- Three.js background layer --- */
-#three-bg{
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: #000; /* fallback */
+#threejs-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: #000000;
+    pointer-events: none;
 }
 
 body {
@@ -64,32 +64,59 @@ body {
 /* Navigation Dropdown */
 .nav-dropdown {
     position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
+    top: 18px;
+    left: 18px;
+    z-index: 10000;
 }
 
 .nav-toggle {
     background: rgba(26, 26, 26, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
-    height: var(--top-ui-height);
-    padding: 0 16px;
+    height: 48px;
+    width: 52px;
+    padding: 0 14px;
     color: #ffffff;
-    font-size: 16px;
-    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0;
+    justify-content: center;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .nav-toggle:hover {
     background: rgba(36, 36, 36, 0.9);
     border-color: var(--primary);
 }
+
+.nav-toggle-icon {
+    position: relative;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+
+.nav-toggle-icon::before,
+.nav-toggle-icon::after {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    left: 0;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+
+.nav-toggle-icon::before { top: -6px; }
+.nav-toggle-icon::after  { top:  6px; }
+.nav-dropdown.active .nav-toggle-icon { background: transparent; }
+.nav-dropdown.active .nav-toggle-icon::before { top: 0; transform: rotate(45deg); }
+.nav-dropdown.active .nav-toggle-icon::after  { top: 0; transform: rotate(-45deg); }
 
 .nav-menu {
     position: absolute;
@@ -98,13 +125,15 @@ body {
     background: rgba(26, 26, 26, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
+    overflow: hidden;
     padding: 8px;
-    min-width: 180px;
+    min-width: 200px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .nav-dropdown.active .nav-menu {
@@ -115,23 +144,22 @@ body {
 
 .nav-menu a {
     display: block;
+    text-align: left;
     padding: 12px 16px;
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     border-radius: 8px;
     transition: all 0.3s ease;
 }
 
 .nav-menu a:hover {
-    background: rgba(0, 153, 255, 0.1);
+    background: rgba(0, 153, 255, 0.12);
     color: var(--primary);
 }
 
-/* Main Container */
-
-/* Squarespace code-block/section padding resets (prevents the page from being pushed down) */
+/* Squarespace resets */
 #page,
 .page-section,
 .content-wrapper,
@@ -141,7 +169,6 @@ body {
     margin: 0 !important;
 }
 
-/* Ensure our full-screen container ignores Squarespace layout flow */
 #homepage-container {
     position: fixed;
     top: 0;
@@ -150,13 +177,12 @@ body {
     bottom: 0;
     width: 100%;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.55);
+    background: transparent;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    /* Top padding keeps content visually aligned with the fixed Menu button */
-    padding: 20px 30px 40px;
+    padding: 20px 24px 30px;
     box-sizing: border-box;
     overflow: hidden;
     z-index: 10;
@@ -189,26 +215,28 @@ body {
     font-size: 18px;
     font-weight: 500;
     text-align: center;
-    margin: 0 0 30px 0;
+    margin: 0 0 20px 0;
     letter-spacing: 1px;
 }
 
-/* Events Grid */
+/* ── Events Grid — single row, all 5 cards ── */
 .events-grid {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1600px;
     display: flex;
-    gap: 30px;
-    margin-bottom: 30px;
+    gap: 20px;
+    margin-bottom: 20px;
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;           /* single horizontal row */
 }
 
-/* Event Card */
+/* ── Event Card — fluid, equal-width ── */
 .event-card {
+    flex: 1 1 0;                 /* share available width equally */
+    min-width: 0;                /* allow shrinking below content size */
     background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(20, 20, 20, 0.9) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
+    border-radius: 16px;
     overflow: hidden;
     position: relative;
     text-decoration: none;
@@ -217,8 +245,6 @@ body {
     backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
-    width: 320px;
-    flex-shrink: 0;
 }
 
 .event-card::before {
@@ -239,10 +265,7 @@ body {
 
 .event-card-bg {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background: linear-gradient(135deg, #0099ff 0%, #00ffff 100%);
     opacity: 0;
     transition: opacity 0.4s ease;
@@ -254,20 +277,19 @@ body {
 
 .event-card:hover {
     border-color: #0099ff;
-    transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(0, 153, 255, 0.3), inset 0 1px 0 rgba(0, 153, 255, 0.5);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 153, 255, 0.3), inset 0 1px 0 rgba(0, 153, 255, 0.5);
 }
 
-/* Flyer Thumbnail */
+/* Flyer thumbnail */
 .event-flyer {
-    width: 100%;
     aspect-ratio: 1 / 1;
     overflow: hidden;
     position: relative;
     z-index: 2;
-    border-radius: 12px;
-    margin: 12px;
-    width: calc(100% - 24px);
+    border-radius: 10px;
+    margin: 10px;
+    width: calc(100% - 20px);
 }
 
 .event-flyer img {
@@ -281,9 +303,9 @@ body {
     transform: scale(1.05);
 }
 
-/* Event Content */
+/* Event content */
 .event-content {
-    padding: 16px 24px 24px 24px;
+    padding: 10px 16px 34px 16px;   /* extra bottom padding clears the arrow */
     position: relative;
     z-index: 2;
     flex: 1;
@@ -292,41 +314,54 @@ body {
 }
 
 .event-title {
-    font-size: 24px;
+    font-size: clamp(14px, 1.3vw, 20px);
     font-weight: 700;
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
     color: #ffffff;
+    line-height: 1.2;
+    /* clamp to 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .event-venue {
-    font-size: 14px;
+    font-size: clamp(11px, 1.0vw, 15px);
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.7);
-    margin: 0 0 12px 0;
+    color: rgba(255, 255, 255, 0.65);
+    margin: 0 0 5px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .event-description {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.5;
-    margin: 0 0 16px 0;
+    font-size: clamp(11px, 0.95vw, 14px);
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+    margin: 0 0 8px 0;
     flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .event-date {
-    font-size: 13px;
+    font-size: clamp(10px, 0.9vw, 13px);
     color: #0099ff;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
 }
 
 .event-arrow {
     position: absolute;
-    bottom: 24px;
-    right: 24px;
-    width: 32px;
-    height: 32px;
+    bottom: 8px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -337,21 +372,19 @@ body {
 
 .event-card:hover .event-arrow {
     background: rgba(0, 153, 255, 0.2);
-    transform: translateX(4px);
+    transform: translateX(3px);
 }
 
 .event-arrow-icon {
-    width: 20px;
-    height: 20px;
+    width: 13px;
+    height: 13px;
     color: #0099ff;
 }
 
 .event-card-shine {
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
     background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
     z-index: 3;
     pointer-events: none;
@@ -362,12 +395,8 @@ body {
 }
 
 @keyframes cardShine {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 100%;
-    }
+    0%   { left: -100%; }
+    100% { left: 100%;  }
 }
 
 /* Social Media Icons */
@@ -392,138 +421,100 @@ body {
     transform: translateY(-3px);
 }
 
-/* Short desktop screens (e.g., 1366x768) */
+/* ── Short desktop screens (e.g. 1366×768) ── */
 @media (max-height: 800px) {
-    /* Allow vertical scroll if content exceeds viewport height */
     #homepage-container {
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch;
-        padding: 14px 24px 26px; /* reduce vertical padding */
+        padding: 12px 20px 20px;
     }
-
-    /* Slightly tighten top branding spacing */
-    .page-logo {
-        margin: 6px 0 6px 0;
-    }
-
-    .tagline {
-        font-size: 56px; /* was 72px */
-        margin: 0 0 8px 0;
-    }
-
-    .subtitle {
-        margin: 0 0 20px 0;
-        font-size: 16px; /* was 18px */
-    }
-
-    /* Tighten grid spacing so header stays visible */
-    .events-grid {
-        gap: 22px;       /* was 30px */
-        margin-bottom: 22px; /* was 30px */
-    }
-
-    .social-container {
-        gap: 1.5rem;     /* was 2rem */
-    }
+    .page-logo  { margin: 4px 0 4px 0; }
+    .tagline    { font-size: 48px; margin: 0 0 6px 0; }
+    .subtitle   { margin: 0 0 14px 0; font-size: 15px; }
+    .events-grid { gap: 10px; margin-bottom: 14px; }
+    .social-container { gap: 1.5rem; }
 }
 
-/* Responsive Design */
+/* ── Tablet: wrap to 2–3 columns ── */
+@media (max-width: 900px) {
+    .events-grid {
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+    .event-card {
+        flex: 1 1 calc(50% - 18px);
+        min-width: 180px;
+        max-width: 300px;
+    }
+    .event-content { padding: 10px 16px 28px 16px; }
+    .event-title   { font-size: 16px; }
+    .event-venue   { font-size: 12px; }
+    .event-description { font-size: 12px; }
+    .event-date    { font-size: 11px; }
+}
+
+/* ── Mobile: single column ── */
 @media (max-width: 768px) {
-    /* Mobile scrolling: allow the full-page container to scroll */
     #homepage-container {
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch;
+        padding: 15px 20px 30px;
     }
+    :root { --top-ui-height: 44px; }
+    .page-logo { margin: 8px 0 6px 0; }
+    .tagline   { font-size: 48px; margin: 0 0 8px 0; }
+    .subtitle  { font-size: 16px; margin-bottom: 20px; }
 
-    :root {
-        --top-ui-height: 44px;
-    }
-    /* Page Logo - Mobile */
-    .page-logo {
-        margin: 8px 0 6px 0;
-    }
-    .tagline {
-        font-size: 48px;
-        margin: 0 0 8px 0;
-    }
-    
-    .subtitle {
-        font-size: 16px;
-        margin-bottom: 20px;
-    }
-    
     .events-grid {
         flex-direction: column;
         align-items: center;
-        gap: 24px;
+        flex-wrap: wrap;
+        gap: 20px;
         margin-bottom: 20px;
     }
-    
     .event-card {
+        flex: none;
         width: 100%;
         max-width: 320px;
     }
-    
-    #homepage-container {
-        padding: 15px 20px 30px;
-    }
-    
-    .social-container {
-        margin-top: 0;
-        gap: 1.5rem;
-    }
+    .event-content     { padding: 12px 18px 32px 18px; }
+    .event-title       { font-size: 20px; -webkit-line-clamp: unset; }
+    .event-venue       { font-size: 13px; }
+    .event-description { font-size: 13px; -webkit-line-clamp: unset; }
+    .event-date        { font-size: 12px; }
+    .event-arrow       { bottom: 16px; right: 16px; width: 28px; height: 28px; }
+    .event-arrow-icon  { width: 16px; height: 16px; }
 
-    .social-icon svg {
-        width: 28px;
-        height: 28px;
-    }
+    .social-container  { gap: 1.5rem; }
+    .social-icon svg   { width: 28px; height: 28px; }
 }
 
 @media (max-width: 480px) {
-    :root {
-        --top-ui-height: 42px;
-    }
-    /* Page Logo - Small Mobile */
-    .page-logo {
-        margin: 6px 0 6px 0;
-    }
-    .tagline {
-        font-size: 36px;
-        margin: 0 0 6px 0;
-    }
-    
-    .subtitle {
-        font-size: 14px;
-        margin-bottom: 15px;
-    }
-    
-    .event-title {
-        font-size: 20px;
-    }
-    
-    .event-card {
-        width: 100%;
-        max-width: 280px;
-    }
+    :root { --top-ui-height: 42px; }
+    .page-logo { margin: 6px 0 6px 0; }
+    .tagline   { font-size: 36px; margin: 0 0 6px 0; }
+    .subtitle  { font-size: 14px; margin-bottom: 15px; }
+    .event-card { max-width: 280px; }
 }
 </style>
 
-<!-- Three.js Background Container -->
-<div id="three-bg"></div>
+<!-- Three.js Particle Background -->
+<canvas id="threejs-bg"></canvas>
 
 <div id="homepage-container">
  
  <!-- Navigation Dropdown -->
  <div class="nav-dropdown" id="navDropdown">
-  <button class="nav-toggle" id="navToggle">
-   Menu
+  <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu">
+   <span class="nav-toggle-icon" aria-hidden="true"></span>
   </button>
-  <div class="nav-menu">
-   <a href="/">Home</a>
-   <a href="/contact">Contact Us</a>
-   <a href="/tools">Tools</a>
+  <div class="nav-menu" role="menu" aria-label="Site navigation">
+   <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+   <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+   <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+   <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
   </div>
  </div>
  
@@ -534,20 +525,19 @@ body {
  
  <!-- Events Grid -->
  <div class="events-grid">
-  
-  <!-- Example Event Card 1 -->
+
   <a class="event-card" href="/swerve">
    <div class="event-card-bg"></div>
    <div class="event-flyer">
-    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/63cdadf0-1b87-440a-872a-c8a818bdde70/phonto.JPG?format=500w" alt="SWERVE Flyer" />
+    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/07ed23f9-c86b-4380-9200-70af70504c91/phonto.PNG?format=500w" alt="swerve" />
    </div>
    <div class="event-content">
     <h3 class="event-title">SWERVE</h3>
     <p class="event-venue">Skully's Music Diner</p>
-    <p class="event-description">All hip hop bangers all night!</p>
-    <div class="event-date">Friday, Feb 27, 2026</div>
+    <p class="event-description">2016 era hip hop bangers!</p>
+    <div class="event-date">Friday, March 27, 2026</div>
     <div class="event-arrow">
-     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewbox="0 0 24 24">
+     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewBox="0 0 24 24">
       <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
      </svg>
     </div>
@@ -555,39 +545,75 @@ body {
    <div class="event-card-shine"></div>
   </a>
   
-  <!-- Example Event Card 2 -->
-  <a class="event-card" href="/coming-soon">
+  <a class="event-card" href="/kidrave7">
    <div class="event-card-bg"></div>
    <div class="event-flyer">
-    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/8a520dd4-bfbf-49e2-84de-144b1abf1c8d/11314.jpg?format=500w" alt="???" />
+    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/b262a90e-f04f-4ab6-baad-ba4c5fee6b32/KID+RAVE+7+%28CHICKEN+JOCKEY%29+%282%29.jpg?format=500w" alt="kid rave 7" />
    </div>
    <div class="event-content">
-    <h3 class="event-title">???</h3>
-    <p class="event-venue">???</p>
-    <p class="event-description">???????</p>
-    <div class="event-date">??????, Mar ??, 2026</div>
+    <h3 class="event-title">KID RAVE 7: Chicken Jockey Edition</h3>
+    <p class="event-venue">Skully's Music Diner</p>
+    <p class="event-description">Get ready to party like it's Y2K at our Early 2000s Dance Party!</p>
+    <div class="event-date">Sunday, Mar 29, 2026</div>
     <div class="event-arrow">
-     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewbox="0 0 24 24">
+     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewBox="0 0 24 24">
       <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
      </svg>
     </div>
    </div>
    <div class="event-card-shine"></div>
   </a>
-  
-  <!-- Example Event Card 3 -->
-  <a class="event-card" href="/coming-soon">
+
+  <a class="event-card" href="/jyklhyde">
    <div class="event-card-bg"></div>
    <div class="event-flyer">
-    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/8a520dd4-bfbf-49e2-84de-144b1abf1c8d/11314.jpg?format=500w" alt="???" />
+    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/29033497-ac7d-46ae-a3fb-4ddbdccc576a/2B2272FF-3DDB-47A9-86F3-6C1C811BDC39.JPEG?format=500w" alt="jykl&hyde" />
    </div>
    <div class="event-content">
-    <h3 class="event-title">???</h3>
-    <p class="event-venue">???</p>
-    <p class="event-description">???????</p>
-    <div class="event-date">??????, Mar ??, 2026</div>
+    <h3 class="event-title">JYKL & HYDE w/ JILLI</h3>
+    <p class="event-venue">Skully's Music Diner</p>
+    <p class="event-description">JYKL & HYDE Presents: Second Self Tour</p>
+    <div class="event-date">Saturday, April 4, 2026</div>
     <div class="event-arrow">
-     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewbox="0 0 24 24">
+     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewBox="0 0 24 24">
+      <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+     </svg>
+    </div>
+   </div>
+   <div class="event-card-shine"></div>
+  </a>
+
+  <a class="event-card" href="/riddimroyale">
+   <div class="event-card-bg"></div>
+   <div class="event-flyer">
+    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/4c44a5e5-2b1e-4b77-9b4c-cd8ff92286cb/Riddim+Royal+5.23.26+SQUARE+%5Blineup+tba%5D.jpg?format=500w" alt="riddim royale" />
+   </div>
+   <div class="event-content">
+    <h3 class="event-title">RIDDIM ROYALE: CAGE MATCH</h3>
+    <p class="event-venue">Dirty Dungarees</p>
+    <p class="event-description">A pro-wrestling themed riddim cage in a laundromat!</p>
+    <div class="event-date">Saturday, May 23, 2026</div>
+    <div class="event-arrow">
+     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewBox="0 0 24 24">
+      <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+     </svg>
+    </div>
+   </div>
+   <div class="event-card-shine"></div>
+  </a>
+
+  <a class="event-card" href="/reaper">
+   <div class="event-card-bg"></div>
+   <div class="event-flyer">
+    <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/1acb84ad-a3c4-426c-a86a-59715539d5fc/Reaper_Boneyard2026_Square.JPG?format=500w" alt="reaper" />
+   </div>
+   <div class="event-content">
+    <h3 class="event-title">REAPER: BONEYARD TOUR 26'</h3>
+    <p class="event-venue">Skully's Music Diner</p>
+    <p class="event-description">REAPER'S BONEYARD TOUR STARTS NOW!</p>
+    <div class="event-date">Saturday, June 6, 2026</div>
+    <div class="event-arrow">
+     <svg aria-hidden="true" class="event-arrow-icon" focusable="false" viewBox="0 0 24 24">
       <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
      </svg>
     </div>
@@ -600,14 +626,14 @@ body {
  <!-- Social Media Icons -->
  <div class="social-container">
   <a class="social-icon" href="https://instagram.com/xodiamg" rel="noopener noreferrer" target="_blank">
-   <svg fill="none" height="35" viewbox="0 0 60 60" width="35" xmlns="http://www.w3.org/2000/svg">
+   <svg fill="none" height="35" viewBox="0 0 60 60" width="35" xmlns="http://www.w3.org/2000/svg">
     <rect height="44" rx="12" stroke="currentColor" stroke-width="3" width="44" x="8" y="8"></rect>
     <circle cx="30" cy="30" r="10" stroke="currentColor" stroke-width="3"></circle>
     <circle cx="43" cy="17" fill="currentColor" r="2.5"></circle>
    </svg>
   </a>
   <a class="social-icon" href="https://facebook.com/xodiamg" rel="noopener noreferrer" target="_blank">
-   <svg fill="none" height="35" viewbox="0 0 60 60" width="35" xmlns="http://www.w3.org/2000/svg">
+   <svg fill="none" height="35" viewBox="0 0 60 60" width="35" xmlns="http://www.w3.org/2000/svg">
     <circle cx="30" cy="30" r="22" stroke="currentColor" stroke-width="3"></circle>
     <path d="M33 52V32H38L39 25H33V21C33 19 33.5 18 36 18H39V12C38 12 35.5 11.5 33 11.5C28 11.5 25 14 25 20V25H20V32H25V52H33Z" fill="currentColor"></path>
    </svg>
@@ -616,7 +642,6 @@ body {
 </div>
 
 <script>
-// Navigation dropdown toggle
 const navDropdown = document.getElementById('navDropdown');
 const navToggle = document.getElementById('navToggle');
 
@@ -625,218 +650,112 @@ navToggle.addEventListener('click', function(e) {
     navDropdown.classList.toggle('active');
 });
 
-// Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
     if (!navDropdown.contains(e.target)) {
         navDropdown.classList.remove('active');
     }
 });
 
-// Close dropdown when clicking a link
-const navLinks = document.querySelectorAll('.nav-menu a');
-navLinks.forEach(link => {
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') navDropdown.classList.remove('active');
+});
+
+document.querySelectorAll('.nav-menu a').forEach(link => {
     link.addEventListener('click', function() {
         navDropdown.classList.remove('active');
     });
 });
 </script>
 
-<script type="module">
-  import * as THREE from "https://unpkg.com/three@0.160.1/build/three.module.js";
-
-  const mount = document.getElementById("three-bg");
-  if (!mount) throw new Error("three-bg mount not found");
-
-  // Basic WebGL support check
-  const canvas = document.createElement("canvas");
-  const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-  if (!gl) {
-    mount.style.background = "#000";
-  } else {
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+    const canvas = document.getElementById('threejs-bg');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x000000, 40, 100); // Add subtle fog for depth
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.z = 500;
 
-    const camera = new THREE.PerspectiveCamera(
-      12.5,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      200
-    );
-    camera.position.set(0, 18, 28);
-    camera.lookAt(0, 0, 0);
+    const PARTICLE_COUNT = 1800;
+    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    const colors    = new Float32Array(PARTICLE_COUNT * 3);
+    const speeds    = new Float32Array(PARTICLE_COUNT);
 
-    // Lights
-    const key = new THREE.DirectionalLight(0xffffff, 4.0); // Main key light    
-    key.position.set(10, 30, 10);
-    key.castShadow = true;
-    key.shadow.mapSize.width = 2048;
-    key.shadow.mapSize.height = 2048;
-    key.shadow.camera.left = -30;
-    key.shadow.camera.right = 30;
-    key.shadow.camera.top = 30;
-    key.shadow.camera.bottom = -30;
-    key.shadow.camera.near = 0.5;
-    key.shadow.camera.far = 100;
-    key.shadow.bias = -0.0001;
-    scene.add(key);
+    const colorPalette = [
+        new THREE.Color(0x0099ff),
+        new THREE.Color(0x00ffff),
+        new THREE.Color(0xffffff),
+        new THREE.Color(0x66ccff),
+    ];
 
-    const rim = new THREE.DirectionalLight(0xffffff, 2.5); // Rim light
-    rim.position.set(-20, 15, -10);
-    rim.castShadow = true;
-    rim.shadow.mapSize.width = 2048;
-    rim.shadow.mapSize.height = 2048;
-    rim.shadow.camera.left = -30;
-    rim.shadow.camera.right = 30;
-    rim.shadow.camera.top = 30;
-    rim.shadow.camera.bottom = -30;
-    scene.add(rim);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        positions[i * 3]     = (Math.random() - 0.5) * 2000;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 1200;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.3));// Base ambient light - reduced to make shadows more visible
+        const c = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+        const brightness = c.equals(colorPalette[2]) ? 0.4 + Math.random() * 0.3 : 0.6 + Math.random() * 0.4;
+        colors[i * 3]     = c.r * brightness;
+        colors[i * 3 + 1] = c.g * brightness;
+        colors[i * 3 + 2] = c.b * brightness;
 
-    // Hex tiles (instanced)
-    const HEX_R = 0.65; // Hexagon radius (distance from center to vertex)
-    const HEX_H = 4.5; // Hexagon height
-
-    const hexGeo = new THREE.CylinderGeometry(HEX_R, HEX_R, 1, 6, 1, false);
-    hexGeo.rotateY(Math.PI / 6); //
-
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0x242424, // Lighter grey
-      roughness: 0.0, // Smooth, reflective surface
-      metalness: 0.9, // Highly metallic for strong reflections
-      emissive: 0x000000,     // No emissive color
-      emissiveIntensity: 0.0      // No emissive glow
-    });
-
-    const isMobile = matchMedia("(max-width: 768px)").matches;
-    const GRID = isMobile ? 34 : 52; // Number of hexes along the width, reduced for mobile to maintain performance
-    const rows = Math.round(GRID * 0.72*2); // Adjust rows based on grid width for a balanced layout
-    const count = GRID * rows; // Total number of hex tiles
-
-    const mesh = new THREE.InstancedMesh(hexGeo, mat, count);
-    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-
-    // Ground plane to receive shadows
-    const groundGeo = new THREE.PlaneGeometry(100, 100);
-    const groundMat = new THREE.MeshStandardMaterial({ 
-      color: 0x0a0a0a,
-      roughness: 0.8,
-      metalness: 0.2
-    });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -2.5;
-    ground.receiveShadow = true;
-    scene.add(ground);
-
-    const xStep = HEX_R * 1.5;
-    const zStep = HEX_R * Math.sqrt(3);
-
-    const tile = new Array(count);
-    let k = 0;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < GRID; c++) {
-        const x = (c - GRID / 2) * xStep;
-        const z = (r - rows / 2) * zStep + (c % 2 ? zStep * 0.5 : 0);
-        tile[k++] = { x, z };
-      }
+        speeds[i] = 0.08 + Math.random() * 0.18;
     }
 
-    // Fast layered trig "noise"
-    function fBm(x, z, t) {
-      let a = 1.0, f = 0.12, sum = 0.0;
-      for (let i = 0; i < 4; i++) {
-        sum += a * Math.sin((x * f + t * 0.35) + Math.cos(z * f - t * 0.25));
-        sum += a * Math.cos((z * f - t * 0.30) + Math.sin(x * f + t * 0.20));
-        a *= 0.5;
-        f *= 2.05;
-      }
-      return sum * 0.55;
-    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
 
-    // Subtle parallax
-    const pointer = { x: 0, y: 0 };
-    window.addEventListener("mousemove", (e) => {
-      pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-      pointer.y = (e.clientY / window.innerHeight) * 2 - 1;
-    }, { passive: true });
+    const material = new THREE.PointsMaterial({
+        size: 1.0,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        sizeAttenuation: true,
+        depthWrite: false,
+    });
 
-    const dummy = new THREE.Object3D();
-    const baseY = -2.0;
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
 
-    // Movement reversal tracking with smooth transitions
-    let currentDirection = 1; // Current direction (smoothly animated)
-    let targetDirection = 1;  // Target direction (1 or -1)
-    let lastHoveredCard = -1;
-    let animationTime = 0; // Separate time tracking that can go forward/backward
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
 
-    // Add hover listeners to EVENT CARDS (changed from nav-card)
-    const eventCards = document.querySelectorAll('.event-card');
-    eventCards.forEach((card, index) => {
-      card.addEventListener('mouseenter', () => {
-        // Only reverse if hovering over a different card
-        if (lastHoveredCard !== index) {
-          targetDirection *= -1; // Flip target direction
-          lastHoveredCard = index;
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const pos = geometry.attributes.position.array;
+    let time = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        time += 0.001;
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            pos[i * 3 + 1] += speeds[i];
+            pos[i * 3] += Math.sin(time + i * 0.5) * 0.04;
+            if (pos[i * 3 + 1] > 1000) pos[i * 3 + 1] = -1000;
         }
-      });
-    });
+        geometry.attributes.position.needsUpdate = true;
 
-    let lastFrameTime = 0;
+        camera.position.x += (mouseX * 40 - camera.position.x) * 0.03;
+        camera.position.y += (-mouseY * 40 - camera.position.y) * 0.03;
 
-    function animate(tMs) {
-      // Calculate delta time
-      const deltaTime = lastFrameTime === 0 ? 0 : (tMs - lastFrameTime) * 0.001;
-      lastFrameTime = tMs;
+        particles.rotation.y = time * 0.05;
 
-      // Smoothly transition current direction toward target direction
-      currentDirection = THREE.MathUtils.lerp(currentDirection, targetDirection, 0.05);
-      
-      // Update animation time based on current direction (maintains constant speed)
-      animationTime += deltaTime * currentDirection;
-
-      const px = pointer.x * 1.6;
-      const py = pointer.y * 0.9;
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, px, 0.04);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 18 + (-py), 0.04);
-      camera.lookAt(0, 0, 0);
-
-      for (let i = 0; i < count; i++) {
-        const { x, z } = tile[i];
-
-        const n = fBm(x, z, animationTime);
-        const h = THREE.MathUtils.clamp((n + 1.25) * 0.55, 0.1, 1.0);
-
-        dummy.position.set(x, baseY + h * (HEX_H * 0.35), z);
-        dummy.scale.set(1, h * HEX_H, 1);
-        dummy.rotation.y = 0.10 * Math.sin(animationTime * 0.35 + (x + z) * 0.05);
-
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-      }
-      mesh.instanceMatrix.needsUpdate = true;
-
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
+        renderer.render(scene, camera);
     }
-    requestAnimationFrame(animate);
 
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }, { passive: true });
-  }
+    animate();
+})();
 </script>
