@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Audio File Converter</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+  <style>
+    :root {
+      --bg:       #1a1a1a;
+      --panel:    #242424;
+      --line:     #3a3a3a;
+      --line2:    #2e2e2e;
+      --text:     #e8e8e8;
+      --muted:    #888;
+      --accent:   #4a9eff;
+      --input-bg: #1e1e1e;
+      --radius:   6px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Rajdhani", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    .wrap {
+      min-height: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .shell {
+      width: min(1180px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card .body { flex: 1; }
+
+    .card .head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title    { font-size: 15px; font-weight: 700; margin: 0; }
+    .subtitle { margin: 0; font-size: 12px; color: var(--muted); }
+
+    .body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── Form elements ── */
+    label.lbl {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    select {
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 8px 32px 8px 10px;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      cursor: pointer;
+    }
+    select:focus { border-color: var(--accent); outline: none; }
+
+    .row  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 980px) { .row { grid-template-columns: 1fr; } }
+
+    /* ── Buttons ── */
+    button {
+      border: 1px solid var(--line);
+      background: #2e2e2e;
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    button:not(:disabled):hover  { background: #363636; border-color: #484848; }
+    button:not(:disabled):active { background: #2a2a2a; }
+    button.primary {
+      background: #2a4a6e;
+      border-color: #3a6090;
+      color: #a8d0ff;
+    }
+    button.primary:not(:disabled):hover { background: #305580; border-color: #4a70a8; }
+    button.success {
+      background: #1e4a2a;
+      border-color: #2a6038;
+      color: #80d898;
+    }
+    button.success:not(:disabled):hover { background: #245530; border-color: #347844; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btnrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+
+    /* ── Pills ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      background: #2a2a2a;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      width: fit-content;
+      max-width: 100%;
+      white-space: nowrap;
+    }
+    .pill.ok   { border-color: #2a5a30; background: #1a3a1e; color: #80d898; }
+    .pill.warn { border-color: #5a4a1a; background: #3a3010; color: #d8b860; }
+    .pill.err  { border-color: #5a2020; background: #3a1414; color: #d88080; }
+    .pill.busy { border-color: #1a3a5a; background: #102030; color: #80b8d8; }
+
+    /* ── Hint ── */
+    .hint { font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+    /* ── Format radio cards ── */
+    .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .radio {
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.15);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.1s, background 0.1s;
+    }
+    .radio:hover { border-color: #484848; background: #2a2a2a; }
+    .radio input { margin: 0; flex-shrink: 0; accent-color: var(--accent); }
+    .radio b     { font-size: 13px; font-weight: 700; color: var(--text); }
+    .radio small { display: block; margin-top: 1px; font-size: 11px; color: var(--muted); line-height: 1.3; }
+
+    /* ── Collapsible ── */
+    .collapse-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 0.2s ease, opacity 0.15s ease;
+    }
+    .collapse-wrap.open { grid-template-rows: 1fr; opacity: 1; }
+    .collapse-inner { overflow: hidden; }
+    .collapse-inner > * { padding-bottom: 2px; }
+
+    /* ── Segmented button group ── */
+    .seg-group {
+      display: flex;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--input-bg);
+    }
+    .seg-group label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 2px;
+      padding: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.1s;
+      border-right: 1px solid var(--line);
+      text-align: center;
+    }
+    .seg-group label:last-child { border-right: none; }
+    .seg-group label:hover { background: #2e2e2e; }
+    .seg-group input[type="radio"] { display: none; }
+    .seg-group label b { font-size: 12px; font-weight: 700; color: var(--muted); transition: color 0.1s; }
+    .seg-group label small { font-size: 10px; color: #666; transition: color 0.1s; }
+    .seg-group label:has(input:checked) { background: #2a4060; }
+    .seg-group label:has(input:checked) b { color: #a8d0ff; }
+    .seg-group label:has(input:checked) small { color: #6090b8; }
+
+    /* ── Bitrate radios ── */
+    .bitrate-stack { display: flex; flex-direction: column; gap: 6px; }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 1px dashed #404040;
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      background: var(--input-bg);
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.over {
+      border-color: var(--accent);
+      background: #1a2a38;
+    }
+    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .drop-icon  { font-size: 24px; margin-bottom: 6px; }
+    .drop-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .drop-sub   { font-size: 12px; color: var(--muted); }
+
+    /* ── File list ── */
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .file-list:empty::after {
+      content: 'No files added yet';
+      display: block;
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .file-list::-webkit-scrollbar { width: 4px; }
+    .file-list::-webkit-scrollbar-track { background: transparent; }
+    .file-list::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+    /* ── File row ── */
+    .file-row {
+      background: var(--input-bg);
+      border: 1px solid var(--line2);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      transition: border-color 0.15s;
+    }
+    .file-row.done  { border-color: #2a5030; }
+    .file-row.error { border-color: #502020; }
+    .file-row.busy  { border-color: #1a3a5a; }
+
+    .file-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-meta {
+      font-size: 11px; color: var(--muted);
+      margin-top: 2px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    }
+
+    .file-progress { width: 100%; height: 2px; background: #333; border-radius: 1px; margin-top: 5px; overflow: hidden; }
+    .file-progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.18s ease; }
+    .file-row.done .file-progress-bar { background: #50a060; width: 100% !important; }
+    .file-row.error .file-progress-bar { background: #a05050; }
+
+    .file-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+    .file-actions button { padding: 4px 8px; font-size: 12px; }
+    .file-dl-btn.active { color: #80d898; border-color: #2a5030; }
+
+    /* ── Footer ── */
+    .foot {
+      padding: 12px 14px 14px;
+      border-top: 1px solid var(--line2);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .foot-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Meta grid ── */
+    .meta-grid { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; }
+    .meta-key  { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; line-height: 1.6; }
+    .meta-val  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; color: #aaa; word-break: break-all; line-height: 1.6; }
+
+    /* ── Toggle button group ── */
+    .tog-group { display: flex; gap: 6px; }
+    .tog-group button {
+      flex: 1;
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--muted);
+      padding: 8px 8px;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+    }
+    .tog-group button:hover { background: #2e2e2e; color: var(--text); border-color: #484848; }
+    .tog-group button.active { background: #2a4060; border-color: #3a6090; color: #a8d0ff; }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--line2); }
+
+    /* ── Spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block; width: 10px; height: 10px;
+      border: 2px solid #333;
+      border-top-color: #80b8d8;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="shell">
+
+    <!-- ── Settings Panel ── -->
+    <section class="card">
+      <div class="head">
+        <div>
+          <h1 class="title">Audio Converter</h1>
+          <p class="subtitle">Batch convert · Browser-side · No uploads</p>
+        </div>
+        <div class="pill" id="statusPill">Ready</div>
+      </div>
+
+      <div class="body">
+
+        <!-- Format -->
+        <div>
+          <label class="lbl">Output Format</label>
+          <div class="tog-group" id="fmtGroup">
+            <button class="active" data-fmt="mp3">MP3</button>
+            <button data-fmt="wav">WAV</button>
+            <button data-fmt="ogg">OGG</button>
+          </div>
+        </div>
+
+        <!-- MP3 options -->
+        <div class="collapse-wrap open" id="mp3Opts">
+          <div class="collapse-inner">
+            <div>
+              <label class="lbl">Bitrate</label>
+              <div class="seg-group">
+                <label>
+                  <input type="radio" name="bitrate" value="192">
+                  <span><b>192 kbps</b><small>Good quality</small></span>
+                </label>
+                <label>
+                  <input type="radio" name="bitrate" value="256" checked>
+                  <span><b>256 kbps</b><small>High quality</small></span>
+                </label>
+                <label>
+                  <input type="radio" name="bitrate" value="320">
+                  <span><b>320 kbps</b><small>Maximum</small></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WAV options -->
+        <div class="collapse-wrap" id="wavOpts">
+          <div class="collapse-inner">
+            <div class="row">
+              <div>
+                <label class="lbl">Bit Depth</label>
+                <select id="wavBitDepth">
+                  <option value="16" selected>16-bit  (CD quality)</option>
+                  <option value="24">24-bit  (Studio)</option>
+                  <option value="32">32-bit float</option>
+                  <option value="8">8-bit  (Lo-fi)</option>
+                </select>
+              </div>
+              <div>
+                <label class="lbl">Sample Rate</label>
+                <select id="wavSampleRate">
+                  <option value="0" selected>Original</option>
+                  <option value="48000">48,000 Hz  (DAW)</option>
+                  <option value="44100">44,100 Hz  (CD)</option>
+                  <option value="96000">96,000 Hz  (Hi-Res)</option>
+                  <option value="22050">22,050 Hz  (FM)</option>
+                  <option value="16000">16,000 Hz  (Voice)</option>
+                  <option value="8000">8,000 Hz  (Phone)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OGG options -->
+        <div class="collapse-wrap" id="oggOpts">
+          <div class="collapse-inner">
+            <div>
+              <label class="lbl">Quality</label>
+              <select id="oggQuality">
+                <option value="0.9">Very High  (~256 kbps equiv.)</option>
+                <option value="0.7" selected>High  (~192 kbps equiv.)</option>
+                <option value="0.5">Medium  (~128 kbps equiv.)</option>
+                <option value="0.3">Low  (~80 kbps equiv.)</option>
+                <option value="0.1">Very Low  (~48 kbps equiv.)</option>
+              </select>
+              <div class="hint" style="margin-top:6px;" id="oggHint">OGG Vorbis uses the browser's MediaRecorder — encoding plays back in real-time.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Channels -->
+        <div>
+          <label class="lbl">Channels</label>
+          <div class="tog-group" id="chGroup">
+            <button class="active" data-ch="original">Original</button>
+            <button data-ch="stereo">Stereo</button>
+            <button data-ch="mono">Mono</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Actions -->
+        <div class="btnrow">
+          <button class="primary" id="convertAllBtn" disabled style="flex:1;">Convert All</button>
+          <button id="clearAllBtn" disabled>Clear</button>
+        </div>
+
+        <div class="hint" id="convHint">Add audio files in the queue to begin.</div>
+
+        <div class="divider"></div>
+
+        <div class="hint">
+          <b style="color:var(--text);">Accepted input:</b> MP3, WAV, OGG, FLAC, AAC, M4A, AIFF, WebM — any format your browser can decode.<br><br>
+          <b style="color:var(--text);">Privacy:</b> All conversion happens locally. No file data leaves your device.
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Queue Panel ── -->
+    <section class="card">
+      <div class="head">
+        <div>
+          <h2 class="title" style="font-size:16px;">File Queue</h2>
+          <p class="subtitle" id="queueSub">Drop files or click to add</p>
+        </div>
+        <div class="pill" id="queuePill">0 files</div>
+      </div>
+
+      <div class="body">
+
+        <!-- Drop zone -->
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" multiple accept="audio/*,.flac,.aiff,.aif,.opus" />
+          <div class="drop-icon">🎵</div>
+          <div class="drop-title">Drop audio files here</div>
+          <div class="drop-sub">or click to browse</div>
+        </div>
+
+        <!-- File list -->
+        <div class="file-list" id="fileList"></div>
+
+      </div>
+
+      <div class="foot">
+        <div class="foot-row">
+          <div class="pill" id="summaryPill">—</div>
+        </div>
+        <div>
+          <label class="lbl">Download Mode</label>
+          <div class="tog-group" id="dlModeGroup" style="margin-bottom:10px;">
+            <button class="active" data-dl="individual">Individual Files</button>
+            <button data-dl="zip">ZIP Archive</button>
+          </div>
+          <button id="dlAllBtn" class="success" disabled style="width:100%;">⬇ Download Converted Files</button>
+        </div>
+        <div class="meta-grid" id="metaGrid"></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(() => {
+  /* ── Bitrate ── */
+  function getBitrate() { return +document.querySelector('input[name="bitrate"]:checked').value; }
+
+  /* ── Generic toggle group helper ── */
+  function makeToggle(groupId, onChange) {
+    const group = document.getElementById(groupId);
+    let active = group.querySelector('.active');
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      if (!btn || btn === active) return;
+      active.classList.remove('active');
+      btn.classList.add('active');
+      active = btn;
+      if (onChange) onChange(btn);
+    });
+    return () => group.querySelector('.active');
+  }
+
+  /* ── Format toggle ── */
+  const mp3Opts = document.getElementById('mp3Opts');
+  const wavOpts = document.getElementById('wavOpts');
+  const oggOpts = document.getElementById('oggOpts');
+  let currentFmt = 'mp3';
+
+  makeToggle('fmtGroup', btn => {
+    currentFmt = btn.dataset.fmt;
+    mp3Opts.classList.toggle('open', currentFmt === 'mp3');
+    wavOpts.classList.toggle('open', currentFmt === 'wav');
+    oggOpts.classList.toggle('open', currentFmt === 'ogg');
+  });
+  function getFormat() { return currentFmt; }
+
+  /* ── Channels toggle ── */
+  let currentCh = 'original';
+  makeToggle('chGroup', btn => { currentCh = btn.dataset.ch; });
+  function getChannels() { return currentCh; }
+
+  /* ── Download mode toggle ── */
+  let currentDlMode = 'individual';
+  makeToggle('dlModeGroup', btn => { currentDlMode = btn.dataset.dl; });
+  function getDlMode() { return currentDlMode; }
+  const entries = [];
+  let isConverting = false;
+
+  const fileInput     = document.getElementById('fileInput');
+  const dropZone      = document.getElementById('dropZone');
+  const fileList      = document.getElementById('fileList');
+  const convertAllBtn = document.getElementById('convertAllBtn');
+  const clearAllBtn   = document.getElementById('clearAllBtn');
+  const dlAllBtn      = document.getElementById('dlAllBtn');
+  const statusPill    = document.getElementById('statusPill');
+  const queuePill     = document.getElementById('queuePill');
+  const queueSub      = document.getElementById('queueSub');
+  const summaryPill   = document.getElementById('summaryPill');
+  const convHint      = document.getElementById('convHint');
+  const metaGrid      = document.getElementById('metaGrid');
+
+  /* ── Drop zone ── */
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('over');
+    addFiles([...e.dataTransfer.files]);
+  });
+  fileInput.addEventListener('change', () => { addFiles([...fileInput.files]); fileInput.value = ''; });
+
+  /* ── Helpers ── */
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(2) + ' MB';
+  }
+  function fmtDur(s) {
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return m + ':' + String(sec).padStart(2, '0');
+  }
+  function fmtHz(hz) {
+    return hz >= 1000 ? (hz / 1000).toFixed(1) + ' kHz' : hz + ' Hz';
+  }
+  function baseName(name) { return name.replace(/\.[^.]+$/, ''); }
+
+  /* ── Add files ── */
+  function addFiles(files) {
+    const audio = files.filter(f =>
+      f.type.startsWith('audio/') ||
+      /\.(mp3|wav|ogg|flac|aac|m4a|aiff?|webm|opus|wma|alac)$/i.test(f.name)
+    );
+    audio.forEach(file => {
+      const entry = { file, name: file.name, size: file.size, status: 'pending', blob: null, outName: null, rowEl: null };
+      entries.push(entry);
+      renderRow(entry);
+    });
+    updateUI();
+  }
+
+  /* ── Render a file row ── */
+  function renderRow(entry) {
+    const div = document.createElement('div');
+    div.className = 'file-row';
+    entry.rowEl = div;
+    div.innerHTML = `
+      <div style="min-width:0;">
+        <div class="file-name" title="${esc(entry.name)}">${esc(entry.name)}</div>
+        <div class="file-meta">
+          <span>${fmtSize(entry.size)}</span>
+          <span class="file-dur"></span>
+          <span class="file-sr"></span>
+          <span class="file-status-txt" style="color:var(--muted);">Pending</span>
+        </div>
+        <div class="file-progress"><div class="file-progress-bar"></div></div>
+      </div>
+      <div class="file-actions">
+        <button class="file-dl-btn" disabled title="Download converted file">↓</button>
+        <button class="file-rm-btn" title="Remove">✕</button>
+      </div>`;
+
+    div.querySelector('.file-rm-btn').addEventListener('click', () => {
+      const i = entries.indexOf(entry);
+      if (i !== -1) entries.splice(i, 1);
+      div.remove(); updateUI();
+    });
+    div.querySelector('.file-dl-btn').addEventListener('click', () => {
+      if (!entry.blob || !entry.outName) return;
+      triggerDownload(entry.blob, entry.outName);
+    });
+    fileList.appendChild(div);
+  }
+
+  function triggerDownload(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 8000);
+  }
+
+  function rowSetProgress(entry, pct, statusTxt, cls) {
+    const row = entry.rowEl; if (!row) return;
+    row.className = 'file-row' + (cls ? ' ' + cls : '');
+    const bar = row.querySelector('.file-progress-bar');
+    const txt = row.querySelector('.file-status-txt');
+    if (bar) bar.style.width = pct + '%';
+    if (txt) { txt.textContent = statusTxt; txt.style.color = cls === 'done' ? 'rgba(120,255,170,0.85)' : cls === 'error' ? 'rgba(255,130,130,0.85)' : cls === 'busy' ? 'rgba(100,200,255,0.85)' : 'var(--muted)'; }
+  }
+
+  function rowSetMeta(entry, dur, sr) {
+    const row = entry.rowEl; if (!row) return;
+    const dEl = row.querySelector('.file-dur');
+    const sEl = row.querySelector('.file-sr');
+    if (dEl && dur !== undefined) dEl.textContent = fmtDur(dur);
+    if (sEl && sr) sEl.textContent = fmtHz(sr);
+    const dlBtn = row.querySelector('.file-dl-btn');
+    if (dlBtn && entry.blob) { dlBtn.disabled = false; dlBtn.classList.add('active'); }
+  }
+
+  /* ── UI state ── */
+  function updateUI() {
+    const n = entries.length;
+    const nDone  = entries.filter(e => e.status === 'done').length;
+    const nErr   = entries.filter(e => e.status === 'error').length;
+    const nBusy  = entries.filter(e => e.status === 'busy').length;
+
+    queuePill.textContent = n + (n === 1 ? ' file' : ' files');
+    queueSub.textContent  = n ? n + (n === 1 ? ' file' : ' files') + ' queued' : 'Drop files or click to add';
+    convertAllBtn.disabled = (!n || isConverting);
+    clearAllBtn.disabled   = (!n || isConverting);
+    dlAllBtn.disabled = (nDone === 0);
+
+    if (!n) {
+      setPill(statusPill, 'Ready', '');
+      summaryPill.textContent = '—';
+      metaGrid.innerHTML = '';
+      convHint.textContent = 'Add audio files in the queue to begin.';
+    } else if (isConverting) {
+      setPill(statusPill, 'Converting…', 'busy');
+      convHint.textContent = 'Processing…';
+    } else if (nDone === n) {
+      setPill(statusPill, '✓ Done', 'ok');
+      const totalOut = entries.reduce((s, e) => s + (e.blob ? e.blob.size : 0), 0);
+      summaryPill.textContent = nDone + ' converted · ' + fmtSize(totalOut) + ' output';
+      convHint.textContent = 'All files converted. Download individually or as ZIP.';
+      setMeta([['Files', nDone + ' converted'], ['Total output', fmtSize(totalOut)], ['Format', getFormat().toUpperCase()]]);
+    } else if (nErr && !nBusy) {
+      setPill(statusPill, nErr + ' error(s)', 'warn');
+      convHint.textContent = nDone + ' done, ' + nErr + ' error(s). Check individual rows.';
+      setMeta([['Done', nDone + ''], ['Errors', nErr + '']]);
+    } else {
+      setPill(statusPill, n + ' ready', '');
+      convHint.textContent = n + ' file' + (n > 1 ? 's' : '') + ' ready. Click Convert All.';
+      setMeta([]);
+    }
+  }
+
+  function setPill(el, txt, cls) {
+    el.textContent = txt;
+    el.className = 'pill' + (cls ? ' ' + cls : '');
+  }
+
+  function setMeta(rows) {
+    metaGrid.innerHTML = rows.map(([k, v]) =>
+      `<span class="meta-key">${esc(k)}</span><span class="meta-val">${esc(v)}</span>`
+    ).join('');
+  }
+
+  /* ── Encoding: float32 → int16 ── */
+  function f32ToI16(float32) {
+    const out = new Int16Array(float32.length);
+    for (let i = 0; i < float32.length; i++) {
+      const s = Math.max(-1, Math.min(1, float32[i]));
+      out[i] = s < 0 ? (s * 32768) : (s * 32767);
+    }
+    return out;
+  }
+
+  /* ── Encode MP3 (lamejs) ── */
+  function encodeMP3(buf, bitrate, numCh) {
+    const enc = new lamejs.Mp3Encoder(numCh, buf.sampleRate, bitrate);
+    const L = f32ToI16(buf.getChannelData(0));
+    const R = numCh === 2 ? f32ToI16(buf.numberOfChannels > 1 ? buf.getChannelData(1) : buf.getChannelData(0)) : null;
+    const BLOCK = 1152;
+    const parts = [];
+    for (let i = 0; i < L.length; i += BLOCK) {
+      const lc = L.subarray(i, i + BLOCK);
+      const chunk = numCh === 2 ? enc.encodeBuffer(lc, R.subarray(i, i + BLOCK)) : enc.encodeBuffer(lc);
+      if (chunk.length > 0) parts.push(new Uint8Array(chunk));
+    }
+    const tail = enc.flush();
+    if (tail.length > 0) parts.push(new Uint8Array(tail));
+    return new Blob(parts, { type: 'audio/mpeg' });
+  }
+
+  /* ── Encode WAV (native PCM) ── */
+  function encodeWAV(buf, bitDepth, numCh) {
+    const sr = buf.sampleRate;
+    const isFloat = bitDepth === 32;
+    const bps = bitDepth === 32 ? 4 : bitDepth === 24 ? 3 : bitDepth === 16 ? 2 : 1;
+    const nSamples = buf.length;
+    const dataLen = nSamples * numCh * bps;
+    const ab = new ArrayBuffer(44 + dataLen);
+    const v = new DataView(ab);
+    const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+    ws(0, 'RIFF'); v.setUint32(4, 36 + dataLen, true);
+    ws(8, 'WAVE'); ws(12, 'fmt ');
+    v.setUint32(16, 16, true);
+    v.setUint16(20, isFloat ? 3 : 1, true);
+    v.setUint16(22, numCh, true);
+    v.setUint32(24, sr, true);
+    v.setUint32(28, sr * numCh * bps, true);
+    v.setUint16(32, numCh * bps, true);
+    v.setUint16(34, bitDepth, true);
+    ws(36, 'data'); v.setUint32(40, dataLen, true);
+    const ch = [];
+    for (let c = 0; c < numCh; c++) ch.push(buf.getChannelData(c < buf.numberOfChannels ? c : 0));
+    let off = 44;
+    for (let i = 0; i < nSamples; i++) {
+      for (let c = 0; c < numCh; c++) {
+        const s = Math.max(-1, Math.min(1, ch[c][i]));
+        if (isFloat) { v.setFloat32(off, s, true); off += 4; }
+        else if (bitDepth === 24) {
+          const val = Math.round(s < 0 ? s * 8388608 : s * 8388607);
+          v.setUint8(off,   val & 0xff);
+          v.setUint8(off+1, (val >> 8) & 0xff);
+          v.setUint8(off+2, (val >> 16) & 0xff);
+          off += 3;
+        } else if (bitDepth === 16) {
+          v.setInt16(off, Math.round(s < 0 ? s * 32768 : s * 32767), true); off += 2;
+        } else {
+          v.setUint8(off, Math.round((s + 1) * 127.5)); off += 1;
+        }
+      }
+    }
+    return new Blob([ab], { type: 'audio/wav' });
+  }
+
+  /* ── Encode OGG via MediaRecorder (real-time playback trick) ── */
+  function encodeOGG(buf, quality) {
+    return new Promise((resolve, reject) => {
+      const numCh = buf.numberOfChannels;
+      const sr = buf.sampleRate;
+
+      // Check support
+      const mimeTypes = ['audio/ogg;codecs=vorbis', 'audio/ogg', 'audio/webm;codecs=opus', 'audio/webm'];
+      const mime = mimeTypes.find(m => MediaRecorder.isTypeSupported(m));
+      if (!mime) { reject(new Error('OGG/WebM MediaRecorder not supported in this browser. Try Chrome or Firefox.')); return; }
+
+      const ctx = new AudioContext({ sampleRate: sr });
+      const dst = ctx.createMediaStreamDestination();
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(dst);
+
+      const bitrate = Math.round(quality * 256000);
+      const rec = new MediaRecorder(dst.stream, { mimeType: mime, audioBitsPerSecond: bitrate });
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      rec.onstop = () => {
+        ctx.close();
+        const ext = mime.includes('webm') ? 'webm' : 'ogg';
+        resolve({ blob: new Blob(chunks, { type: mime }), ext });
+      };
+      rec.onerror = e => { ctx.close(); reject(e.error || new Error('MediaRecorder error')); };
+      rec.start(100);
+      src.start();
+      src.onended = () => { setTimeout(() => rec.stop(), 200); };
+    });
+  }
+
+  /* ── Decode + resample ── */
+  async function decodeFile(file, targetSR) {
+    const ab = await file.arrayBuffer();
+    const ctx = new AudioContext();
+    const decoded = await ctx.decodeAudioData(ab);
+    await ctx.close();
+    if (targetSR && targetSR !== decoded.sampleRate) {
+      const nSamples = Math.ceil(decoded.duration * targetSR);
+      const off = new OfflineAudioContext(decoded.numberOfChannels, nSamples, targetSR);
+      const src = off.createBufferSource();
+      src.buffer = decoded; src.connect(off.destination); src.start();
+      return await off.startRendering();
+    }
+    return decoded;
+  }
+
+  /* ── Mix channels ── */
+  async function mixChannels(buf, mode) {
+    const numCh = mode === 'mono' ? 1 : mode === 'stereo' ? 2 : Math.min(buf.numberOfChannels, 2);
+    if (numCh === buf.numberOfChannels) return buf;
+    if (numCh > buf.numberOfChannels) {
+      // mono→stereo: duplicate
+      const off = new OfflineAudioContext(numCh, buf.length, buf.sampleRate);
+      const src = off.createBufferSource(); src.buffer = buf; src.connect(off.destination); src.start();
+      return await off.startRendering();
+    }
+    // stereo→mono: mix down
+    const out = new AudioBuffer({ length: buf.length, sampleRate: buf.sampleRate, numberOfChannels: 1 });
+    const outData = out.getChannelData(0);
+    const l = buf.getChannelData(0);
+    const r = buf.numberOfChannels > 1 ? buf.getChannelData(1) : l;
+    for (let i = 0; i < outData.length; i++) outData[i] = (l[i] + r[i]) * 0.5;
+    return out;
+  }
+
+  /* ── Convert single file ── */
+  async function convertEntry(entry) {
+    const fmt    = getFormat();
+    const chMode = getChannels();
+    const targetSR = fmt === 'wav' ? (+document.getElementById('wavSampleRate').value || 0) : 0;
+    entry.status = 'busy';
+    rowSetProgress(entry, 8, 'Reading…', 'busy');
+
+    try {
+      // Decode
+      const decoded = await decodeFile(entry.file, targetSR);
+      rowSetProgress(entry, 30, 'Processing…', 'busy');
+
+      // Mix channels
+      const mixed = await mixChannels(decoded, chMode);
+      rowSetProgress(entry, 50, 'Encoding…', 'busy');
+
+      // Small yield so UI can paint
+      await new Promise(r => setTimeout(r, 12));
+
+      let blob, ext;
+      if (fmt === 'mp3') {
+        blob = encodeMP3(mixed, getBitrate(), mixed.numberOfChannels);
+        ext  = 'mp3';
+        rowSetProgress(entry, 90, 'Finalising…', 'busy');
+      } else if (fmt === 'wav') {
+        const bd = +document.getElementById('wavBitDepth').value;
+        blob = encodeWAV(mixed, bd, mixed.numberOfChannels);
+        ext  = 'wav';
+        rowSetProgress(entry, 90, 'Finalising…', 'busy');
+      } else {
+        // OGG
+        rowSetProgress(entry, 55, 'Encoding OGG (real-time)…', 'busy');
+        const q = +document.getElementById('oggQuality').value;
+        const result = await encodeOGG(mixed, q);
+        blob = result.blob; ext = result.ext;
+        rowSetProgress(entry, 90, 'Finalising…', 'busy');
+      }
+
+      const outName = baseName(entry.name) + '.' + ext;
+      entry.status  = 'done';
+      entry.blob    = blob;
+      entry.outName = outName;
+      rowSetProgress(entry, 100, 'Done · ' + fmtSize(blob.size), 'done');
+      rowSetMeta(entry, decoded.duration, decoded.sampleRate);
+
+    } catch (err) {
+      console.error(err);
+      entry.status = 'error';
+      rowSetProgress(entry, 100, 'Error: ' + (err.message || String(err)), 'error');
+    }
+  }
+
+  /* ── Convert All ── */
+  convertAllBtn.addEventListener('click', async () => {
+    if (isConverting || !entries.length) return;
+    isConverting = true;
+    updateUI();
+
+    // Reset non-done entries
+    entries.forEach(e => { if (e.status !== 'done') { e.status = 'pending'; e.blob = null; rowSetProgress(e, 0, 'Pending', ''); } });
+
+    for (const entry of entries) {
+      if (entry.status === 'done') continue;
+      await convertEntry(entry);
+      updateUI();
+    }
+
+    isConverting = false;
+    updateUI();
+  });
+
+  /* ── Clear All ── */
+  clearAllBtn.addEventListener('click', () => {
+    if (isConverting) return;
+    entries.length = 0;
+    fileList.innerHTML = '';
+    updateUI();
+  });
+
+  /* ── Download All ── */
+  dlAllBtn.addEventListener('click', async () => {
+    const done = entries.filter(e => e.status === 'done' && e.blob);
+    if (!done.length) return;
+
+    if (getDlMode() === 'zip') {
+      dlAllBtn.disabled = true;
+      dlAllBtn.textContent = '⏳ Zipping…';
+      try {
+        const zip = new JSZip();
+        done.forEach(e => zip.file(e.outName, e.blob));
+        const content = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+        triggerDownload(content, 'converted_audio.zip');
+      } catch (err) { console.error(err); }
+      dlAllBtn.disabled = false;
+      dlAllBtn.textContent = '⬇ Download Converted Files';
+    } else {
+      // Individual — fire sequential downloads with a small delay so browser doesn't block them
+      for (let i = 0; i < done.length; i++) {
+        setTimeout(() => triggerDownload(done[i].blob, done[i].outName), i * 120);
+      }
+    }
+  });
+
+  updateUI();
+})();
+</script>
+</body>
+</html>
