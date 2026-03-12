@@ -538,72 +538,87 @@
     $("status").textContent = "";
   });
 
+  function formatEventDateLocal(localStr) {
+    if (!localStr) return { monthDay: 'TBA', year: '', dayLabel: '' };
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const m = localStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return { monthDay: 'TBA', year: '', dayLabel: '' };
+    const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+    const dt = new Date(y, mo, d);
+    return { monthDay: `${months[mo]} ${d}`, year: String(y), dayLabel: dayNames[dt.getDay()] };
+  }
+
   function generateSnippet(data) {
-    const ns = "xmgEventModule";
     const eventName = escapeHtml(data.eventName || "Event");
     const tzLabel = escapeHtml(data.tzLabel || "");
     const eventISO = data.eventISO || "";
     const venueName = escapeHtml(data.venueName || "");
     const venueAddress = escapeHtml(data.venueAddress || "");
-
-    const flyerSrc = data.flyerUrlTrimmed ? escapeHtml(data.flyerUrlTrimmed) : "";
-    const flyerHtml = flyerSrc ? `<div class="${ns}__flyer"><img src="${flyerSrc}" alt="${eventName} flyer"></div>` : `<div class="${ns}__flyer ${ns}__flyer--empty"><div class="${ns}__flyerPlaceholder">Flyer</div></div>`;
-
     const eventDesc = (data.eventDescription || "").trim();
-    const descriptionHtml = eventDesc ? `<div class="${ns}__description">${escapeHtml(eventDesc).replace(/\n/g, '<br>')}</div>` : "";
+    const flyerSrc = data.flyerUrlTrimmed ? escapeHtml(data.flyerUrlTrimmed) : "";
+    const dateFormatted = formatEventDateLocal(data.eventDateVal || "");
 
-    const venueHtml = (venueName || venueAddress) ? `<div class="${ns}__venue">${venueName ? `<div class="${ns}__venueName">${venueName}</div>` : ''}${venueAddress ? `<div class="${ns}__venueAddress">${venueAddress}</div>` : ''}</div>` : "";
+    // Flyer
+    const flyerHtml = flyerSrc
+      ? `<div class="xmgR-flyer-frame"><img src="${flyerSrc}" alt="${eventName} flyer"></div>`
+      : `<div class="xmgR-flyer-frame xmgR-flyer-empty"><span>Flyer</span></div>`;
 
-    let ticketHtml = "";
-    if (data.ticketMode === "embed") {
-      const embedRaw = (data.ticketEmbed || "").trim();
+    // Hero sub: use description if provided
+    const heroSub = eventDesc
+      ? `<div class="xmgR-hero-sub">${escapeHtml(eventDesc).replace(/\n/g,'<br>')}</div>`
+      : '';
+
+    // Venue badge
+    const venueBadgeHtml = (venueName || venueAddress)
+      ? `<div class="xmgR-venue-wrap"><div class="xmgR-venue-badge"><div class="xmgR-venue-name">${venueName}</div>${venueAddress ? `<div class="xmgR-venue-addr">${venueAddress}</div>` : ''}</div></div>`
+      : '';
+
+    // Ticket area
+    let ticketAreaHtml = '';
+    if (data.ticketMode === 'embed') {
+      const embedRaw = (data.ticketEmbed || '').trim();
       if (embedRaw) {
-        // If they paste an actual embed, render it.
         if (looksLikeIframeOrEmbedCode(embedRaw)) {
           const isPosh = /posh\.vip/i.test(embedRaw);
-          ticketHtml = `<div class="${ns}__tickets${isPosh ? ' ' + ns + '__tickets--posh' : ''}">${embedRaw}</div>`;
-        }
-        // If they paste a URL into the embed field, fall back to a big "Buy Tickets Here" button (iframe checkouts often block embedding).
-        else if (looksLikeUrl(embedRaw)) {
-          ticketHtml = `<div class="${ns}__tickets"><a class="${ns}__btn ${ns}__btn--xl" href="${escapeHtml(embedRaw)}" target="_blank" rel="noopener noreferrer">Buy Tickets Here</a></div>`;
+          ticketAreaHtml = `<div class="xmgR-ticket-embed${isPosh ? ' xmgR-ticket-posh' : ''}">${embedRaw}</div>`;
+        } else if (looksLikeUrl(embedRaw)) {
+          ticketAreaHtml = `<a class="xmgR-ticket-btn" href="${escapeHtml(embedRaw)}" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>Buy Tickets Here</a>`;
         }
       }
     } else {
-      const url = (data.ticketUrl || "").trim();
+      const url = (data.ticketUrl || '').trim();
       if (url) {
-        ticketHtml = `<div class="${ns}__tickets"><a class="${ns}__btn ${ns}__btn--xl" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.ticketBtnText || "Get Tickets")}</a></div>`;
+        ticketAreaHtml = `<a class="xmgR-ticket-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>${escapeHtml(data.ticketBtnText || 'Get Tickets')}</a>`;
       }
     }
 
-    
-    const topContentHtml = (data.ticketMode === "button")
-      ? `<div class="${ns}__topContent ${ns}__topContent--stack">
-           ${flyerHtml}
-           ${ticketHtml}
-         </div>`
-      : `<div class="${ns}__topContent">
-           ${flyerHtml}
-           ${ticketHtml}
-         </div>`;
+    // Details grid
+    const detailsGridHtml = `<div class="xmgR-details-grid">
+  <div class="xmgR-detail-card"><div class="xmgR-detail-label">Headliner</div><div class="xmgR-detail-value">${eventName}</div></div>
+  ${venueName ? `<div class="xmgR-detail-card"><div class="xmgR-detail-label">Venue</div><div class="xmgR-detail-value">${venueName}</div></div>` : ''}
+</div>`;
 
-
+    // Music
     const spotifyHtml = normalizeMaybeEmbed(data.spotifyInput, "Open Spotify");
     const soundcloudHtml = normalizeMaybeEmbed(data.soundcloudInput, "Open SoundCloud");
-    const musicBlocks = [spotifyHtml, soundcloudHtml].filter(Boolean).map((html) => {
-      const isEmbed = looksLikeIframeOrEmbedCode(html);
-      return isEmbed ? `<div class="${ns}__embedWrap">${html}</div>` : `<div class="${ns}__linkWrap">${html}</div>`;
-    }).join("\n");
-    
-    const promoCard = `<a href="https://www.xodiamediagroup.com/updates" target="_blank" rel="noopener noreferrer" class="${ns}__promoCard">
-      <div class="${ns}__promoCardBg"></div>
-      <div class="${ns}__promoCardContent">
-        <h3>Stay Updated</h3>
-        <p>Get the latest event updates, exclusive offers, and announcements delivered straight to your phone!</p>
-        <span class="${ns}__promoCardArrow">→</span>
-      </div>
-    </a>`;
-    
-    const musicSection = musicBlocks ? `<div class="${ns}__music"><div class="${ns}__musicGrid">${musicBlocks}${promoCard}</div></div>` : "";
+    const musicBlocks = [spotifyHtml, soundcloudHtml].filter(Boolean).map(html => {
+      return looksLikeIframeOrEmbedCode(html)
+        ? `<div class="xmgR-embed-frame">${html}</div>`
+        : `<div class="xmgR-link-wrap">${html}</div>`;
+    }).join('\n');
+
+    const promoCard = `<a href="https://www.xodiamediagroup.com/updates" target="_blank" rel="noopener noreferrer" class="xmgR-promo-card">
+  <div class="xmgR-promo-tag">// Updates</div>
+  <h3 class="xmgR-promo-title">Stay in the Loop</h3>
+  <p class="xmgR-promo-body">Get exclusive event updates, presale alerts, and announcements delivered straight to you.</p>
+  <span class="xmgR-promo-arrow">Sign Up →</span>
+</a>`;
+
+    const musicSection = musicBlocks ? `<div class="xmgR-music-section">
+  <div class="xmgR-section-header"><div class="xmgR-section-tag">// Music</div><h2 class="xmgR-section-h2">Listen Now</h2></div>
+  <div class="xmgR-music-grid">${musicBlocks}${promoCard}</div>
+</div>` : '';
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -613,14 +628,17 @@
 <title>${eventName}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
+:root{--cold:#00e5ff;--cold-dim:rgba(0,229,255,0.15);--cold-glow:rgba(0,229,255,0.4);--bg:#050508;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text:#e8e8f0;--muted:rgba(232,232,240,0.5)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
-#threejs-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;pointer-events:none}
-.nav-dropdown{position:fixed;top:18px;left:18px;z-index:10000}
-.nav-toggle{background:rgba(26,26,26,0.9);border:1px solid rgba(255,255,255,0.2);border-radius:12px;height:48px;width:52px;padding:0 14px;color:#ffffff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.nav-toggle:hover{background:rgba(36,36,36,0.9);border-color:#0099ff}
+html{scroll-behavior:smooth;height:auto}
+body{font-family:'Barlow Condensed',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;height:auto}
+#threejs-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1;opacity:0.4}
+.nav-dropdown{position:fixed;top:20px;left:20px;z-index:10000}
+.nav-toggle{background:rgba(5,5,8,0.85);border:1px solid var(--border);border-radius:8px;height:44px;width:48px;padding:0 14px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;backdrop-filter:blur(20px)}
+.nav-toggle:hover{border-color:var(--cold);box-shadow:0 0 12px var(--cold-glow)}
 .nav-toggle-icon{position:relative;width:18px;height:2px;background:currentColor;border-radius:2px;transition:0.3s}
 .nav-toggle-icon::before,.nav-toggle-icon::after{content:"";position:absolute;width:18px;height:2px;background:currentColor;left:0;border-radius:2px;transition:0.3s}
 .nav-toggle-icon::before{top:-6px}
@@ -628,75 +646,79 @@ body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
 .nav-dropdown.active .nav-toggle-icon{background:transparent}
 .nav-dropdown.active .nav-toggle-icon::before{top:0;transform:rotate(45deg)}
 .nav-dropdown.active .nav-toggle-icon::after{top:0;transform:rotate(-45deg)}
-.nav-menu{position:absolute;top:60px;left:0;background:rgba(26,26,26,0.95);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:8px;min-width:200px;opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.nav-menu{position:absolute;top:56px;left:0;background:rgba(5,5,8,0.95);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:210px;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all 0.25s ease;backdrop-filter:blur(20px)}
 .nav-dropdown.active .nav-menu{opacity:1;visibility:visible;transform:translateY(0)}
-.nav-menu a{display:block;width:100%;text-align:left;padding:12px 16px;color:rgba(255,255,255,0.8);text-decoration:none;font-size:15px;font-weight:600;border-radius:8px;transition:all 0.3s ease}
-.nav-menu a:hover{background:rgba(0,153,255,0.12);color:#0099ff}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.${ns}{max-width:1200px;margin:0 auto;padding:30px 20px;position:relative;z-index:1}
-.${ns}__logo{text-align:center;margin-bottom:15px}
-.${ns}__logo img{width:100px;height:auto}
-.${ns}__name{text-align:center;font-size:72px;font-weight:900;margin-bottom:10px;color:#fff;line-height:1.1;letter-spacing:1px}
-.${ns}__description{text-align:center;font-size:20px;color:rgba(255,255,255,0.8);margin-bottom:30px;line-height:1.6}
-.${ns}__countdown{display:flex;justify-content:center;gap:8px;margin-bottom:20px;font-size:72px;font-weight:900}
-.${ns}__countNum{color:#ffff00;transition:color 0.3s ease}
-.${ns}__countNum.urgent{color:#ff0000}
-.${ns}__countSep{color:rgba(255,255,255,0.6)}
-.${ns}__countMeta{font-size:24px;font-weight:400;color:rgba(255,255,255,0.9);text-align:center;margin-bottom:20px}
-.${ns}__venue{text-align:center;margin-bottom:40px}
-.${ns}__venueName{font-size:20px;font-weight:400;color:rgba(255,255,255,0.9);margin-bottom:5px}
-.${ns}__venueAddress{font-size:20px;font-weight:400;color:rgba(255,255,255,0.9)}
-.${ns}__topContent{display:grid;grid-template-columns:500px 1fr;gap:40px;align-items:start;margin-bottom:40px}
-.${ns}__topContent--stack{grid-template-columns:1fr;justify-items:center}
-.${ns}__topContent--stack .${ns}__flyer{max-width:500px;width:100%}
-.${ns}__topContent--stack .${ns}__tickets{max-width:500px;width:100%}
-
-.${ns}__flyer img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:16px;display:block}
-.${ns}__flyer--empty{width:100%;aspect-ratio:1/1;border-radius:16px;border:2px dashed rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5)}
-.${ns}__tickets{width:100%}
-
-.${ns}__topContent .${ns}__tickets{display:flex;align-items:center;justify-content:center}
-.${ns}__topContent .${ns}__tickets iframe{align-self:center}
-.${ns}__topContent--stack .${ns}__tickets{display:block}
-
-
-.${ns}__tickets iframe{width:100%;min-height:500px;border:2px solid rgba(255,255,255,0.2);border-radius:12px;background:#fff}
-.${ns}__tickets--posh{background:#000}
-.${ns}__tickets--posh iframe{min-height:250px!important;max-height:250px!important;height:250px!important;background:#000}
-.${ns}__btn{display:inline-block;text-decoration:none;background:#fff;color:#000;padding:16px 32px;border-radius:12px;font-weight:800;font-size:18px;border:2px solid #fff;transition:all 0.3s ease}
-.${ns}__btn:hover{background:rgba(255,255,255,0.9);transform:translateY(-2px)}
-.${ns}__btn--xl{display:block;width:100%;text-align:center;padding:22px 32px;border-radius:16px;font-size:24px;letter-spacing:0.5px}
-.${ns}__promoCard{position:relative;background:linear-gradient(135deg,rgba(26,26,26,0.8) 0%,rgba(20,20,20,0.9) 100%);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:30px;display:block;text-decoration:none;color:#fff;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);max-width:400px;cursor:pointer}
-.${ns}__promoCard::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(0,153,255,0.1) 50%,transparent 100%);transition:left 0.6s ease}
-.${ns}__promoCard:hover::before{left:100%}
-.${ns}__promoCardBg{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#0099ff 0%,#00ffff 100%);opacity:0;transition:opacity 0.4s ease;border-radius:16px}
-.${ns}__promoCard:hover .${ns}__promoCardBg{opacity:0.1}
-.${ns}__promoCard:hover{border-color:#0099ff;transform:translateY(-5px);box-shadow:0 10px 30px rgba(0,153,255,0.3),inset 0 1px 0 rgba(0,153,255,0.5)}
-.${ns}__promoCardContent{position:relative;z-index:2}
-.${ns}__promoCard h3{font-size:24px;font-weight:700;margin:0 0 10px 0;color:#fff}
-.${ns}__promoCard p{font-size:16px;margin:0 0 15px 0;color:rgba(255,255,255,0.8);line-height:1.5}
-.${ns}__promoCardArrow{display:inline-block;font-size:24px;color:#0099ff;transition:transform 0.3s ease}
-.${ns}__promoCard:hover .${ns}__promoCardArrow{transform:translateX(5px)}
-.${ns}__music{margin-top:60px;padding-top:40px;border-top:2px solid rgba(255,255,255,0.2)}
-.${ns}__musicGrid{display:grid;grid-template-columns:1fr 400px;gap:40px;align-items:start}
-.${ns}__embedWrap{border:2px solid rgba(255,255,255,0.2);border-radius:14px;overflow:hidden;background:#000;margin-bottom:20px}
-.${ns}__embedWrap iframe{width:100%!important;border:0!important;display:block;min-height:380px}
-.xmg-linkbtn{display:inline-block;text-decoration:none;background:rgba(255,255,255,0.1);color:#fff;padding:12px 20px;border-radius:12px;font-weight:800;border:2px solid rgba(255,255,255,0.3)}
-.xmg-linkbtn:hover{background:rgba(255,255,255,0.2)}
-.${ns}__linkWrap{margin-bottom:20px}
-@media (max-width:1024px){
-.${ns}__topContent{grid-template-columns:1fr}
-.${ns}__musicGrid{grid-template-columns:1fr}
-.${ns}__flyer{max-width:500px;margin:0 auto}
-.${ns}__promoCard{max-width:100%;margin:0 auto}
-.${ns}__name{font-size:48px}
-.${ns}__countdown{font-size:56px}}
-@media (max-width:600px){
-.${ns}{padding:30px 15px}
-.${ns}__name{font-size:32px;margin-bottom:20px}
-.${ns}__description{font-size:16px}
-.${ns}__countMeta{font-size:18px}
-.${ns}__countdown{font-size:36px}}
+.nav-menu a{display:block;padding:11px 16px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;border-radius:6px;transition:all 0.2s ease}
+.nav-menu a:hover{background:var(--cold-dim);color:var(--cold)}
+.xmgR-page{max-width:1100px;margin:0 auto;padding:40px 24px 40px;position:relative;z-index:2}
+.xmgR-logo-wrap{display:flex;justify-content:center;margin-bottom:32px;animation:xmgR-fadeDown 0.6s ease both}
+.xmgR-logo-wrap img{height:42px;width:auto;filter:brightness(0) invert(1);opacity:0.7}
+.xmgR-split-line{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:28px;animation:xmgR-fadeDown 0.7s 0.1s ease both}
+.xmgR-split-line span{display:block;height:1px;flex:1}
+.xmgR-split-line span:first-child{background:linear-gradient(to right,transparent,var(--cold))}
+.xmgR-split-line span:last-child{background:linear-gradient(to left,transparent,var(--cold))}
+.xmgR-split-line em{font-style:normal;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);padding:0 18px;white-space:nowrap;font-family:'DM Mono',monospace;font-weight:300}
+.xmgR-hero-title{text-align:center;margin-bottom:6px;animation:xmgR-fadeDown 0.7s 0.15s ease both}
+.xmgR-hero-title-text{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,13vw,160px);line-height:0.9;letter-spacing:0.02em;color:#ffffff;display:inline-block}
+.xmgR-hero-sub{text-align:center;font-size:16px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-bottom:44px;font-family:'DM Mono',monospace;animation:xmgR-fadeDown 0.7s 0.2s ease both}
+.xmgR-countdown-wrap{display:flex;justify-content:center;align-items:flex-end;gap:0;margin-bottom:10px;animation:xmgR-fadeDown 0.7s 0.25s ease both}
+.xmgR-count-unit{display:flex;flex-direction:column;align-items:center;padding:0 18px;position:relative}
+.xmgR-count-unit+.xmgR-count-unit::before{content:':';position:absolute;left:-4px;bottom:22px;font-family:'Bebas Neue',sans-serif;font-size:52px;color:rgba(255,255,255,0.2);line-height:1}
+.xmgR-count-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,8vw,88px);line-height:1;color:#ffffff;transition:color 0.3s}
+.xmgR-count-num.urgent{color:var(--cold);filter:drop-shadow(0 0 12px var(--cold-glow))}
+.xmgR-count-label{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;margin-top:4px}
+.xmgR-count-meta{text-align:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);margin-bottom:48px;letter-spacing:0.06em;animation:xmgR-fadeDown 0.7s 0.3s ease both}
+.xmgR-venue-wrap{display:flex;justify-content:center;margin-bottom:56px;animation:xmgR-fadeDown 0.7s 0.32s ease both}
+.xmgR-venue-badge{display:inline-flex;flex-direction:column;align-items:center;border:1px solid var(--border);border-radius:12px;padding:18px 36px;background:var(--surface);backdrop-filter:blur(10px);position:relative;overflow:hidden}
+.xmgR-venue-badge::before{content:'';position:absolute;inset:0;background:var(--cold-dim);opacity:0.5}
+.xmgR-venue-name{font-size:20px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;position:relative;z-index:1}
+.xmgR-venue-addr{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:0.06em;position:relative;z-index:1}
+.xmgR-main-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:56px;animation:xmgR-fadeUp 0.8s 0.4s ease both}
+.xmgR-flyer-frame{border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 0 1px var(--border),0 30px 80px rgba(0,0,0,0.6)}
+.xmgR-flyer-frame::before{content:'';position:absolute;inset:0;z-index:1;background:rgba(0,229,255,0.04);pointer-events:none}
+.xmgR-flyer-frame img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;filter:saturate(1.1) contrast(1.05)}
+.xmgR-flyer-empty{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border:2px dashed var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.1em}
+.xmgR-ticket-block{display:flex;flex-direction:column;gap:16px;justify-content:center}
+.xmgR-section-tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--cold);margin-bottom:4px}
+.xmgR-event-date-big{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,5vw,60px);line-height:1;color:#fff;letter-spacing:0.04em}
+.xmgR-event-date-day{font-size:14px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-top:2px}
+.xmgR-ticket-btn{display:flex;align-items:center;justify-content:center;gap:12px;text-decoration:none;background:var(--cold);color:#000;padding:18px 32px;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.08em;transition:all 0.3s ease;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,229,255,0.25)}
+.xmgR-ticket-btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s ease}
+.xmgR-ticket-btn:hover::after{left:100%}
+.xmgR-ticket-btn:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,229,255,0.4)}
+.xmgR-ticket-btn svg{width:22px;height:22px;flex-shrink:0}
+.xmgR-ticket-embed iframe{width:100%;min-height:500px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.xmgR-ticket-posh iframe{min-height:250px!important;max-height:250px!important;height:250px!important;background:#000}
+.xmgR-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.xmgR-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.xmgR-detail-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.xmgR-detail-value{font-size:16px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
+.xmgR-music-section{padding-top:48px;border-top:1px solid var(--border);animation:xmgR-fadeUp 0.8s 0.5s ease both}
+.xmgR-section-header{margin-bottom:28px}
+.xmgR-section-h2{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:0.06em;color:#ffffff}
+.xmgR-music-grid{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
+.xmgR-embed-frame{border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#111}
+.xmgR-embed-frame iframe{display:block;width:100%;border:none;min-height:352px}
+.xmg-linkbtn{display:inline-block;text-decoration:none;background:var(--cold-dim);color:var(--cold);padding:12px 20px;border-radius:10px;font-weight:700;border:1px solid var(--cold);letter-spacing:0.06em}
+.xmg-linkbtn:hover{background:rgba(0,229,255,0.25)}
+.xmgR-link-wrap{margin-bottom:16px}
+.xmgR-promo-card{text-decoration:none;color:inherit;display:block;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;overflow:hidden;position:relative;transition:all 0.35s cubic-bezier(0.4,0,0.2,1)}
+.xmgR-promo-card:hover{border-color:var(--cold);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,229,255,0.2)}
+.xmgR-promo-tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--cold);margin-bottom:12px}
+.xmgR-promo-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.04em;margin-bottom:10px;line-height:1;color:#fff}
+.xmgR-promo-body{font-size:14px;line-height:1.7;color:var(--muted);margin-bottom:20px}
+.xmgR-promo-arrow{display:inline-flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--cold);transition:gap 0.3s ease}
+.xmgR-promo-card:hover .xmgR-promo-arrow{gap:14px}
+.xmgR-footer-line{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;animation:xmgR-fadeUp 0.8s 0.6s ease both}
+.xmgR-footer-credit{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.08em}
+.xmgR-footer-logo img{height:24px;width:auto;filter:brightness(0) invert(1);opacity:0.35}
+@keyframes xmgR-fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes xmgR-fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){.xmgR-main-grid{grid-template-columns:1fr}.xmgR-music-grid{grid-template-columns:1fr}.xmgR-flyer-frame{max-width:480px;margin:0 auto}}
+@media(max-width:600px){.xmgR-page{padding:28px 16px 60px}.xmgR-count-unit{padding:0 10px}.xmgR-count-unit+.xmgR-count-unit::before{font-size:36px;bottom:18px}.xmgR-details-grid{grid-template-columns:1fr}.xmgR-footer-line{flex-direction:column;gap:12px;text-align:center}}
+/* Kill Squarespace page padding — injected via Page Header Code Injection */
+#page,#canvas,#content,main,#main,.sqs-layout,.sqs-row,.page-section,.content-wrapper,.view-list,.site-content,.Interior{padding-top:0!important;padding-bottom:0!important;min-height:0!important;}
+.sqs-block-content,.sqs-col-12,.sqs-row{padding:0!important;margin:0!important;}
 </style>
 </head>
 <body>
@@ -712,89 +734,119 @@ body{font-family:'Rajdhani',sans-serif;background:#000;color:#fff}
     <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
   </div>
 </div>
-<div class="${ns}" data-event-iso="${escapeHtml(eventISO)}" data-tz-label="${tzLabel}">
-  <div class="${ns}__logo">
+<div class="xmgR-page" data-event-iso="${escapeHtml(eventISO)}" data-tz-label="${tzLabel}">
+  <div class="xmgR-logo-wrap">
     <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Xodia Media Group">
   </div>
-  <div class="${ns}__name">${eventName}</div>
-  ${descriptionHtml}
-  <div class="${ns}__countdown">
-    <span data-unit="days">0</span><span class="${ns}__countSep">:</span><span data-unit="hours">00</span><span class="${ns}__countSep">:</span><span data-unit="mins">00</span><span class="${ns}__countSep">:</span><span data-unit="secs">00</span>
+  <div class="xmgR-split-line"><span></span><em>Presents</em><span></span></div>
+  <div class="xmgR-hero-title"><span class="xmgR-hero-title-text">${eventName}</span></div>
+  ${heroSub}
+  <div class="xmgR-countdown-wrap">
+    <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="days">00</span><span class="xmgR-count-label">Days</span></div>
+    <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="hours">00</span><span class="xmgR-count-label">Hours</span></div>
+    <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="mins">00</span><span class="xmgR-count-label">Mins</span></div>
+    <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="secs">00</span><span class="xmgR-count-label">Secs</span></div>
   </div>
-  <div class="${ns}__countMeta" data-meta></div>
-  ${venueHtml}
-  ${topContentHtml}
+  <div class="xmgR-count-meta" data-meta></div>
+  ${venueBadgeHtml}
+  <div class="xmgR-main-grid">
+    ${flyerHtml}
+    <div class="xmgR-ticket-block">
+      <div>
+        <div class="xmgR-section-tag">// Event Info</div>
+        <div class="xmgR-event-date-big">${dateFormatted.monthDay}<br>${dateFormatted.year}</div>
+        <div class="xmgR-event-date-day">${dateFormatted.dayLabel}</div>
+      </div>
+      ${ticketAreaHtml}
+      ${detailsGridHtml}
+    </div>
+  </div>
   ${musicSection}
+  <div class="xmgR-footer-line">
+    <span class="xmgR-footer-credit">&copy; ${dateFormatted.year || new Date().getFullYear()} Xodia Media Group</span>
+    <div class="xmgR-footer-logo"><img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Xodia Media Group"></div>
+  </div>
 </div>
-<scr`+`ipt>
+<scr` + `ipt>
 (function(){
-var navDropdown=document.getElementById('navDropdown');
-var navToggle=document.getElementById('navToggle');
-navToggle.addEventListener('click',function(e){
-e.stopPropagation();
-navDropdown.classList.toggle('active');
-});
-document.addEventListener('click',function(e){
-if(!navDropdown.contains(e.target)){
-navDropdown.classList.remove('active');
+var nd=document.getElementById('navDropdown');
+var nt=document.getElementById('navToggle');
+nt.addEventListener('click',function(e){e.stopPropagation();nd.classList.toggle('active')});
+document.addEventListener('click',function(e){if(!nd.contains(e.target))nd.classList.remove('active')});
+var r=document.querySelector('.xmgR-page');
+if(!r||r.__xmgRInit)return;r.__xmgRInit=true;
+var iso=r.getAttribute('data-event-iso')||'';
+var tz=r.getAttribute('data-tz-label')||'';
+var metaEl=r.querySelector('[data-meta]');
+var units={days:r.querySelector('[data-unit="days"]'),hours:r.querySelector('[data-unit="hours"]'),mins:r.querySelector('[data-unit="mins"]'),secs:r.querySelector('[data-unit="secs"]')};
+function pad(n){return String(n).padStart(2,'0')}
+if(!iso){if(metaEl)metaEl.textContent='';return}
+var tgt=new Date(iso);
+if(isNaN(tgt.getTime()))return;
+function tick(){
+  var diff=tgt.getTime()-Date.now();var ended=diff<=0;if(ended)diff=0;
+  var sec=Math.floor(diff/1000);
+  var days=Math.floor(sec/86400);var rem=sec%86400;
+  var hrs=Math.floor(rem/3600);rem=rem%3600;var mins=Math.floor(rem/60);var secs=rem%60;
+  var urgent=diff<86400000;var cls='xmgR-count-num'+(urgent?' urgent':'');
+  if(units.days){units.days.textContent=days;units.days.className=cls}
+  if(units.hours){units.hours.textContent=pad(hrs);units.hours.className=cls}
+  if(units.mins){units.mins.textContent=pad(mins);units.mins.className=cls}
+  if(units.secs){units.secs.textContent=pad(secs);units.secs.className=cls}
+  var ds=tgt.toLocaleString(undefined,{year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  if(metaEl)metaEl.textContent=(ended?'Event started: ':'Event starts: ')+ds+(tz?' '+tz:'');
+  if(ended)clearInterval(tmr);
 }
-});
-var r=document.querySelector(".${ns}");if(!r||r.__${ns}Init)return;r.__${ns}Init=true;var iso=r.getAttribute("data-event-iso")||"";var tz=r.getAttribute("data-tz-label")||"";var m=r.querySelector("[data-meta]");var d=r.querySelector('[data-unit="days"]');var h=r.querySelector('[data-unit="hours"]');var mi=r.querySelector('[data-unit="mins"]');var s=r.querySelector('[data-unit="secs"]');function pad(n){return String(n).padStart(2,"0")}function setM(t){if(m)m.textContent=t||""}if(!iso){setM("Set event date/time to enable countdown.");return}var tgt=new Date(iso);if(isNaN(tgt.getTime())){setM("Invalid event date/time.");return}function tick(){var now=new Date();var diff=tgt.getTime()-now.getTime();var ended=diff<=0;if(ended)diff=0;var sec=Math.floor(diff/1000);var days=Math.floor(sec/86400);var rem=sec%86400;var hrs=Math.floor(rem/3600);rem=rem%3600;var mins=Math.floor(rem/60);var secs=rem%60;var urgent=diff<86400000;if(d){d.textContent=days;d.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(h){h.textContent=pad(hrs);h.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(mi){mi.textContent=pad(mins);mi.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}if(s){s.textContent=pad(secs);s.className=urgent?"${ns}__countNum urgent":"${ns}__countNum"}var ds=tgt.toLocaleString(undefined,{year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"});setM((ended?"Event started: ":"Event starts: ")+ds+(tz?" "+tz:""));if(ended){clearInterval(r.__${ns}Tmr);r.__${ns}Tmr=null}}tick();r.__${ns}Tmr=setInterval(tick,1000)
+tick();var tmr=setInterval(tick,1000);
 })();
-</scr`+`ipt>
-<scr`+`ipt src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></scr`+`ipt>
-<scr`+`ipt>
+</scr` + `ipt>
+<scr` + `ipt src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></scr` + `ipt>
+<scr` + `ipt>
 (function(){
 var canvas=document.getElementById('threejs-bg');
-var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
+var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.setClearColor(0x000000,1);
+renderer.setClearColor(0x050508,1);
 var scene=new THREE.Scene();
 var camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,2000);
 camera.position.z=500;
-var PARTICLE_COUNT=1800;
-var positions=new Float32Array(PARTICLE_COUNT*3);
-var colors=new Float32Array(PARTICLE_COUNT*3);
-var speeds=new Float32Array(PARTICLE_COUNT);
-var palette=[new THREE.Color(0x0099ff),new THREE.Color(0x00ffff),new THREE.Color(0xffffff),new THREE.Color(0x66ccff)];
-for(var i=0;i<PARTICLE_COUNT;i++){
-positions[i*3]=(Math.random()-0.5)*2000;
-positions[i*3+1]=(Math.random()-0.5)*2000;
-positions[i*3+2]=(Math.random()-0.5)*1200;
-var c=palette[Math.floor(Math.random()*palette.length)];
-var brightness=c.equals(palette[2])?0.4+Math.random()*0.3:0.6+Math.random()*0.4;
-colors[i*3]=c.r*brightness;colors[i*3+1]=c.g*brightness;colors[i*3+2]=c.b*brightness;
-speeds[i]=0.08+Math.random()*0.18;
+var N=2200;
+var pos=new Float32Array(N*3);var col=new Float32Array(N*3);var spd=new Float32Array(N);
+for(var i=0;i<N;i++){
+  pos[i*3]=(Math.random()-0.5)*2200;
+  pos[i*3+1]=(Math.random()-0.5)*2200;
+  pos[i*3+2]=(Math.random()-0.5)*1200;
+  var b=0.2+Math.random()*0.7;
+  col[i*3]=b;col[i*3+1]=b;col[i*3+2]=b;
+  spd[i]=0.05+Math.random()*0.15;
 }
-var geometry=new THREE.BufferGeometry();
-geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
-geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
-var material=new THREE.PointsMaterial({size:1.0,vertexColors:true,transparent:true,opacity:0.85,sizeAttenuation:true,depthWrite:false});
-var particles=new THREE.Points(geometry,material);
-scene.add(particles);
-var mouseX=0,mouseY=0;
-document.addEventListener('mousemove',function(e){mouseX=(e.clientX/window.innerWidth-0.5)*2;mouseY=(e.clientY/window.innerHeight-0.5)*2;});
-window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
-var pos=geometry.attributes.position.array;
-var time=0;
+var geo=new THREE.BufferGeometry();
+geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+var mat=new THREE.PointsMaterial({size:1.2,vertexColors:true,transparent:true,opacity:0.75,sizeAttenuation:true,depthWrite:false});
+var pts=new THREE.Points(geo,mat);
+scene.add(pts);
+var mx=0,my=0;
+document.addEventListener('mousemove',function(e){mx=(e.clientX/window.innerWidth-0.5)*2;my=(e.clientY/window.innerHeight-0.5)*2});
+window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)});
+var t=0;
 function animate(){
-requestAnimationFrame(animate);
-time+=0.001;
-for(var i=0;i<PARTICLE_COUNT;i++){
-pos[i*3+1]+=speeds[i];
-pos[i*3]+=Math.sin(time+i*0.5)*0.04;
-if(pos[i*3+1]>1000)pos[i*3+1]=-1000;
-}
-geometry.attributes.position.needsUpdate=true;
-camera.position.x+=(mouseX*40-camera.position.x)*0.03;
-camera.position.y+=(-mouseY*40-camera.position.y)*0.03;
-particles.rotation.y=time*0.05;
-renderer.render(scene,camera);
+  requestAnimationFrame(animate);t+=0.0008;
+  for(var i=0;i<N;i++){
+    pos[i*3+1]+=spd[i];
+    pos[i*3]+=Math.sin(t+i*0.4)*0.03;
+    if(pos[i*3+1]>1100)pos[i*3+1]=-1100;
+  }
+  geo.attributes.position.needsUpdate=true;
+  camera.position.x+=(mx*30-camera.position.x)*0.025;
+  camera.position.y+=(-my*30-camera.position.y)*0.025;
+  pts.rotation.y=t*0.04;
+  renderer.render(scene,camera);
 }
 animate();
 })();
-</scr`+`ipt>
+</scr` + `ipt>
 </body>
 </html>`;
   }
@@ -829,6 +881,7 @@ animate();
       venueName,
       venueAddress,
       eventISO: zonedLocalToUtcIso(eventDateVal, eventTz),
+      eventDateVal,
       tzLabel: tzLabelFromIana(eventTz),
       flyerUrlTrimmed,
       ticketMode,
