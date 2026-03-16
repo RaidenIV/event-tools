@@ -593,11 +593,7 @@
       }
     }
 
-    // Details grid
-    const detailsGridHtml = `<div class="xmgR-details-grid">
-  <div class="xmgR-detail-card"><div class="xmgR-detail-label">Headliner</div><div class="xmgR-detail-value">${eventName}</div></div>
-  ${venueName ? `<div class="xmgR-detail-card"><div class="xmgR-detail-label">Venue</div><div class="xmgR-detail-value">${venueName}</div></div>` : ''}
-</div>`;
+    const ticketDisplayHtml = ticketAreaHtml || '<div class="xmgR-ticket-placeholder">Ticket link coming soon.</div>';
 
     // Music
     const spotifyHtml = normalizeMaybeEmbed(data.spotifyInput, "Open Spotify");
@@ -608,7 +604,7 @@
         : `<div class="xmgR-link-wrap">${html}</div>`;
     }).join('\n');
 
-    const promoCard = `<a href="https://www.xodiamediagroup.com/updates" target="_blank" rel="noopener noreferrer" class="xmgR-promo-card">
+    const updatesCard = `<a href="https://www.xodiamediagroup.com/updates" target="_blank" rel="noopener noreferrer" class="xmgR-promo-card xmgR-updates-card">
   <div class="xmgR-promo-tag">// Updates</div>
   <h3 class="xmgR-promo-title">Stay in the Loop</h3>
   <p class="xmgR-promo-body">Get exclusive event updates, presale alerts, and announcements delivered straight to you.</p>
@@ -617,7 +613,7 @@
 
     const musicSection = musicBlocks ? `<div class="xmgR-music-section">
   <div class="xmgR-section-header"><div class="xmgR-section-tag">// Music</div><h2 class="xmgR-section-h2">Listen Now</h2></div>
-  <div class="xmgR-music-grid">${musicBlocks}${promoCard}</div>
+  <div class="xmgR-music-grid">${musicBlocks}</div>
 </div>` : '';
 
     return `<!DOCTYPE html>
@@ -650,59 +646,60 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
 .nav-dropdown.active .nav-menu{opacity:1;visibility:visible;transform:translateY(0)}
 .nav-menu a{display:block;padding:11px 16px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;border-radius:6px;transition:all 0.2s ease}
 .nav-menu a:hover{background:var(--cold-dim);color:var(--cold)}
-.xmgR-page{max-width:1100px;margin:0 auto;padding:40px 24px 40px;position:relative;z-index:2}
-.xmgR-logo-wrap{display:flex;justify-content:center;margin-bottom:32px;animation:xmgR-fadeDown 0.6s ease both}
+.xmgR-page{max-width:1320px;margin:0 auto;padding:40px 24px 40px;position:relative;z-index:2}
+.xmgR-logo-wrap{display:flex;justify-content:center;margin-bottom:28px;animation:xmgR-fadeDown 0.6s ease both}
 .xmgR-logo-wrap img{height:42px;width:auto;filter:brightness(0) invert(1);opacity:0.7}
-.xmgR-split-line{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:28px;animation:xmgR-fadeDown 0.7s 0.1s ease both}
+.xmgR-hero-shell{margin-bottom:64px;animation:xmgR-fadeUp 0.8s 0.4s ease both}
+.xmgR-hero-grid{display:grid;grid-template-areas:'flyer copy info';grid-template-columns:minmax(260px,360px) minmax(0,1.2fr) minmax(260px,320px);gap:34px;align-items:start}
+.xmgR-hero-flyer{grid-area:flyer;display:flex;align-items:flex-start;justify-content:flex-start;min-width:0}
+.xmgR-hero-copy{grid-area:copy;display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.xmgR-hero-info{grid-area:info;display:flex;flex-direction:column;align-items:stretch;min-width:0}
+.xmgR-split-line{display:flex;align-items:center;justify-content:flex-start;gap:0;width:100%;margin-bottom:28px;animation:xmgR-fadeDown 0.7s 0.1s ease both}
 .xmgR-split-line span{display:block;height:1px;flex:1}
 .xmgR-split-line span:first-child{background:linear-gradient(to right,transparent,var(--cold))}
 .xmgR-split-line span:last-child{background:linear-gradient(to left,transparent,var(--cold))}
 .xmgR-split-line em{font-style:normal;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);padding:0 18px;white-space:nowrap;font-family:'DM Mono',monospace;font-weight:300}
-.xmgR-hero-title{text-align:center;margin-bottom:6px;animation:xmgR-fadeDown 0.7s 0.15s ease both}
-.xmgR-hero-title-text{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,13vw,160px);line-height:0.9;letter-spacing:0.02em;color:#ffffff;display:inline-block}
-.xmgR-hero-sub{text-align:center;font-size:16px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-bottom:44px;font-family:'DM Mono',monospace;animation:xmgR-fadeDown 0.7s 0.2s ease both}
-.xmgR-countdown-wrap{display:flex;justify-content:center;align-items:flex-end;gap:0;margin-bottom:10px;animation:xmgR-fadeDown 0.7s 0.25s ease both}
+.xmgR-hero-title{text-align:left;margin-bottom:12px;animation:xmgR-fadeDown 0.7s 0.15s ease both;width:100%}
+.xmgR-hero-title-text{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,10vw,150px);line-height:0.9;letter-spacing:0.02em;color:#ffffff;display:block;width:100%;max-width:100%;white-space:normal;word-break:break-word;text-wrap:balance}
+.xmgR-hero-sub{text-align:left;font-size:16px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-bottom:24px;font-family:'DM Mono',monospace;max-width:780px;animation:xmgR-fadeDown 0.7s 0.2s ease both}
+.xmgR-countdown-wrap{display:flex;justify-content:flex-start;align-items:flex-end;gap:0;margin-bottom:10px;flex-wrap:wrap;animation:xmgR-fadeDown 0.7s 0.25s ease both}
 .xmgR-count-unit{display:flex;flex-direction:column;align-items:center;padding:0 18px;position:relative}
 .xmgR-count-unit+.xmgR-count-unit::before{content:':';position:absolute;left:-4px;bottom:22px;font-family:'Bebas Neue',sans-serif;font-size:52px;color:rgba(255,255,255,0.2);line-height:1}
 .xmgR-count-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,8vw,88px);line-height:1;color:#ffffff;transition:color 0.3s}
 .xmgR-count-num.urgent{color:var(--cold);filter:drop-shadow(0 0 12px var(--cold-glow))}
 .xmgR-count-label{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;margin-top:4px}
-.xmgR-count-meta{text-align:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);margin-bottom:48px;letter-spacing:0.06em;animation:xmgR-fadeDown 0.7s 0.3s ease both}
-.xmgR-venue-wrap{display:flex;justify-content:center;margin-bottom:56px;animation:xmgR-fadeDown 0.7s 0.32s ease both}
-.xmgR-venue-badge{display:inline-flex;flex-direction:column;align-items:center;border:1px solid var(--border);border-radius:12px;padding:18px 36px;background:var(--surface);backdrop-filter:blur(10px);position:relative;overflow:hidden}
+.xmgR-count-meta{text-align:left;font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);margin-bottom:0;letter-spacing:0.06em;max-width:760px;animation:xmgR-fadeDown 0.7s 0.3s ease both}
+.xmgR-venue-wrap{display:flex;justify-content:flex-start;margin-bottom:18px;animation:xmgR-fadeDown 0.7s 0.32s ease both;width:100%}
+.xmgR-venue-badge{display:inline-flex;flex-direction:column;align-items:flex-start;border:1px solid var(--border);border-radius:12px;padding:18px 36px;background:var(--surface);backdrop-filter:blur(10px);position:relative;overflow:hidden}
 .xmgR-venue-badge::before{content:'';position:absolute;inset:0;background:var(--cold-dim);opacity:0.5}
 .xmgR-venue-name{font-size:20px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;position:relative;z-index:1}
 .xmgR-venue-addr{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:0.06em;position:relative;z-index:1}
-.xmgR-main-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:56px;animation:xmgR-fadeUp 0.8s 0.4s ease both}
-.xmgR-flyer-frame{border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 0 1px var(--border),0 30px 80px rgba(0,0,0,0.6)}
+.xmgR-flyer-frame{border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 0 1px var(--border),0 30px 80px rgba(0,0,0,0.6);width:100%}
 .xmgR-flyer-frame::before{content:'';position:absolute;inset:0;z-index:1;background:rgba(0,229,255,0.04);pointer-events:none}
 .xmgR-flyer-frame img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;filter:saturate(1.1) contrast(1.05)}
 .xmgR-flyer-empty{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border:2px dashed var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.1em}
-.xmgR-ticket-block{display:flex;flex-direction:column;gap:16px;justify-content:center}
+.xmgR-ticket-block{display:flex;flex-direction:column;gap:18px;justify-content:flex-start;align-items:flex-start;width:100%;max-width:none}
 .xmgR-section-tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--cold);margin-bottom:4px}
 .xmgR-event-date-big{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,5vw,60px);line-height:1;color:#fff;letter-spacing:0.04em}
 .xmgR-event-date-day{font-size:14px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-top:2px}
-.xmgR-ticket-btn{display:flex;align-items:center;justify-content:center;gap:12px;text-decoration:none;background:var(--cold);color:#000;padding:18px 32px;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.08em;transition:all 0.3s ease;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,229,255,0.25)}
+.xmgR-ticket-btn{display:flex;align-items:center;justify-content:center;gap:12px;text-decoration:none;background:var(--cold);color:#000;padding:18px 32px;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.08em;transition:all 0.3s ease;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,229,255,0.25);width:100%}
 .xmgR-ticket-btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s ease}
 .xmgR-ticket-btn:hover::after{left:100%}
 .xmgR-ticket-btn:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,229,255,0.4)}
 .xmgR-ticket-btn svg{width:22px;height:22px;flex-shrink:0}
-.xmgR-ticket-embed iframe{width:100%;min-height:500px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.xmgR-ticket-embed{width:100%;max-width:560px}
+.xmgR-ticket-embed iframe{width:100%;min-height:420px;border:1px solid var(--border);border-radius:12px;background:#fff}
 .xmgR-ticket-posh iframe{min-height:250px!important;max-height:250px!important;height:250px!important;background:#000}
-.xmgR-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
-.xmgR-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
-.xmgR-detail-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-.xmgR-detail-value{font-size:16px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
-.xmgR-music-section{padding-top:48px;border-top:1px solid var(--border);animation:xmgR-fadeUp 0.8s 0.5s ease both}
-.xmgR-section-header{margin-bottom:28px}
+.xmgR-music-section{padding-top:48px;border-top:1px solid var(--border);animation:xmgR-fadeUp 0.8s 0.5s ease both;max-width:860px;margin:0 auto}
+.xmgR-section-header{margin-bottom:28px;text-align:center}
 .xmgR-section-h2{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:0.06em;color:#ffffff}
-.xmgR-music-grid{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
-.xmgR-embed-frame{border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#111}
+.xmgR-music-grid{display:grid;grid-template-columns:1fr;gap:24px;align-items:start;max-width:760px;margin:0 auto}
+.xmgR-embed-frame{width:100%;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#111}
 .xmgR-embed-frame iframe{display:block;width:100%;border:none;min-height:352px}
-.xmg-linkbtn{display:inline-block;text-decoration:none;background:var(--cold-dim);color:var(--cold);padding:12px 20px;border-radius:10px;font-weight:700;border:1px solid var(--cold);letter-spacing:0.06em}
+.xmg-linkbtn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--cold-dim);color:var(--cold);padding:12px 20px;border-radius:10px;font-weight:700;border:1px solid var(--cold);letter-spacing:0.06em}
 .xmg-linkbtn:hover{background:rgba(0,229,255,0.25)}
-.xmgR-link-wrap{margin-bottom:16px}
-.xmgR-promo-card{text-decoration:none;color:inherit;display:block;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;overflow:hidden;position:relative;transition:all 0.35s cubic-bezier(0.4,0,0.2,1)}
+.xmgR-link-wrap{width:100%;margin-bottom:0;text-align:center}
+.xmgR-promo-card{text-decoration:none;color:inherit;display:block;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;overflow:hidden;position:relative;transition:all 0.35s cubic-bezier(0.4,0,0.2,1);width:100%;max-width:560px}
 .xmgR-promo-card:hover{border-color:var(--cold);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,229,255,0.2)}
 .xmgR-promo-tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--cold);margin-bottom:12px}
 .xmgR-promo-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.04em;margin-bottom:10px;line-height:1;color:#fff}
@@ -714,11 +711,56 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
 .xmgR-footer-logo img{height:24px;width:auto;filter:brightness(0) invert(1);opacity:0.35}
 @keyframes xmgR-fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes xmgR-fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:900px){.xmgR-main-grid{grid-template-columns:1fr}.xmgR-music-grid{grid-template-columns:1fr}.xmgR-flyer-frame{max-width:480px;margin:0 auto}}
-@media(max-width:600px){.xmgR-page{padding:28px 16px 60px}.xmgR-count-unit{padding:0 10px}.xmgR-count-unit+.xmgR-count-unit::before{font-size:36px;bottom:18px}.xmgR-details-grid{grid-template-columns:1fr}.xmgR-footer-line{flex-direction:column;gap:12px;text-align:center}}
+@media(max-width:1100px){.xmgR-hero-grid{grid-template-areas:'flyer copy' 'info info';grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:30px}}
+@media(max-width:900px){.xmgR-hero-grid{grid-template-areas:'flyer' 'copy' 'info';grid-template-columns:1fr;gap:28px}.xmgR-hero-flyer .xmgR-flyer-frame{max-width:480px;margin:0 auto}.xmgR-hero-copy,.xmgR-hero-info{align-items:center}.xmgR-split-line,.xmgR-hero-title,.xmgR-hero-sub,.xmgR-countdown-wrap,.xmgR-count-meta,.xmgR-venue-wrap{text-align:center;justify-content:center}.xmgR-venue-badge{align-items:center}.xmgR-ticket-block{max-width:100%;margin:0 auto;align-items:stretch}}
+@media(max-width:600px){.xmgR-page{padding:28px 16px 60px}.xmgR-count-unit{padding:0 10px}.xmgR-count-unit+.xmgR-count-unit::before{font-size:36px;bottom:18px}.xmgR-ticket-btn{font-size:24px;padding:16px 20px}.xmgR-hero-sub{font-size:13px}.xmgR-footer-line{flex-direction:column;gap:12px;text-align:center}}
 /* Kill Squarespace page padding — injected via Page Header Code Injection */
+
 #page,#canvas,#content,main,#main,.sqs-layout,.sqs-row,.page-section,.content-wrapper,.view-list,.site-content,.Interior{padding-top:0!important;padding-bottom:0!important;min-height:0!important;}
 .sqs-block-content,.sqs-col-12,.sqs-row{padding:0!important;margin:0!important;}
+/* v16 layout overrides */
+.xmgR-hero-grid{--xmgR-side-col:clamp(240px,24vw,340px);--xmgR-title-col:clamp(420px,34vw,620px);display:grid;grid-template-areas:'flyer copy updates';grid-template-columns:var(--xmgR-side-col) var(--xmgR-title-col) var(--xmgR-side-col);gap:34px;align-items:start;justify-content:center}
+.xmgR-hero-flyer{grid-area:flyer;display:flex;align-items:stretch;justify-content:center;min-width:0}
+.xmgR-hero-copy{grid-area:copy;display:flex;flex-direction:column;align-items:center;justify-self:center;min-width:0;width:100%;max-width:var(--xmgR-title-col)}
+.xmgR-hero-updates{grid-area:updates;display:flex;align-items:stretch;justify-content:center;min-width:0}
+.xmgR-side-square{width:100%}
+.xmgR-side-square>*{width:100%}
+.xmgR-split-line{justify-content:center}
+.xmgR-hero-title{text-align:center;width:100%;margin-bottom:12px}
+.xmgR-hero-sub{text-align:center;max-width:760px;margin:0 auto 24px}
+.xmgR-countdown-wrap{justify-content:center}
+.xmgR-count-meta{text-align:center;margin:0 auto;max-width:760px}
+.xmgR-below-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;width:min(50%,720px);margin:52px auto 0;align-items:start;justify-content:center}
+.xmgR-info-card,.xmgR-ticket-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;backdrop-filter:blur(10px);display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%;max-width:100%}
+.xmgR-ticket-panel{align-self:start}
+.xmgR-event-stack{margin-bottom:12px}
+.xmgR-info-card .xmgR-venue-wrap{width:100%;margin-bottom:0;animation:none;justify-content:flex-start}
+.xmgR-info-card .xmgR-venue-badge{width:100%;padding:14px 16px}
+.xmgR-info-card .xmgR-event-date-big{font-size:clamp(34px,4vw,50px)}
+.xmgR-info-card .xmgR-event-date-day{font-size:12px}
+.xmgR-ticket-panel .xmgR-ticket-block{width:100%;max-width:none;align-items:stretch;gap:12px;flex:1;min-height:0}
+.xmgR-ticket-panel .xmgR-ticket-btn{padding:14px 24px;font-size:24px}
+.xmgR-ticket-panel .xmgR-ticket-embed{width:100%;max-width:none;display:flex;flex:1;min-height:0}
+.xmgR-ticket-panel .xmgR-ticket-embed iframe{width:100%;height:100%;min-height:0;flex:1}
+.xmgR-ticket-placeholder{width:100%;min-height:68px;border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:14px 16px;text-align:center;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase}
+.xmgR-hero-updates .xmgR-promo-card{max-width:none}
+.xmgR-updates-card{aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:center;padding:32px}
+.xmgR-updates-card .xmgR-promo-body{margin-bottom:24px}
+@media(max-width:1100px){
+  .xmgR-hero-grid{--xmgR-side-col:clamp(220px,24vw,280px);--xmgR-title-col:clamp(360px,36vw,540px);gap:24px}
+  .xmgR-below-grid{width:min(70%,680px)}
+}
+@media(max-width:900px){
+  .xmgR-hero-grid{grid-template-areas:'copy' 'flyer' 'updates';grid-template-columns:1fr;gap:28px}
+  .xmgR-hero-copy,.xmgR-hero-flyer,.xmgR-hero-updates{align-items:center;justify-content:center}
+  .xmgR-side-square{max-width:480px;margin:0 auto}
+  .xmgR-below-grid{grid-template-columns:1fr;width:100%;max-width:560px;gap:16px}
+  .xmgR-info-card,.xmgR-ticket-panel{align-items:stretch}
+}
+@media(max-width:600px){
+  .xmgR-info-card,.xmgR-ticket-panel{padding:16px}
+  .xmgR-updates-card{padding:24px}
+}
 </style>
 </head>
 <body>
@@ -738,27 +780,38 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
   <div class="xmgR-logo-wrap">
     <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Xodia Media Group">
   </div>
-  <div class="xmgR-split-line"><span></span><em>Presents</em><span></span></div>
-  <div class="xmgR-hero-title"><span class="xmgR-hero-title-text">${eventName}</span></div>
-  ${heroSub}
-  <div class="xmgR-countdown-wrap">
-    <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="days">00</span><span class="xmgR-count-label">Days</span></div>
-    <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="hours">00</span><span class="xmgR-count-label">Hours</span></div>
-    <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="mins">00</span><span class="xmgR-count-label">Mins</span></div>
-    <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="secs">00</span><span class="xmgR-count-label">Secs</span></div>
-  </div>
-  <div class="xmgR-count-meta" data-meta></div>
-  ${venueBadgeHtml}
-  <div class="xmgR-main-grid">
-    ${flyerHtml}
-    <div class="xmgR-ticket-block">
-      <div>
-        <div class="xmgR-section-tag">// Event Info</div>
-        <div class="xmgR-event-date-big">${dateFormatted.monthDay}<br>${dateFormatted.year}</div>
-        <div class="xmgR-event-date-day">${dateFormatted.dayLabel}</div>
+  <div class="xmgR-hero-shell">
+    <div class="xmgR-split-line"><span></span><em>Presents</em><span></span></div>
+    <div class="xmgR-hero-grid">
+      <div class="xmgR-hero-flyer xmgR-side-square">${flyerHtml}</div>
+      <div class="xmgR-hero-copy">
+        <div class="xmgR-hero-title"><span class="xmgR-hero-title-text">${eventName}</span></div>
+        ${heroSub}
+        <div class="xmgR-countdown-wrap">
+          <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="days">00</span><span class="xmgR-count-label">Days</span></div>
+          <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="hours">00</span><span class="xmgR-count-label">Hours</span></div>
+          <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="mins">00</span><span class="xmgR-count-label">Mins</span></div>
+          <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="secs">00</span><span class="xmgR-count-label">Secs</span></div>
+        </div>
+        <div class="xmgR-count-meta" data-meta></div>
       </div>
-      ${ticketAreaHtml}
-      ${detailsGridHtml}
+      <div class="xmgR-hero-updates xmgR-side-square">${updatesCard}</div>
+    </div>
+    <div class="xmgR-below-grid">
+      <div class="xmgR-info-card">
+        <div class="xmgR-section-tag">// Event Info</div>
+        <div class="xmgR-event-stack">
+          <div class="xmgR-event-date-big">${dateFormatted.monthDay}<br>${dateFormatted.year}</div>
+          <div class="xmgR-event-date-day">${dateFormatted.dayLabel}</div>
+        </div>
+        ${venueBadgeHtml}
+      </div>
+      <div class="xmgR-ticket-panel">
+        <div class="xmgR-section-tag">// Tickets</div>
+        <div class="xmgR-ticket-block">
+          ${ticketDisplayHtml}
+        </div>
+      </div>
     </div>
   </div>
   ${musicSection}
@@ -779,6 +832,73 @@ var iso=r.getAttribute('data-event-iso')||'';
 var tz=r.getAttribute('data-tz-label')||'';
 var metaEl=r.querySelector('[data-meta]');
 var units={days:r.querySelector('[data-unit="days"]'),hours:r.querySelector('[data-unit="hours"]'),mins:r.querySelector('[data-unit="mins"]'),secs:r.querySelector('[data-unit="secs"]')};
+var titleWrap=r.querySelector('.xmgR-hero-title');
+var titleText=r.querySelector('.xmgR-hero-title-text');
+var fitTitleRAF=0;
+function fitTitle(){
+  if(!titleWrap||!titleText)return;
+  var wrapWidth=titleWrap.clientWidth||titleWrap.getBoundingClientRect().width||0;
+  if(!wrapWidth)return;
+  var vw=window.innerWidth||document.documentElement.clientWidth||1280;
+  var max=vw<=600?72:(vw<=900?94:150);
+  var min=vw<=600?30:(vw<=900?38:44);
+  var size=max;
+  titleText.style.fontSize=size+'px';
+  titleText.style.lineHeight='0.9';
+  titleText.style.maxWidth='100%';
+  titleText.style.width='100%';
+  titleText.style.display='block';
+  titleText.style.whiteSpace='normal';
+  var maxLines=vw<=600?3:2;
+  while(size>min){
+    var box=titleText.getBoundingClientRect();
+    var lineHeight=Math.max(1,size*0.9);
+    var maxHeight=(lineHeight*maxLines)+2;
+    var fitsWidth=titleText.scrollWidth<=wrapWidth+1;
+    var fitsHeight=box.height<=maxHeight;
+    if(fitsWidth&&fitsHeight)break;
+    size-=1;
+    titleText.style.fontSize=size+'px';
+  }
+  titleText.style.fontSize=Math.max(size,min)+'px';
+}
+function scheduleFitTitle(){
+  if(fitTitleRAF)cancelAnimationFrame(fitTitleRAF);
+  fitTitleRAF=requestAnimationFrame(function(){
+    fitTitleRAF=requestAnimationFrame(function(){
+      fitTitle();
+    });
+  });
+}
+function syncTicketPanelSize(){
+  var infoCard=r.querySelector('.xmgR-info-card');
+  var ticketPanel=r.querySelector('.xmgR-ticket-panel');
+  var ticketEmbed=ticketPanel&&ticketPanel.querySelector('.xmgR-ticket-embed');
+  var iframe=ticketEmbed&&ticketEmbed.querySelector('iframe');
+  if(!infoCard||!ticketPanel)return;
+  ticketPanel.style.height='';
+  ticketPanel.style.minHeight='';
+  if(ticketEmbed&&window.innerWidth>900){
+    var infoH=Math.ceil(infoCard.getBoundingClientRect().height||infoCard.offsetHeight||0);
+    if(infoH>0){
+      ticketPanel.style.height=infoH+'px';
+      ticketPanel.style.minHeight=infoH+'px';
+      if(iframe){
+        var styles=window.getComputedStyle(ticketPanel);
+        var block=ticketPanel.querySelector('.xmgR-ticket-block');
+        var tag=ticketPanel.querySelector('.xmgR-section-tag');
+        var pt=parseFloat(styles.paddingTop)||0;
+        var pb=parseFloat(styles.paddingBottom)||0;
+        var tagH=tag?tag.getBoundingClientRect().height:0;
+        var gap=block?parseFloat(window.getComputedStyle(block).gap||0):0;
+        var inner=Math.max(120,infoH-pt-pb-tagH-gap);
+        iframe.style.height=inner+'px';
+      }
+    }
+  }else if(iframe){
+    iframe.style.height='';
+  }
+}
 function pad(n){return String(n).padStart(2,'0')}
 if(!iso){if(metaEl)metaEl.textContent='';return}
 var tgt=new Date(iso);
@@ -798,6 +918,24 @@ function tick(){
   if(ended)clearInterval(tmr);
 }
 tick();var tmr=setInterval(tick,1000);
+scheduleFitTitle();
+syncTicketPanelSize();
+window.addEventListener('resize',function(){scheduleFitTitle();syncTicketPanelSize();});
+window.addEventListener('load',function(){scheduleFitTitle();syncTicketPanelSize();});
+setTimeout(function(){scheduleFitTitle();syncTicketPanelSize();},0);
+setTimeout(function(){scheduleFitTitle();syncTicketPanelSize();},150);
+setTimeout(function(){scheduleFitTitle();syncTicketPanelSize();},500);
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){scheduleFitTitle();syncTicketPanelSize();}).catch(function(){});}
+if(window.ResizeObserver){
+  try{
+    var syncRO=new ResizeObserver(function(){scheduleFitTitle();syncTicketPanelSize();});
+    if(titleWrap)syncRO.observe(titleWrap);
+    var infoCardRO=r.querySelector('.xmgR-info-card');
+    if(infoCardRO)syncRO.observe(infoCardRO);
+    var ticketPanelRO=r.querySelector('.xmgR-ticket-panel');
+    if(ticketPanelRO)syncRO.observe(ticketPanelRO);
+  }catch(e){}
+}
 })();
 </scr` + `ipt>
 <scr` + `ipt src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></scr` + `ipt>
@@ -815,18 +953,13 @@ var PARTICLE_COUNT=1800;
 var positions=new Float32Array(PARTICLE_COUNT*3);
 var colors=new Float32Array(PARTICLE_COUNT*3);
 var speeds=new Float32Array(PARTICLE_COUNT);
-var colorPalette=[
-  new THREE.Color(0x0099ff),
-  new THREE.Color(0x00ffff),
-  new THREE.Color(0xffffff),
-  new THREE.Color(0x66ccff)
-];
+var colorPalette=[new THREE.Color(0x0099ff),new THREE.Color(0x00ffff),new THREE.Color(0xffffff),new THREE.Color(0x66ccff)];
 for(var i=0;i<PARTICLE_COUNT;i++){
   positions[i*3]=(Math.random()-0.5)*2000;
   positions[i*3+1]=(Math.random()-0.5)*2000;
   positions[i*3+2]=(Math.random()-0.5)*1200;
   var c=colorPalette[Math.floor(Math.random()*colorPalette.length)];
-  var brightness=c.equals(colorPalette[2])?(0.4+Math.random()*0.3):(0.6+Math.random()*0.4);
+  var brightness=(c.equals(colorPalette[2])?0.4+Math.random()*0.3:0.6+Math.random()*0.4);
   colors[i*3]=c.r*brightness;
   colors[i*3+1]=c.g*brightness;
   colors[i*3+2]=c.b*brightness;
@@ -839,15 +972,8 @@ var material=new THREE.PointsMaterial({size:1.0,vertexColors:true,transparent:tr
 var particles=new THREE.Points(geometry,material);
 scene.add(particles);
 var mouseX=0,mouseY=0;
-document.addEventListener('mousemove',function(e){
-  mouseX=(e.clientX/window.innerWidth-0.5)*2;
-  mouseY=(e.clientY/window.innerHeight-0.5)*2;
-});
-window.addEventListener('resize',function(){
-  camera.aspect=window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth,window.innerHeight);
-});
+document.addEventListener('mousemove',function(e){mouseX=(e.clientX/window.innerWidth-0.5)*2;mouseY=(e.clientY/window.innerHeight-0.5)*2});
+window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)});
 var pos=geometry.attributes.position.array;
 var time=0;
 function animate(){
