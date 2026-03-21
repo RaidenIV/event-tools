@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#0b0b0c; --panel:#131316; --text:#f2f2f4; --muted:#a7a7ad; --line:#2a2a2f; }
+    :root { --bg:#000000; --panel:#131316; --text:#f2f2f4; --muted:#a7a7ad; --line:#2a2a2f; }
     * { box-sizing: border-box; }
     html, body {
       margin: 0; padding: 0;
@@ -106,6 +106,25 @@
     .small { font-size: 12px; }
     .divider { height:1px; background: var(--line); margin: 14px 0; }
     
+    /* Three.js particle canvas */
+    #threejs-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: #000000;
+        pointer-events: none;
+    }
+
+    /* Ensure all page content sits above the canvas */
+    .nav-dropdown,
+    .wrap {
+        position: relative;
+        z-index: 1;
+    }
+
     /* ======= MENU NAV (Hamburger Style) ======= */
     .nav-dropdown {
         position: fixed;
@@ -228,6 +247,7 @@
 </head>
 
 <body>
+  <canvas id="threejs-bg"></canvas>
   <!-- Navigation Dropdown -->
   <div class="nav-dropdown" id="navDropdown">
     <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu">
@@ -1123,6 +1143,117 @@ animate();
       navDropdown.classList.remove('active');
     });
   });
+})();
+</script>
+
+<!-- Three.js Particle Background -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+    const canvas = document.getElementById('threejs-bg');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.z = 500;
+
+    const PARTICLE_COUNT = 3500;
+    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    const colors    = new Float32Array(PARTICLE_COUNT * 3);
+    const speeds    = new Float32Array(PARTICLE_COUNT);
+
+    const colorPalette = [
+        new THREE.Color(0x0099ff),
+        new THREE.Color(0x00ffff),
+        new THREE.Color(0xffffff),
+        new THREE.Color(0x66ccff),
+    ];
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        positions[i * 3]     = (Math.random() - 0.5) * 2000;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 1200;
+
+        const c = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+        const brightness = c.equals(colorPalette[2]) ? 0.9 + Math.random() * 0.1 : 1.0;
+        colors[i * 3]     = c.r * brightness;
+        colors[i * 3 + 1] = c.g * brightness;
+        colors[i * 3 + 2] = c.b * brightness;
+
+        speeds[i] = 0.08 + Math.random() * 0.18;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
+
+    const spriteCanvas = document.createElement('canvas');
+    spriteCanvas.width = 64;
+    spriteCanvas.height = 64;
+    const ctx = spriteCanvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0,   'rgba(255,255,255,1)');
+    gradient.addColorStop(0.4, 'rgba(255,255,255,0.9)');
+    gradient.addColorStop(0.7, 'rgba(255,255,255,0.4)');
+    gradient.addColorStop(1,   'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(32, 32, 32, 0, Math.PI * 2);
+    ctx.fill();
+    const spriteTexture = new THREE.CanvasTexture(spriteCanvas);
+
+    const material = new THREE.PointsMaterial({
+        size: 3.5,
+        vertexColors: true,
+        transparent: true,
+        opacity: 1.0,
+        sizeAttenuation: true,
+        depthWrite: false,
+        map: spriteTexture,
+        alphaTest: 0.01,
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const pos = geometry.attributes.position.array;
+    let time = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        time += 0.001;
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            pos[i * 3 + 1] += speeds[i];
+            pos[i * 3] += Math.sin(time + i * 0.5) * 0.04;
+            if (pos[i * 3 + 1] > 1000) pos[i * 3 + 1] = -1000;
+        }
+        geometry.attributes.position.needsUpdate = true;
+
+        camera.position.x += (mouseX * 40 - camera.position.x) * 0.03;
+        camera.position.y += (-mouseY * 40 - camera.position.y) * 0.03;
+
+        particles.rotation.y = time * 0.05;
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
 })();
 </script>
 </body>
