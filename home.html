@@ -36,6 +36,7 @@
     height: 100%;
     z-index: 0;
     background: #000000;
+    pointer-events: none;
 }
 
 /* Prevent scrolling only while splash screen is active */
@@ -1040,7 +1041,7 @@ window.addEventListener('load', function() {
     camera.position.z = 500;
 
     // --- Particle geometry ---
-    const PARTICLE_COUNT = 1800;
+    const PARTICLE_COUNT = 3500;
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const colors    = new Float32Array(PARTICLE_COUNT * 3);
     const speeds    = new Float32Array(PARTICLE_COUNT); // drift speed per particle
@@ -1059,7 +1060,7 @@ window.addEventListener('load', function() {
 
         const c = colorPalette[Math.floor(Math.random() * colorPalette.length)];
         // White particles are dimmer; colored ones brighter
-        const brightness = c.equals(colorPalette[2]) ? 0.65 + Math.random() * 0.35 : 0.85 + Math.random() * 0.15;
+        const brightness = c.equals(colorPalette[2]) ? 0.9 + Math.random() * 0.1 : 1.0;
         colors[i * 3]     = c.r * brightness;
         colors[i * 3 + 1] = c.g * brightness;
         colors[i * 3 + 2] = c.b * brightness;
@@ -1088,7 +1089,7 @@ window.addEventListener('load', function() {
     const spriteTexture = new THREE.CanvasTexture(spriteCanvas);
 
     const material = new THREE.PointsMaterial({
-        size: 1.0,
+        size: 3.5,
         vertexColors: true,
         transparent: true,
         opacity: 1.0,
