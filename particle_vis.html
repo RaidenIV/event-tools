@@ -1,20 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!--
-SQUARESPACE INSTALLATION INSTRUCTIONS:
-1. Go to your Squarespace page
-2. Click on the page settings (gear icon)
-3. Go to Advanced > Page Header Code Injection
-4. Paste this entire HTML file
-5. Save and view your page
 
-OR use a Code Block:
-1. Add a Code Block to your page
-2. Paste this entire HTML file
-3. Make sure the block takes up the full width/height of the section
-
-The visualizer will automatically fill the entire available space.
--->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,13 +59,6 @@ The visualizer will automatically fill the entire available space.
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-        }
-
-        .logo {
-            width: 60px;
-            height: 40px;
-            object-fit: contain;
-            opacity: 0.9;
         }
 
         .app-title {
@@ -280,14 +259,6 @@ The visualizer will automatically fill the entire available space.
             font-variant-numeric: tabular-nums;
         }
 
-        #file-input {
-            position: absolute;
-            left: -9999px;
-            width: 1px;
-            height: 1px;
-            opacity: 0;
-        }
-
         .keyboard-shortcuts {
             margin-top: 20px;
             padding-top: 16px;
@@ -371,6 +342,150 @@ The visualizer will automatically fill the entire available space.
             font-family: 'Rajdhani', sans-serif !important;
         }
 
+        /* Centered logo at top of panel */
+        .logo-top {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 14px;
+        }
+        .logo-top .logo {
+            width: 80px;
+            height: auto;
+            opacity: 0.92;
+        }
+
+        /* Colormap toggle row */
+        .cmap-toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 4px 0;
+        }
+        .cmap-toggle-row:hover .section-title { color: #ccc; }
+        .cmap-arrow {
+            font-size: 12px;
+            color: #666;
+            transition: transform 0.2s, color 0.2s;
+            display: inline-block;
+        }
+        .cmap-arrow.open {
+            transform: rotate(90deg);
+            color: #999;
+        }
+
+        /* Collapsed cmap body */
+        .cmap-body {
+            overflow: hidden;
+            max-height: 400px;
+            transition: max-height 0.25s ease, opacity 0.2s;
+            opacity: 1;
+        }
+        .cmap-body.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* Minimized panel – only logo + header visible */
+        #controls.collapsed .controls-content { display: none; }
+
+        /* Minimize button */
+        .minimize-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            border-radius: 6px;
+            color: #aaa;
+            width: 28px !important;
+            height: 28px;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, color 0.2s;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .minimize-btn:hover:not(:disabled) { background: rgba(255,255,255,0.16) !important; color: #fff; transform: none !important; box-shadow: none !important; }
+        #controls.collapsed .controls-content { display: none; }
+
+        /* Colormap selector */
+        .section-title {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .cmap-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+        .cmap-btn {
+            padding: 6px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.10) !important;
+            background: rgba(255,255,255,0.05);
+            color: #999;
+            cursor: pointer;
+            transition: all 0.18s;
+            text-align: center;
+            width: 100%;
+            margin: 0;
+            font-family: 'Rajdhani', sans-serif !important;
+        }
+        .cmap-btn:hover:not(:disabled) { background: rgba(255,255,255,0.12) !important; color: #eee; transform: none !important; box-shadow: none !important; }
+        .cmap-btn.active { border-color: #3b82f6 !important; color: #fff; background: rgba(59,130,246,0.22) !important; }
+        .cmap-auto-row { grid-column: span 2; }
+        .cmap-btn.auto-active { border-color: rgba(74,222,128,0.55) !important; color: #4ade80 !important; background: rgba(74,222,128,0.10) !important; }
+
+        /* Beat flash overlay */
+        @keyframes beatFlash {
+            0%   { opacity: 0; }
+            8%   { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        #beat-flash {
+            position: fixed; inset: 0; pointer-events: none; z-index: 500;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.20) 0%, transparent 68%);
+            opacity: 0;
+        }
+        #beat-flash.flash { animation: beatFlash 0.38s ease-out forwards; }
+
+        /* Drag-and-drop overlay */
+        #drag-overlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 3000;
+            background: rgba(59,130,246,0.10);
+            border: 3px dashed rgba(59,130,246,0.65);
+            border-radius: 20px;
+            align-items: center; justify-content: center;
+            flex-direction: column; gap: 14px;
+            color: #fff;
+            pointer-events: none;
+        }
+        #drag-overlay.active { display: flex; }
+        .drag-icon { font-size: 52px; }
+        .drag-label { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+        .drag-sub { font-size: 14px; color: rgba(255,255,255,0.6); }
+
+        .progress-bar { overflow: visible; }
+
+        .cmap-section {
+            margin: 16px 0;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
     </style>
 </head>
 <body>
@@ -378,22 +493,22 @@ The visualizer will automatically fill the entire available space.
         <canvas id="canvas"></canvas>
 
         <div id="controls">
+            <!-- Logo centered at top -->
+            <div class="logo-top">
+                <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/f173dc58-2856-4e84-b647-8cf46ca113ad/phonto-Photoroom.png?format=1000w" alt="Logo" class="logo">
+            </div>
+
+            <!-- Title row with minimize -->
             <div class="header-container">
                 <div class="app-title">Particle Visualizer</div>
-                <img src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w" alt="Logo" class="logo">
+                <button class="minimize-btn" id="minimize-btn" title="Collapse panel">−</button>
             </div>
+
             <div class="controls-content">
             <button id="load-btn" class="primary">Load Audio File</button>
             <button id="play-btn" class="play" disabled>▶ Play</button>
-            
-            <div class="slider-container">
-                <div class="slider-label">
-                    <span>Volume</span>
-                    <span class="slider-value" id="volume-value">100%</span>
-                </div>
-                <input type="range" id="volume-slider" min="0" max="100" value="100">
-            </div>
-            
+
+            <!-- Progress bar and file name directly under play -->
             <div class="progress-container" id="progress-container" style="display: none;">
                 <div class="progress-label">
                     <span class="time-display" id="current-time">0:00</span>
@@ -403,12 +518,46 @@ The visualizer will automatically fill the entire available space.
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
             </div>
-            
+
             <div class="info">
                 <div class="stat-label">Audio File</div>
                 <div id="audio-name" class="info-value">No file loaded</div>
             </div>
-            
+
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Volume</span>
+                    <span class="slider-value" id="volume-value">100%</span>
+                </div>
+                <input type="range" id="volume-slider" min="0" max="100" value="100">
+            </div>
+
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Reactivity</span>
+                    <span class="slider-value" id="reactivity-value">100%</span>
+                </div>
+                <input type="range" id="reactivity-slider" min="10" max="300" value="100">
+            </div>
+
+            <!-- Colour map – collapsed by default -->
+            <div class="cmap-section">
+                <div class="cmap-toggle-row" id="cmap-toggle-row">
+                    <div class="section-title" style="margin:0;">Color Maps</div>
+                    <span class="cmap-arrow" id="cmap-arrow">▸</span>
+                </div>
+                <div class="cmap-body" id="cmap-body">
+                    <div class="cmap-grid" id="cmap-grid">
+                        <div class="cmap-auto-row">
+                            <button class="cmap-btn auto-active" data-cmap="auto">⟳ Auto-cycle</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reset to defaults -->
+            <button id="reset-btn" class="primary">Reset to Defaults</button>
+
             <div class="keyboard-shortcuts">
                 <div class="shortcuts-title">Keyboard Shortcuts</div>
                 <div class="shortcut-item">
@@ -425,10 +574,15 @@ The visualizer will automatically fill the entire available space.
                 </div>
             </div>
             </div> <!-- End controls-content -->
-            <input type="file" id="file-input" accept="audio/*">
         </div>
     </div>
 
+    <div id="beat-flash"></div>
+    <div id="drag-overlay">
+        <div class="drag-icon">🎵</div>
+        <div class="drag-label">Drop audio file</div>
+        <div class="drag-sub">mp3 · wav · ogg · flac · aac</div>
+    </div>
     <script type="importmap">
     {
         "imports": {
@@ -448,7 +602,7 @@ The visualizer will automatically fill the entire available space.
 
         // ===== CONSTANTS =====
         const MIN_PARTICLES = 800;
-        const MAX_PARTICLES = 35000;
+        const MAX_PARTICLES = 20000;
         const PARTICLE_SIZE = 0.15; // fixed size (world units) - doubled
         
         // Noise-based motion parameters (from cube_particles_motion_rules.md)
@@ -637,6 +791,19 @@ const FREQ_BANDS = [
         let currentLowFreqMagnitude = 0; // 0-150Hz for sphere particles
         let frozenLowFreqMagnitude = 0; // Frozen low freq magnitude when paused
 
+        // ===== REACTIVITY & COLORMAP SETTINGS =====
+        let reactivityMultiplier = 1.0; // driven by slider
+        let lockedCmapIndex = -1;       // -1 = auto-cycle
+
+        // ===== BLOOM SMOOTHING =====
+        let smoothedBloom = 0.55;
+
+        // ===== BEAT DETECTION =====
+        const BEAT_HISTORY = 43;  // ~700ms at 60fps
+        let beatHistory = new Array(BEAT_HISTORY).fill(0);
+        let beatHistoryIdx = 0;
+        let beatCooldown = 0;     // frames before next beat allowed
+
         // ===== THREE.JS SCENE =====
         const canvas = document.getElementById('canvas');
         const scene = new THREE.Scene();
@@ -713,6 +880,20 @@ const FREQ_BANDS = [
         const pointLight = new THREE.PointLight(0xffffff, 1.0, 100);
         pointLight.position.set(0, 0, 20);
         scene.add(pointLight);
+
+        // ===== CIRCULAR PARTICLE TEXTURE =====
+        const circleCanvas = document.createElement('canvas');
+        circleCanvas.width = 64;
+        circleCanvas.height = 64;
+        const circleCtx = circleCanvas.getContext('2d');
+        const circleGrad = circleCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+        circleGrad.addColorStop(0.0, 'rgba(255,255,255,1.0)');
+        circleGrad.addColorStop(0.5, 'rgba(255,255,255,0.8)');
+        circleGrad.addColorStop(1.0, 'rgba(255,255,255,0.0)');
+        circleCtx.fillStyle = circleGrad;
+        circleCtx.fillRect(0, 0, 64, 64);
+        const circleTexture = new THREE.CanvasTexture(circleCanvas);
+
         // ===== ENDLESS TUNNEL BACKGROUND (WHITE PARTICLE LIGHTS) =====
         // A camera-locked particle tunnel: perspective remains fixed; only particles scroll.
         const TUNNEL_RADIUS = 400;
@@ -761,6 +942,7 @@ const FREQ_BANDS = [
 
         const tunnelMat = new THREE.PointsMaterial({
             size: 0.85,
+            map: circleTexture,
             vertexColors: true,
             transparent: true,
             opacity: 0.50,
@@ -779,6 +961,7 @@ const FREQ_BANDS = [
 
         const vpMat = new THREE.PointsMaterial({
             size: 2.0,
+            map: circleTexture,
             vertexColors: true,
             transparent: true,
             opacity: 0.25,
@@ -827,6 +1010,7 @@ const FREQ_BANDS = [
 
         const capMat = new THREE.PointsMaterial({
             size: 1.05,
+            map: circleTexture,
             vertexColors: true,
             transparent: true,
             opacity: 0.22,
@@ -880,6 +1064,7 @@ const FREQ_BANDS = [
 
         // Keep the tunnel locked to camera pose so the perspective does not change
         let _tunnelLastT = 0;
+
 // ===== PARTICLE SWARM =====
         // Particle swarm using 4D noise field motion (from cube_particles_motion_rules.md)
         // Motion is driven by coherent noise, not particle-to-particle interactions
@@ -976,6 +1161,7 @@ const FREQ_BANDS = [
         const particleGeometry = new THREE.BufferGeometry();
         const particleMaterial = new THREE.PointsMaterial({
             size: PARTICLE_SIZE,
+            map: circleTexture,
             vertexColors: true,
             transparent: true,
             opacity: 0.8,
@@ -1105,7 +1291,31 @@ const FREQ_BANDS = [
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
-            
+
+            // Always update progress bar (runs even when paused, so scrubbing shows feedback)
+            if (audioLoaded && audioElement && audioElement.duration) {
+                const progressPercent = (audioElement.currentTime / audioElement.duration) * 100;
+                document.getElementById('progress-fill').style.width = progressPercent + '%';
+                const cm = Math.floor(audioElement.currentTime / 60);
+                const cs = Math.floor(audioElement.currentTime % 60);
+                const dm = Math.floor(audioElement.duration / 60);
+                const ds = Math.floor(audioElement.duration % 60);
+                document.getElementById('current-time').textContent  = `${cm}:${cs.toString().padStart(2,'0')}`;
+                document.getElementById('duration-time').textContent = `${dm}:${ds.toString().padStart(2,'0')}`;
+            }
+
+            // ── FREEZE when audio is loaded but paused ──────────────────────
+            // Re-render the exact scene state from the last playing frame.
+            // Nothing is updated; bloom, particles, tunnel all stay pixel-perfect.
+            if (audioLoaded && !isPlaying) {
+                camera.layers.set(BLOOM_LAYER);
+                bloomComposer.render();
+                camera.layers.set(0);
+                finalComposer.render();
+                return;
+            }
+            // ────────────────────────────────────────────────────────────────
+
             // Only increment time when playing
             if (isPlaying) {
                 time += 0.016;
@@ -1113,11 +1323,13 @@ const FREQ_BANDS = [
 
             // Use frozen magnitudes when paused, current magnitudes when playing
             const activeMagnitudes = isPlaying ? currentMagnitudes : frozenMagnitudes;
-            const avgMagnitude = activeMagnitudes.reduce((a, b) => a + b, 0) / activeMagnitudes.length;
+            const rawAvg = activeMagnitudes.reduce((a, b) => a + b, 0) / activeMagnitudes.length;
+            const avgMagnitude = Math.min(1, rawAvg * reactivityMultiplier);
             
             // Use low frequency magnitude (0-150Hz) for sphere particles only
-            const activeLowFreqMag = isPlaying ? currentLowFreqMagnitude : frozenLowFreqMagnitude;
-            const sphereMagnitude = activeLowFreqMag; // Sphere reacts only to 0-150Hz
+            const rawLowFreq = isPlaying ? currentLowFreqMagnitude : frozenLowFreqMagnitude;
+            const activeLowFreqMag = Math.min(1, rawLowFreq * reactivityMultiplier);
+            const sphereMagnitude = activeLowFreqMag;
 
                         // Drive tunnel motion/brightness with audio (subtle when paused)
             const tNow = time;
@@ -1213,25 +1425,33 @@ const FREQ_BANDS = [
             tunnelGroup.position.copy(camera.position);
             tunnelGroup.quaternion.copy(camera.quaternion);
 
-            // Particle count: constant at maximum
-            activeCount = MAX_PARTICLES;
+            // Particle count: scales with average magnitude
+            const targetCount = (audioLoaded && isPlaying)
+                ? Math.floor(MIN_PARTICLES + avgMagnitude * reactivityMultiplier * (MAX_PARTICLES - MIN_PARTICLES))
+                : MIN_PARTICLES;
+            activeCount = Math.floor(activeCount + (targetCount - activeCount) * 0.05);
+            activeCount = Math.max(MIN_PARTICLES, Math.min(MAX_PARTICLES, activeCount));
 
             // Speed: sphere particles react to 0-150Hz only
             const speedMultiplier = (audioLoaded && isPlaying)
                 ? (5.6+ sphereMagnitude * 25.6)
                 : 0.7;
 
-            // Color: cycle through colormaps; sphere reacts to 0-150Hz only
+            // Color: cycle through colormaps (unless locked); sphere reacts to 0-150Hz only
             const cycleSpeed = (audioLoaded && isPlaying) ? (0.08 + sphereMagnitude * 0.42) : 0.06;
             
-            // Only cycle colors when playing
-            if (isPlaying) {
+            // Only cycle colors when playing and not locked
+            if (isPlaying && lockedCmapIndex < 0) {
                 cmapMix += 0.016 * cycleSpeed;
                 if (cmapMix >= 1) {
                     cmapMix = 0;
                     cmapA = cmapB;
                     cmapB = (cmapB + 1) % COLORMAPS.length;
                 }
+            } else if (lockedCmapIndex >= 0) {
+                cmapA = lockedCmapIndex;
+                cmapB = lockedCmapIndex;
+                cmapMix = 0;
             }
 
             const brightness = (audioLoaded && isPlaying) ? (0.25 + sphereMagnitude * 0.95) : 0.25;
@@ -1277,31 +1497,38 @@ const FREQ_BANDS = [
                     p.color.setRGB(c[0] * brightness, c[1] * brightness, c[2] * brightness);
                 }
             }
-            // When paused, don't update particles at all - keep visualization frozen            // Background is fixed (no magnitude-driven color changes)
-            // Update progress bar
-            if (audioLoaded && audioElement) {
-                const progressPercent = (audioElement.currentTime / audioElement.duration) * 100;
-                document.getElementById('progress-fill').style.width = progressPercent + '%';
-                
-                // Update time displays
-                const currentMinutes = Math.floor(audioElement.currentTime / 60);
-                const currentSeconds = Math.floor(audioElement.currentTime % 60);
-                const durationMinutes = Math.floor(audioElement.duration / 60);
-                const durationSeconds = Math.floor(audioElement.duration % 60);
-                
-                document.getElementById('current-time').textContent = 
-                    `${currentMinutes}:${currentSeconds.toString().padStart(2, '0')}`;
-                document.getElementById('duration-time').textContent = 
-                    `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
+            // When paused, don't update particles at all - keep visualization frozen
+            // (handled by the early-return freeze above)
+
+            // Particle size: swells with bass (low-freq) hits
+            particleMaterial.size = PARTICLE_SIZE * (1.0 + sphereMagnitude * reactivityMultiplier * 2.2);
+
+            // ===== BEAT DETECTION =====
+            if (isPlaying) {
+                const bassEnergy = activeMagnitudes[0] * 0.5 + activeMagnitudes[1] * 0.5; // Sub Bass + Bass
+                beatHistory[beatHistoryIdx] = bassEnergy;
+                beatHistoryIdx = (beatHistoryIdx + 1) % BEAT_HISTORY;
+                const avgBeat = beatHistory.reduce((a, b) => a + b, 0) / BEAT_HISTORY;
+                const beatThreshold = avgBeat * (1.55 - reactivityMultiplier * 0.1);
+                beatCooldown = Math.max(0, beatCooldown - 1);
+                if (bassEnergy > beatThreshold && bassEnergy > 0.25 && beatCooldown === 0) {
+                    // Trigger beat flash
+                    const flash = document.getElementById('beat-flash');
+                    flash.classList.remove('flash');
+                    void flash.offsetWidth; // force reflow
+                    flash.classList.add('flash');
+                    beatCooldown = 14; // ~230ms cooldown at 60fps
+                }
             }
 
             updateParticleGeometry();
             // Camera fixed (no motion)
             camera.lookAt(0, 0, 0);
 
-            // Update bloom strength based on audio magnitude (maintains strength when paused)
-            // Conservative range to avoid artifacts
-            bloomPass.strength = audioLoaded ? (0.60 + avgMagnitude * 3.20) : 0.55;
+            // Update bloom strength: lerp toward target for smooth transitions
+            const bloomTarget = audioLoaded ? (0.60 + avgMagnitude * reactivityMultiplier * 3.20) : 0.55;
+            smoothedBloom += (bloomTarget - smoothedBloom) * 0.08;
+            bloomPass.strength = smoothedBloom;
 
             // Render bloom from tunnel-only layer, then composite over full scene
             camera.layers.set(BLOOM_LAYER);
@@ -1349,23 +1576,21 @@ const FREQ_BANDS = [
         }
 
         // ===== UI CONTROLS =====
-        const loadBtn = document.getElementById('load-btn');
-        const playBtn = document.getElementById('play-btn');
-        const fileInput = document.getElementById('file-input');
-        const audioNameEl = document.getElementById('audio-name');
+        const loadBtn      = document.getElementById('load-btn');
+        const playBtn      = document.getElementById('play-btn');
+        const audioNameEl  = document.getElementById('audio-name');
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeValue  = document.getElementById('volume-value');
 
-        loadBtn.addEventListener('click', () => {
-            console.log('Load button clicked');
-            fileInput.click();
+        // Volume control (declared early so loadAudioFile can reference it)
+        volumeSlider.addEventListener('input', (e) => {
+            const vol = e.target.value / 100;
+            if (gainNode) gainNode.gain.value = vol;
+            volumeValue.textContent = e.target.value + '%';
         });
 
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) {
-                console.log('No file selected');
-                return;
-            }
-
+        // Core file-loading logic
+        const loadAudioFile = async (file) => {
             console.log('Loading file:', file.name, file.type);
             loadBtn.textContent = 'Loading...';
             loadBtn.disabled = true;
@@ -1374,13 +1599,11 @@ const FREQ_BANDS = [
                 if (!audioContext) {
                     audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 }
-
                 if (!analyser) {
                     analyser = audioContext.createAnalyser();
                     analyser.fftSize = 4096;
                     analyser.smoothingTimeConstant = 0.8;
                 }
-
                 if (!gainNode) {
                     gainNode = audioContext.createGain();
                     gainNode.gain.value = volumeSlider.value / 100;
@@ -1391,79 +1614,69 @@ const FREQ_BANDS = [
                     audioElement.pause();
                     audioElement.currentTime = 0;
                 }
-                
-                // Disconnect old source if it exists
                 if (audioSource) {
-                    try {
-                        audioSource.disconnect();
-                    } catch (e) {
-                        console.log('Source already disconnected');
-                    }
+                    try { audioSource.disconnect(); } catch (_) {}
                     audioSource = null;
                 }
 
-                // Create new audio element
                 audioElement = new Audio();
-                audioElement.crossOrigin = "anonymous";
-                
-                // Create object URL
+                audioElement.crossOrigin = 'anonymous';
                 const url = URL.createObjectURL(file);
-                console.log('Created URL:', url);
-                
-                // Wait for the audio to be loadable
+
                 await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => {
-                        reject(new Error('Audio load timeout'));
-                    }, 10000);
-
-                    audioElement.addEventListener('loadedmetadata', () => {
-                        clearTimeout(timeout);
-                        console.log('Audio metadata loaded');
-                        resolve();
-                    }, { once: true });
-
-                    audioElement.addEventListener('error', (e) => {
-                        clearTimeout(timeout);
-                        console.error('Audio error:', e, audioElement.error);
-                        reject(new Error('Failed to load audio'));
-                    }, { once: true });
-
+                    const timeout = setTimeout(() => reject(new Error('Audio load timeout')), 10000);
+                    audioElement.addEventListener('loadedmetadata', () => { clearTimeout(timeout); resolve(); }, { once: true });
+                    audioElement.addEventListener('error', (ev) => { clearTimeout(timeout); reject(new Error('Failed to load audio')); }, { once: true });
                     audioElement.src = url;
                     audioElement.load();
                 });
 
-                // Connect audio graph: source -> analyser (for visualization) and source -> gain -> destination (for playback)
                 audioSource = audioContext.createMediaElementSource(audioElement);
                 audioSource.connect(analyser);
                 audioSource.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-                console.log('Audio source connected to analyser and gain node');
 
-                // Mark as loaded
                 audioLoaded = true;
-                playBtn.disabled = false;
+                isPlaying   = false;
+                playBtn.disabled  = false;
+                playBtn.textContent = '▶ Play';
+                playBtn.className   = 'play';
                 audioNameEl.textContent = file.name;
-                
-                // Show progress bar
                 document.getElementById('progress-container').style.display = 'block';
 
-                // Add event listener for when audio ends
                 audioElement.addEventListener('ended', () => {
                     isPlaying = false;
                     playBtn.textContent = '▶ Play';
-                    playBtn.className = 'play';
+                    playBtn.className   = 'play';
                 });
 
-                console.log('Audio loaded successfully!');
                 loadBtn.textContent = 'Load Audio File';
                 loadBtn.disabled = false;
 
             } catch (error) {
                 console.error('Failed to load audio:', error);
-                audioNameEl.textContent = 'Load failed - try again';
+                audioNameEl.textContent = 'Load failed – try again';
                 loadBtn.textContent = 'Load Audio File';
                 loadBtn.disabled = false;
             }
+        };
+
+        // Load button → create a fresh file input and click it immediately
+        loadBtn.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'audio/*';
+            input.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+            document.body.appendChild(input);
+            input.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                document.body.removeChild(input);
+                if (file) await loadAudioFile(file);
+            });
+            input.addEventListener('cancel', () => {
+                document.body.removeChild(input);
+            });
+            input.click();
         });
 
         playBtn.addEventListener('click', async () => {
@@ -1488,29 +1701,127 @@ const FREQ_BANDS = [
             }
         });
 
-        // Progress bar scrub functionality
+        // Progress bar scrub – supports both click and drag
         const progressBar = document.getElementById('progress-bar');
-        progressBar.addEventListener('click', (e) => {
+        let isScrubbing = false;
+
+        function scrubTo(clientX) {
             if (!audioLoaded || !audioElement) return;
-            
             const rect = progressBar.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const percentage = clickX / rect.width;
-            const newTime = percentage * audioElement.duration;
-            
-            audioElement.currentTime = newTime;
+            const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            audioElement.currentTime = pct * audioElement.duration;
+        }
+
+        progressBar.addEventListener('mousedown', (e) => {
+            isScrubbing = true;
+            scrubTo(e.clientX);
+            e.preventDefault();
+        });
+        progressBar.addEventListener('touchstart', (e) => {
+            isScrubbing = true;
+            scrubTo(e.touches[0].clientX);
+        }, { passive: true });
+        document.addEventListener('mousemove', (e) => { if (isScrubbing) scrubTo(e.clientX); });
+        document.addEventListener('touchmove', (e) => { if (isScrubbing) scrubTo(e.touches[0].clientX); }, { passive: true });
+        document.addEventListener('mouseup', () => { isScrubbing = false; });
+        document.addEventListener('touchend', () => { isScrubbing = false; });
+
+        // Reactivity slider
+        const reactivitySlider = document.getElementById('reactivity-slider');
+        const reactivityValue = document.getElementById('reactivity-value');
+        reactivitySlider.addEventListener('input', (e) => {
+            reactivityMultiplier = e.target.value / 100;
+            reactivityValue.textContent = e.target.value + '%';
         });
 
-        // Volume control
-        const volumeSlider = document.getElementById('volume-slider');
-        const volumeValue = document.getElementById('volume-value');
-        
-        volumeSlider.addEventListener('input', (e) => {
-            const volume = e.target.value / 100;
-            if (gainNode) {
-                gainNode.gain.value = volume;
-            }
-            volumeValue.textContent = e.target.value + '%';
+        // Colormap selector – build buttons dynamically
+        const cmapGrid = document.getElementById('cmap-grid');
+        COLORMAPS.forEach((cm, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'cmap-btn';
+            btn.textContent = cm.name;
+            btn.dataset.cmap = idx;
+            btn.addEventListener('click', () => {
+                lockedCmapIndex = idx;
+                // Update button states
+                cmapGrid.querySelectorAll('.cmap-btn').forEach(b => {
+                    b.classList.remove('active', 'auto-active');
+                    if (parseInt(b.dataset.cmap) === idx) b.classList.add('active');
+                    if (b.dataset.cmap === 'auto') b.classList.remove('auto-active');
+                });
+            });
+            cmapGrid.appendChild(btn);
+        });
+
+        // Auto-cycle button
+        const autoBtn = cmapGrid.querySelector('[data-cmap="auto"]');
+        autoBtn.addEventListener('click', () => {
+            lockedCmapIndex = -1;
+            cmapGrid.querySelectorAll('.cmap-btn').forEach(b => b.classList.remove('active'));
+            autoBtn.classList.add('auto-active');
+        });
+
+        // Colormap section toggle (collapsed by default)
+        const cmapToggleRow = document.getElementById('cmap-toggle-row');
+        const cmapBody      = document.getElementById('cmap-body');
+        const cmapArrow     = document.getElementById('cmap-arrow');
+        cmapBody.classList.add('collapsed'); // start collapsed
+        cmapToggleRow.addEventListener('click', () => {
+            const isCollapsed = cmapBody.classList.toggle('collapsed');
+            cmapArrow.classList.toggle('open', !isCollapsed);
+        });
+
+        // Reset to defaults button
+        const resetBtn = document.getElementById('reset-btn');
+        function applyDefaults() {
+            // Volume
+            volumeSlider.value = 100;
+            volumeValue.textContent = '100%';
+            if (gainNode) gainNode.gain.value = 1;
+
+            // Reactivity
+            const reactivitySlider = document.getElementById('reactivity-slider');
+            const reactivityValue  = document.getElementById('reactivity-value');
+            reactivitySlider.value = 100;
+            reactivityValue.textContent = '100%';
+            reactivityMultiplier = 1.0;
+
+            // Colormap → auto-cycle
+            lockedCmapIndex = -1;
+            cmapGrid.querySelectorAll('.cmap-btn').forEach(b => b.classList.remove('active'));
+            autoBtn.classList.add('auto-active');
+        }
+        resetBtn.addEventListener('click', applyDefaults);
+
+        // Minimize / collapse panel
+        const minimizeBtn = document.getElementById('minimize-btn');
+        minimizeBtn.addEventListener('click', () => {
+            controlsPanel.classList.toggle('collapsed');
+            minimizeBtn.textContent = controlsPanel.classList.contains('collapsed') ? '+' : '−';
+        });
+
+        // ===== DRAG AND DROP =====
+        const dragOverlay = document.getElementById('drag-overlay');
+        let dragCounter = 0;
+
+        document.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragCounter++;
+            if (e.dataTransfer.types.includes('Files')) dragOverlay.classList.add('active');
+        });
+        document.addEventListener('dragleave', () => {
+            dragCounter--;
+            if (dragCounter <= 0) { dragCounter = 0; dragOverlay.classList.remove('active'); }
+        });
+        document.addEventListener('dragover', (e) => e.preventDefault());
+        document.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+            dragOverlay.classList.remove('active');
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.type.startsWith('audio/')) return;
+            // Reuse the same load logic via a synthetic FileList on the input
+            await loadAudioFile(file);
         });
 
         // Fullscreen functionality with 'F' key
