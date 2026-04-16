@@ -27,44 +27,75 @@
     --light: #ffffff;
 }
 
-/* --- Three.js background layer --- */
-#three-bg{
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: #000; /* fallback */
+/* --- Three.js particle canvas --- */
+#threejs-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: #000000;
+    pointer-events: none;
 }
 
 
 /* Navigation Dropdown */
 .nav-dropdown {
     position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
+    top: 18px;
+    left: 18px;
+    z-index: 10000;
 }
 
 .nav-toggle {
     background: rgba(26, 26, 26, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
-    padding: 12px 16px;
+    height: 48px;
+    width: 52px;
+    padding: 0 14px;
     color: #ffffff;
-    font-size: 16px;
-    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0;
+    justify-content: center;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .nav-toggle:hover {
     background: rgba(36, 36, 36, 0.9);
     border-color: var(--primary);
 }
+
+.nav-toggle-icon {
+    position: relative;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+
+.nav-toggle-icon::before,
+.nav-toggle-icon::after {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    left: 0;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+
+.nav-toggle-icon::before { top: -6px; }
+.nav-toggle-icon::after  { top:  6px; }
+.nav-dropdown.active .nav-toggle-icon { background: transparent; }
+.nav-dropdown.active .nav-toggle-icon::before { top: 0; transform: rotate(45deg); }
+.nav-dropdown.active .nav-toggle-icon::after  { top: 0; transform: rotate(-45deg); }
 
 .nav-menu {
     position: absolute;
@@ -73,13 +104,15 @@
     background: rgba(26, 26, 26, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
+    overflow: hidden;
     padding: 8px;
-    min-width: 180px;
+    min-width: 200px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .nav-dropdown.active .nav-menu {
@@ -90,17 +123,18 @@
 
 .nav-menu a {
     display: block;
+    text-align: left;
     padding: 12px 16px;
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     border-radius: 8px;
     transition: all 0.3s ease;
 }
 
 .nav-menu a:hover {
-    background: rgba(0, 153, 255, 0.1);
+    background: rgba(0, 153, 255, 0.12);
     color: var(--primary);
 }
 
@@ -551,19 +585,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- Three.js Background Container -->
-<div id="three-bg"></div>
+<canvas id="threejs-bg"></canvas>
 
 <div id="contact-container">
 
 <!-- Navigation Dropdown -->
 <div class="nav-dropdown" id="navDropdown">
-  <button class="nav-toggle" id="navToggle">
-   Menu
+  <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu">
+   <span class="nav-toggle-icon" aria-hidden="true"></span>
   </button>
-  <div class="nav-menu">
-   <a href="/">Home</a>
-   <a href="/upcoming-events">Upcoming Events</a>
-   <a href="/tools">Tools</a>
+  <div class="nav-menu" role="menu" aria-label="Site navigation">
+   <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+   <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+   <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+   <a href="https://www.xodiamediagroup.com/tools" target="_top" rel="noopener">Tools</a>
   </div>
  </div>
 
@@ -751,14 +786,16 @@ navToggle.addEventListener('click', function(e) {
     navDropdown.classList.toggle('active');
 });
 
-// Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
     if (!navDropdown.contains(e.target)) {
         navDropdown.classList.remove('active');
     }
 });
 
-// Close dropdown when clicking a link
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') navDropdown.classList.remove('active');
+});
+
 const navLinks = document.querySelectorAll('.nav-menu a');
 navLinks.forEach(link => {
     link.addEventListener('click', function() {
@@ -767,202 +804,95 @@ navLinks.forEach(link => {
 });
 </script>
 
-<script type="module">
-  import * as THREE from "https://unpkg.com/three@0.160.1/build/three.module.js";
-
-  const mount = document.getElementById("three-bg");
-  if (!mount) throw new Error("three-bg mount not found");
-
-  // Basic WebGL support check
-  const canvas = document.createElement("canvas");
-  const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-  if (!gl) {
-    mount.style.background = "#000";
-  } else {
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+    const canvas = document.getElementById('threejs-bg');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x000000, 40, 100); // Add subtle fog for depth
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.z = 500;
 
-    const camera = new THREE.PerspectiveCamera(
-      12.5,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      200
-    );
-    camera.position.set(0, 18, 28);
-    camera.lookAt(0, 0, 0);
+    const PARTICLE_COUNT = 1800;
+    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    const colors    = new Float32Array(PARTICLE_COUNT * 3);
+    const speeds    = new Float32Array(PARTICLE_COUNT);
 
-    // Lights
-    const key = new THREE.DirectionalLight(0xffffff, 4.0); // Main key light    
-    key.position.set(10, 30, 10);
-    key.castShadow = true;
-    key.shadow.mapSize.width = 2048;
-    key.shadow.mapSize.height = 2048;
-    key.shadow.camera.left = -30;
-    key.shadow.camera.right = 30;
-    key.shadow.camera.top = 30;
-    key.shadow.camera.bottom = -30;
-    key.shadow.camera.near = 0.5;
-    key.shadow.camera.far = 100;
-    key.shadow.bias = -0.0001;
-    scene.add(key);
+    const colorPalette = [
+        new THREE.Color(0x0099ff),
+        new THREE.Color(0x00ffff),
+        new THREE.Color(0xffffff),
+        new THREE.Color(0x66ccff),
+    ];
 
-    const rim = new THREE.DirectionalLight(0xffffff, 2.5); // Rim light
-    rim.position.set(-20, 15, -10);
-    rim.castShadow = true;
-    rim.shadow.mapSize.width = 2048;
-    rim.shadow.mapSize.height = 2048;
-    rim.shadow.camera.left = -30;
-    rim.shadow.camera.right = 30;
-    rim.shadow.camera.top = 30;
-    rim.shadow.camera.bottom = -30;
-    scene.add(rim);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        positions[i * 3]     = (Math.random() - 0.5) * 2000;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 1200;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.3));// Base ambient light - reduced to make shadows more visible
+        const c = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+        const brightness = c.equals(colorPalette[2]) ? 0.4 + Math.random() * 0.3 : 0.6 + Math.random() * 0.4;
+        colors[i * 3]     = c.r * brightness;
+        colors[i * 3 + 1] = c.g * brightness;
+        colors[i * 3 + 2] = c.b * brightness;
 
-    // Hex tiles (instanced)
-    const HEX_R = 0.65; // Hexagon radius (distance from center to vertex)
-    const HEX_H = 4.5; // Hexagon height
-
-    const hexGeo = new THREE.CylinderGeometry(HEX_R, HEX_R, 1, 6, 1, false);
-    hexGeo.rotateY(Math.PI / 6); //
-
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0x242424, // Lighter grey
-      roughness: 0.0, // Smooth, reflective surface
-      metalness: 0.9, // Highly metallic for strong reflections
-      emissive: 0x000000,     // No emissive color
-      emissiveIntensity: 0.0      // No emissive glow
-    });
-
-    const isMobile = matchMedia("(max-width: 768px)").matches;
-    const GRID = isMobile ? 34 : 52; // Number of hexes along the width, reduced for mobile to maintain performance
-    const rows = Math.round(GRID * 0.72*2); // Adjust rows based on grid width for a balanced layout
-    const count = GRID * rows; // Total number of hex tiles
-
-    const mesh = new THREE.InstancedMesh(hexGeo, mat, count);
-    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-
-    // Ground plane to receive shadows
-    const groundGeo = new THREE.PlaneGeometry(100, 100);
-    const groundMat = new THREE.MeshStandardMaterial({ 
-      color: 0x0a0a0a,
-      roughness: 0.8,
-      metalness: 0.2
-    });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -2.5;
-    ground.receiveShadow = true;
-    scene.add(ground);
-
-    const xStep = HEX_R * 1.5;
-    const zStep = HEX_R * Math.sqrt(3);
-
-    const tile = new Array(count);
-    let k = 0;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < GRID; c++) {
-        const x = (c - GRID / 2) * xStep;
-        const z = (r - rows / 2) * zStep + (c % 2 ? zStep * 0.5 : 0);
-        tile[k++] = { x, z };
-      }
+        speeds[i] = 0.08 + Math.random() * 0.18;
     }
 
-    // Fast layered trig "noise"
-    function fBm(x, z, t) {
-      let a = 1.0, f = 0.12, sum = 0.0;
-      for (let i = 0; i < 4; i++) {
-        sum += a * Math.sin((x * f + t * 0.35) + Math.cos(z * f - t * 0.25));
-        sum += a * Math.cos((z * f - t * 0.30) + Math.sin(x * f + t * 0.20));
-        a *= 0.5;
-        f *= 2.05;
-      }
-      return sum * 0.55;
-    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
 
-    // Subtle parallax
-    const pointer = { x: 0, y: 0 };
-    window.addEventListener("mousemove", (e) => {
-      pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-      pointer.y = (e.clientY / window.innerHeight) * 2 - 1;
-    }, { passive: true });
+    const material = new THREE.PointsMaterial({
+        size: 1.0,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        sizeAttenuation: true,
+        depthWrite: false,
+    });
 
-    const dummy = new THREE.Object3D();
-    const baseY = -2.0;
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
 
-    // Movement reversal tracking with smooth transitions
-    let currentDirection = 1; // Current direction (smoothly animated)
-    let targetDirection = 1;  // Target direction (1 or -1)
-    let lastHoveredCard = -1;
-    let animationTime = 0; // Separate time tracking that can go forward/backward
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
 
-    // Add hover listeners to FORM CARDS
-    const formCards = document.querySelectorAll('.form-card');
-    formCards.forEach((card, index) => {
-      card.addEventListener('mouseenter', () => {
-        // Only reverse if hovering over a different card
-        if (lastHoveredCard !== index) {
-          targetDirection *= -1; // Flip target direction
-          lastHoveredCard = index;
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const pos = geometry.attributes.position.array;
+    let time = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        time += 0.001;
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            pos[i * 3 + 1] += speeds[i];
+            pos[i * 3] += Math.sin(time + i * 0.5) * 0.04;
+            if (pos[i * 3 + 1] > 1000) pos[i * 3 + 1] = -1000;
         }
-      });
-    });
+        geometry.attributes.position.needsUpdate = true;
 
-    let lastFrameTime = 0;
+        camera.position.x += (mouseX * 40 - camera.position.x) * 0.03;
+        camera.position.y += (-mouseY * 40 - camera.position.y) * 0.03;
 
-    function animate(tMs) {
-      // Calculate delta time
-      const deltaTime = lastFrameTime === 0 ? 0 : (tMs - lastFrameTime) * 0.001;
-      lastFrameTime = tMs;
+        particles.rotation.y = time * 0.05;
 
-      // Smoothly transition current direction toward target direction
-      currentDirection = THREE.MathUtils.lerp(currentDirection, targetDirection, 0.05);
-      
-      // Update animation time based on current direction (maintains constant speed)
-      animationTime += deltaTime * currentDirection;
-
-      const px = pointer.x * 1.6;
-      const py = pointer.y * 0.9;
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, px, 0.04);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 18 + (-py), 0.04);
-      camera.lookAt(0, 0, 0);
-
-      for (let i = 0; i < count; i++) {
-        const { x, z } = tile[i];
-
-        const n = fBm(x, z, animationTime);
-        const h = THREE.MathUtils.clamp((n + 1.25) * 0.55, 0.1, 1.0);
-
-        dummy.position.set(x, baseY + h * (HEX_H * 0.35), z);
-        dummy.scale.set(1, h * HEX_H, 1);
-        dummy.rotation.y = 0.10 * Math.sin(animationTime * 0.35 + (x + z) * 0.05);
-
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-      }
-      mesh.instanceMatrix.needsUpdate = true;
-
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
+        renderer.render(scene, camera);
     }
-    requestAnimationFrame(animate);
 
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }, { passive: true });
-  }
+    animate();
+})();
 </script>
