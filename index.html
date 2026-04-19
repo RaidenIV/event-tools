@@ -317,13 +317,26 @@
         }
         #event-tools-dashboard.light-mode .tools-title { color: #1a1a1a !important; }
         #event-tools-dashboard.light-mode .tool-title  { color: #1a1a1a !important; }
-        #event-tools-dashboard.light-mode .tool-desc   { color: rgba(0,0,0,0.45) !important; }
-        #event-tools-dashboard.light-mode .tools-subtitle { color: rgba(0,0,0,0.45) !important; }
+        #event-tools-dashboard.light-mode .tool-desc   { color: #1a1a1a !important; }
+        #event-tools-dashboard.light-mode .tools-subtitle { color: #1a1a1a !important; }
         #event-tools-dashboard.light-mode .nav-menu    { background: var(--bg); }
         #event-tools-dashboard.light-mode .nav-menu a  { color: #444; }
 
         /* Light mode: dark hamburger lines */
         #event-tools-dashboard.light-mode .nav-toggle { color: #1a1a1a; }
+
+        /* LOGO CARD — matches tool-card exactly, centered content */
+        .logo-card {
+            justify-content: center !important;
+        }
+        .logo-card img {
+            height: 42px !important;
+            width: auto !important;
+            display: block !important;
+            object-fit: contain !important;
+            filter: drop-shadow(1px 1px 3px var(--dark-shadow));
+            transition: filter 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -371,7 +384,19 @@
                 <p class="tools-subtitle">Professional tools for seamless event planning</p>
             </div>
 
+            <!-- Logo card: centered, tool-card dimensions, outside grid -->
+            <div style="display:flex; justify-content:center; width:100%; margin-bottom:12px;">
+                <a href="https://www.xodiamediagroup.com/aigox" target="_top" aria-label="Open AIGOX" style="text-decoration:none; color:inherit; display:block;">
+                    <div class="tool-card logo-card" style="width:280px; flex-shrink:0; height:55px !important; cursor:pointer;">
+                        <img id="brandLogo"
+                             src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/f173dc58-2856-4e84-b647-8cf46ca113ad/phonto-Photoroom.png?format=750w"
+                             alt="AIGOX Logo">
+                    </div>
+                </a>
+            </div>
+
             <div class="tools-grid">
+
                 <a href="javascript:void(0)" onclick="goToTool('sheet')" class="tool-card">
                     <div class="tool-icon">
                         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -712,9 +737,12 @@
         const iconMoon    = document.getElementById('iconMoon');
         const iconSun     = document.getElementById('iconSun');
         const toolsLogo   = document.getElementById('toolsLogo');
+        const brandLogo   = document.getElementById('brandLogo');
 
         const LOGO_DARK  = 'https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w';
         const LOGO_LIGHT = 'https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/7803d573-dd87-40ed-9570-0bc7c5ed8915/xodia_logo_black.png?format=750w';
+        const BRAND_DARK  = 'https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/f173dc58-2856-4e84-b647-8cf46ca113ad/phonto-Photoroom.png?format=750w';
+        const BRAND_LIGHT = 'https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/a539e2d3-74e3-48f8-915e-46d97f2f1f0a/image.png?format=750w';
 
         let lightMode = false;
 
@@ -725,6 +753,7 @@
             iconMoon.style.display  = lightMode ? 'none' : '';
             iconSun.style.display   = lightMode ? ''     : 'none';
             toolsLogo.src           = lightMode ? LOGO_LIGHT : LOGO_DARK;
+            brandLogo.src           = lightMode ? BRAND_LIGHT : BRAND_DARK;
         });
 
         function goToTool(tool) {
