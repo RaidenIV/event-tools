@@ -97,18 +97,48 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 12px;
         height: var(--top-ui-height);
-        padding: 0 16px;
+        width: var(--top-ui-height);
+        padding: 0;
         color: #ffffff;
         font-size: 16px;
         font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 0;
         transition: all 0.3s ease;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }
+
+    .nav-toggle-icon {
+        position: relative;
+        width: 18px;
+        height: 2px;
+        background: currentColor;
+        border-radius: 2px;
+        transition: 0.3s;
+    }
+
+    .nav-toggle-icon::before,
+    .nav-toggle-icon::after {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 2px;
+        background: currentColor;
+        left: 0;
+        border-radius: 2px;
+        transition: 0.3s;
+    }
+
+    .nav-toggle-icon::before { top: -6px; }
+    .nav-toggle-icon::after { top: 6px; }
+
+    .nav-dropdown.active .nav-toggle-icon { background: transparent; }
+    .nav-dropdown.active .nav-toggle-icon::before { top: 0; transform: rotate(45deg); }
+    .nav-dropdown.active .nav-toggle-icon::after { top: 0; transform: rotate(-45deg); }
 
     html[data-theme="light"] .nav-toggle {
         background: rgba(245, 245, 245, 0.92);
@@ -600,8 +630,8 @@ font-size: 16px;
 
 <!-- Navigation Dropdown -->
 <div class="nav-dropdown" id="navDropdown">
-  <button class="nav-toggle" id="navToggle">
-   Menu
+  <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu">
+    <span class="nav-toggle-icon" aria-hidden="true"></span>
   </button>
   <div class="nav-menu">
     <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
@@ -977,7 +1007,35 @@ function render(rows){
 function copySchedule(){
     let rows=resultsEl._rows||[];
     let text = scheduleToText(rows);
-    navigator.clipboard.writeText(text);
+    const btn = document.getElementById("copyBtnBottom");
+    const originalText = btn.textContent;
+
+    function showCopiedIndicator(){
+        btn.textContent = "Copied!";
+        clearTimeout(btn._copyResetTimer);
+        btn._copyResetTimer = setTimeout(() => {
+            btn.textContent = originalText;
+        }, 1200);
+    }
+
+    function fallbackCopy(){
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        try { document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(textarea);
+        showCopiedIndicator();
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showCopiedIndicator).catch(fallbackCopy);
+    } else {
+        fallbackCopy();
+    }
 }
 
 /* ---------- RESET ---------- */
