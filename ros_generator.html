@@ -597,6 +597,13 @@
                 <datalist id="productionTechList">
                     <option value="Jon Sedlak: (440) 554-1285 sedlakjonathan@gmail.com">
                 </datalist>
+
+                <label>Tech/Visuals Confirmed?</label>
+                <input type="text" id="techVisualsConfirmed" list="yesNoList">
+                <datalist id="yesNoList">
+                    <option value="Yes">
+                    <option value="No">
+                </datalist>
             </div>
 
             <!-- COLUMN 2 - Media, Sound Check, Run of Show spanning, then remaining inputs -->
@@ -610,8 +617,14 @@
                 <label>Sound Check:</label>
                 <input type="time" id="soundCheck" value="19:00">
 
+                <label>Doors:</label>
+                <input type="time" id="doors">
+
                 <label>Run of Show (Set Times):</label>
                 <textarea id="runOfShow" class="run-of-show-span"></textarea>
+
+                <label>Hospitality Confirmed?</label>
+                <input type="text" id="hospitalityConfirmed" list="yesNoList">
 
                 <label>Hotel:</label>
                 <input type="text" id="hotel" list="hotelList">
@@ -679,10 +692,13 @@ const inputs = {
     transportation: document.getElementById("transportation"),
     production: document.getElementById("production"),
     productionTech: document.getElementById("productionTech"),
+    techVisualsConfirmed: document.getElementById("techVisualsConfirmed"),
     settlementContact: document.getElementById("settlementContact"),
     media: document.getElementById("media"),
     soundCheck: document.getElementById("soundCheck"),
+    doors: document.getElementById("doors"),
     runOfShow: document.getElementById("runOfShow"),
+    hospitalityConfirmed: document.getElementById("hospitalityConfirmed"),
     hotel: document.getElementById("hotel"),
     confirmation: document.getElementById("confirmation")
 };
@@ -743,6 +759,10 @@ function generateEmail() {
         emailText += `Production/Tech: ${data.productionTech}\n\n`;
         emailHTML += `<span class="label">Production/Tech:</span> ${data.productionTech}\n\n`;
     }
+    if (data.techVisualsConfirmed) {
+        emailText += `Tech/Visuals Confirmed? ${data.techVisualsConfirmed}\n\n`;
+        emailHTML += `<span class="label">Tech/Visuals Confirmed?</span> ${data.techVisualsConfirmed}\n\n`;
+    }
     if (data.media) {
         emailText += `Media: ${data.media}\n\n`;
         emailHTML += `<span class="label">Media:</span> ${data.media}\n\n`;
@@ -753,12 +773,21 @@ function generateEmail() {
         emailText += `Sound Check: ${time12}\n\n`;
         emailHTML += `<span class="label">Sound Check:</span> ${time12}\n\n`;
     }
-    
+    if (data.doors) {
+        const time12 = convertTo12Hour(data.doors);
+        emailText += `Doors: ${time12}\n\n`;
+        emailHTML += `<span class="label">Doors:</span> ${time12}\n\n`;
+    }
+
     if (data.runOfShow) {
         emailText += `Run of Show (Set Times): ${data.runOfShow}\n\n`;
         emailHTML += `<span class="label">Run of Show (Set Times):</span> ${data.runOfShow}\n\n`;
     }
-    
+    if (data.hospitalityConfirmed) {
+        emailText += `Hospitality Confirmed? ${data.hospitalityConfirmed}\n\n`;
+        emailHTML += `<span class="label">Hospitality Confirmed?</span> ${data.hospitalityConfirmed}\n\n`;
+    }
+
     if (data.hotel) {
         emailText += `Hotel: ${data.hotel}\n\n`;
         emailHTML += `<span class="label">Hotel:</span> ${data.hotel}\n\n`;
@@ -812,11 +841,16 @@ function importCSV(file) {
                 'transportation': 'transportation',
                 'production': 'production',
                 'production/tech': 'productionTech',
+                'tech/visuals confirmed?': 'techVisualsConfirmed',
+                'tech/visuals confirmed': 'techVisualsConfirmed',
                 'venue/settlement contact': 'settlementContact',
                 'media': 'media',
                 'sound check': 'soundCheck',
+                'doors': 'doors',
                 'run of show (set times)': 'runOfShow',
                 'run of show': 'runOfShow',
+                'hospitality confirmed?': 'hospitalityConfirmed',
+                'hospitality confirmed': 'hospitalityConfirmed',
                 'hotel': 'hotel',
                 'confirmation #': 'confirmation',
                 'confirmation': 'confirmation'
@@ -870,10 +904,13 @@ function exportCSV() {
         transportation: 'Transportation',
         production: 'Production',
         productionTech: 'Production/Tech',
+        techVisualsConfirmed: 'Tech/Visuals Confirmed?',
         settlementContact: 'Venue/Settlement Contact',
         media: 'Media',
         soundCheck: 'Sound Check',
+        doors: 'Doors',
         runOfShow: 'Run of Show (Set Times)',
+        hospitalityConfirmed: 'Hospitality Confirmed?',
         hotel: 'Hotel',
         confirmation: 'Confirmation #'
     };
