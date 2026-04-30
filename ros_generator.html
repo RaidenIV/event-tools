@@ -871,12 +871,28 @@ csvUpload.onchange = function(e) {
 /* ---------- COPY ---------- */
 function copyEmail() {
     const text = previewBox.dataset.plainText || previewBox.textContent;
+    const copyBtn = document.getElementById("copyBtn");
+    const originalText = copyBtn.textContent;
+
+    function showCopyIndicator(message) {
+        copyBtn.textContent = message;
+        copyBtn.disabled = true;
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.disabled = false;
+        }, 1500);
+    }
+
     if (text === "Email preview will appear here as you type.") {
-        alert("Nothing to copy yet!");
+        showCopyIndicator("Nothing to copy");
         return;
     }
-    navigator.clipboard.writeText(text);
-    alert("Copied!");
+
+    navigator.clipboard.writeText(text).then(() => {
+        showCopyIndicator("Copied!");
+    }).catch(() => {
+        showCopyIndicator("Copy failed");
+    });
 }
 
 /* ---------- EXPORT CSV ---------- */
