@@ -771,10 +771,16 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
   .xmgR-below-grid{width:min(70%,680px)}
 }
 @media(max-width:900px){
-  .xmgR-hero-grid{grid-template-areas:'copy' 'flyer' 'updates';grid-template-columns:1fr;gap:28px}
+  .xmgR-hero-shell{display:grid;grid-template-columns:1fr;grid-template-areas:'split' 'copy' 'flyer' 'tickets' 'updates' 'info';gap:20px}
+  .xmgR-split-line{grid-area:split;margin-bottom:8px}
+  .xmgR-hero-grid,.xmgR-below-grid{display:contents}
+  .xmgR-hero-copy{grid-area:copy}
+  .xmgR-hero-flyer{grid-area:flyer}
+  .xmgR-ticket-panel{grid-area:tickets;width:100%;max-width:480px;margin:0 auto}
+  .xmgR-hero-updates{grid-area:updates}
+  .xmgR-info-card{grid-area:info;width:100%;max-width:560px;margin:0 auto}
   .xmgR-hero-copy,.xmgR-hero-flyer,.xmgR-hero-updates{align-items:center;justify-content:center}
   .xmgR-side-square{max-width:480px;margin:0 auto}
-  .xmgR-below-grid{grid-template-columns:1fr;width:100%;max-width:560px;gap:16px}
   .xmgR-info-card,.xmgR-ticket-panel{align-items:stretch}
 }
 @media(max-width:600px){
