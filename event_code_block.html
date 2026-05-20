@@ -753,6 +753,7 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
 .xmgR-below-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;width:min(50%,720px);margin:52px auto 0;align-items:start;justify-content:center}
 .xmgR-info-card,.xmgR-ticket-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;backdrop-filter:blur(10px);display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%;max-width:100%}
 .xmgR-ticket-panel{align-self:start}
+.xmgR-mobile-ticket-panel{display:none}
 .xmgR-event-stack{margin-bottom:12px}
 .xmgR-info-card .xmgR-venue-wrap{width:100%;margin-bottom:0;animation:none;justify-content:flex-start}
 .xmgR-info-card .xmgR-venue-badge{width:100%;padding:14px 16px}
@@ -771,17 +772,19 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
   .xmgR-below-grid{width:min(70%,680px)}
 }
 @media(max-width:900px){
-  .xmgR-hero-shell{display:grid;grid-template-columns:1fr;grid-template-areas:'split' 'copy' 'flyer' 'tickets' 'updates' 'info';gap:20px}
+  .xmgR-hero-shell{display:grid;grid-template-columns:1fr;grid-template-areas:'split' 'copy' 'flyer' 'updates' 'info';gap:20px}
   .xmgR-split-line{grid-area:split;margin-bottom:8px}
   .xmgR-hero-grid,.xmgR-below-grid{display:contents}
   .xmgR-hero-copy{grid-area:copy}
   .xmgR-hero-flyer{grid-area:flyer}
-  .xmgR-ticket-panel{grid-area:tickets;width:100%;max-width:480px;margin:0 auto}
+  .xmgR-ticket-panel{display:none}
+  .xmgR-mobile-ticket-panel{display:flex;flex-direction:column;align-items:stretch;width:100%;max-width:480px;margin:0 auto 24px}
+  .xmgR-mobile-ticket-panel .xmgR-ticket-block{width:100%;max-width:none;align-items:stretch;gap:12px}
   .xmgR-hero-updates{grid-area:updates}
   .xmgR-info-card{grid-area:info;width:100%;max-width:560px;margin:0 auto}
   .xmgR-hero-copy,.xmgR-hero-flyer,.xmgR-hero-updates{align-items:center;justify-content:center}
   .xmgR-side-square{max-width:480px;margin:0 auto}
-  .xmgR-info-card,.xmgR-ticket-panel{align-items:stretch}
+  .xmgR-info-card{align-items:stretch}
 }
 @media(max-width:600px){
   .xmgR-info-card,.xmgR-ticket-panel{padding:16px}
@@ -813,6 +816,11 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
       <div class="xmgR-hero-copy">
         <div class="xmgR-hero-title"><span class="xmgR-hero-title-text">${eventName}</span></div>
         ${heroSub}
+        <div class="xmgR-mobile-ticket-panel">
+          <div class="xmgR-ticket-block">
+            ${ticketDisplayHtml}
+          </div>
+        </div>
         <div class="xmgR-countdown-wrap">
           <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="days">00</span><span class="xmgR-count-label">Days</span></div>
           <div class="xmgR-count-unit"><span class="xmgR-count-num" data-unit="hours">00</span><span class="xmgR-count-label">Hours</span></div>
