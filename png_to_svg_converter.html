@@ -442,10 +442,14 @@
     }
 
     .toolbar-status {
-      min-height: auto;
+      min-height: 24px;
       color: var(--muted);
       font-size: 1rem;
       font-weight: 750;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .status.ok { color: var(--success); }
@@ -460,6 +464,10 @@
 
     .preview-card {
       overflow: hidden;
+    }
+
+    .toolbar {
+      min-height: 65px;
     }
 
     .toolbar .small-actions {
@@ -479,13 +487,15 @@
     .preview-wrap {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      height: 430px;
       min-height: 430px;
     }
 
     .preview-pane {
       min-width: 0;
+      min-height: 0;
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto minmax(0, 1fr);
     }
 
     .preview-pane + .preview-pane {
@@ -505,12 +515,20 @@
 
     .image-stage,
     .svg-stage {
-      min-height: 360px;
+      min-height: 0;
+      height: 100%;
       display: grid;
       place-items: center;
       padding: 18px;
-      overflow: auto;
       background-color: var(--stage-bg);
+    }
+
+    .image-stage {
+      overflow: hidden;
+    }
+
+    .svg-stage {
+      overflow: auto;
     }
 
     .image-stage.dropzone {
@@ -556,18 +574,28 @@
     .dropzone.has-image .drop-instructions { display: none; }
 
     .image-stage canvas {
+      display: block;
       max-width: 100%;
-      max-height: 540px;
+      max-height: 100%;
       image-rendering: auto;
       background: transparent;
     }
 
-    .svg-stage iframe {
+    .svg-preview {
       width: 100%;
       height: 100%;
-      min-height: 360px;
-      border: 0;
+      min-height: 0;
+      display: grid;
+      place-items: center;
       background: transparent;
+    }
+
+    .svg-preview svg {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
     }
 
     .svg-options {
@@ -595,9 +623,12 @@
       grid-template-columns: 1fr 1fr;
       gap: 14px;
       align-items: center;
+      height: 120px;
+      min-height: 120px;
       padding: 16px 18px;
       border-top: 1px solid var(--line-soft);
       background: var(--surface);
+      overflow: hidden;
     }
 
     .preview-info {
@@ -609,7 +640,7 @@
     .preview-actions {
       justify-self: end;
       display: grid;
-      grid-template-columns: repeat(3, minmax(130px, 1fr));
+      grid-template-columns: repeat(2, minmax(130px, 1fr));
       gap: 10px;
     }
 
@@ -644,10 +675,17 @@
         flex-direction: column;
       }
       .toolbar .small-actions { justify-content: flex-start; }
-      .preview-wrap { min-height: 0; }
+      .preview-wrap {
+        height: 640px;
+        min-height: 640px;
+      }
       .image-stage,
-      .svg-stage { min-height: 300px; }
-      .preview-footer { grid-template-columns: 1fr; }
+      .svg-stage { min-height: 0; }
+      .preview-footer {
+        grid-template-columns: 1fr;
+        height: 170px;
+        min-height: 170px;
+      }
       .preview-actions { justify-self: stretch; }
     }
   </style>
@@ -692,7 +730,7 @@
             </div>
             <div class="preview-pane">
               <div class="pane-title">Generated SVG</div>
-              <div class="svg-stage"><iframe id="svgPreview" title="Generated SVG preview"></iframe></div>
+              <div class="svg-stage"><div class="svg-preview" id="svgPreview" role="img" aria-label="Generated SVG preview"></div></div>
             </div>
           </div>
 
@@ -764,7 +802,6 @@
               </div>
             </div>
             <div class="preview-actions">
-              <button class="primary" id="generate" disabled>Convert</button>
               <button class="danger" id="reset">Reset</button>
               <button class="download" id="download" disabled>Download</button>
             </div>
@@ -793,7 +830,6 @@
       svgColor: document.getElementById('svgColor'),
       rotation: document.getElementById('rotation'),
       mirror: document.getElementById('mirror'),
-      generate: document.getElementById('generate'),
       reset: document.getElementById('reset'),
       download: document.getElementById('download'),
       meta: document.getElementById('meta'),
@@ -810,7 +846,8 @@
       width: 0,
       height: 0,
       lastSvg: '',
-      objectUrl: null
+      objectUrl: null,
+      generateFrame: null
     };
 
     const modeHints = {
@@ -931,8 +968,31 @@
       els.svgColor.disabled = !usesCustomColor();
     }
 
+    function fitCanvasPreview() {
+      if (!state.width || !state.height) {
+        els.sourceCanvas.style.width = '';
+        els.sourceCanvas.style.height = '';
+        return;
+      }
+
+      const stageRect = els.dropzone.getBoundingClientRect();
+      const stageStyles = window.getComputedStyle(els.dropzone);
+      const availableWidth = Math.max(0, stageRect.width - Number.parseFloat(stageStyles.paddingLeft) - Number.parseFloat(stageStyles.paddingRight));
+      const availableHeight = Math.max(0, stageRect.height - Number.parseFloat(stageStyles.paddingTop) - Number.parseFloat(stageStyles.paddingBottom));
+      const fitScale = Math.min(1, availableWidth / state.width, availableHeight / state.height);
+
+      if (!Number.isFinite(fitScale) || fitScale <= 0) {
+        els.sourceCanvas.style.width = '';
+        els.sourceCanvas.style.height = '';
+        return;
+      }
+
+      els.sourceCanvas.style.width = `${Math.floor(state.width * fitScale)}px`;
+      els.sourceCanvas.style.height = `${Math.floor(state.height * fitScale)}px`;
+    }
+
     function regenerateIfReady() {
-      if (state.imageData && state.lastSvg) generate();
+      if (state.imageData) generate();
     }
 
     function updateModeUi() {
@@ -1183,18 +1243,16 @@ ${meta}${transformedInner}
     function renderSvg(svg) {
       state.lastSvg = svg;
       els.download.disabled = false;
-
-      if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
-      state.objectUrl = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-      els.svgPreview.src = state.objectUrl;
+      els.svgPreview.innerHTML = svg;
     }
 
     function generate() {
       if (!state.imageData) return;
-      setStatus('Generating SVG...');
-      els.generate.disabled = true;
+      if (state.generateFrame) cancelAnimationFrame(state.generateFrame);
 
-      requestAnimationFrame(() => {
+      state.generateFrame = requestAnimationFrame(() => {
+        state.generateFrame = null;
+
         try {
           const mode = els.mode.value;
           let svg;
@@ -1207,8 +1265,6 @@ ${meta}${transformedInner}
           setStatus(`${modeLabel} generated successfully.`, 'ok');
         } catch (error) {
           setStatus(error.message || 'Could not generate SVG.', 'bad');
-        } finally {
-          els.generate.disabled = false;
         }
       });
     }
@@ -1216,7 +1272,9 @@ ${meta}${transformedInner}
     function clearOutput() {
       state.lastSvg = '';
       els.download.disabled = true;
-      els.svgPreview.removeAttribute('src');
+      els.svgPreview.innerHTML = '';
+      if (state.generateFrame) cancelAnimationFrame(state.generateFrame);
+      state.generateFrame = null;
       if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
       state.objectUrl = null;
       setStatus('Output cleared.');
@@ -1268,11 +1326,11 @@ ${meta}${transformedInner}
           ctx.drawImage(img, 0, 0);
           state.imageData = ctx.getImageData(0, 0, state.width, state.height);
           els.dropzone.classList.add('has-image');
+          fitCanvasPreview();
 
-          els.generate.disabled = false;
           clearOutput();
           setMeta();
-          setStatus('PNG loaded.', 'ok');
+          generate();
         };
         img.onerror = () => setStatus('Could not load this PNG.', 'bad');
         img.src = reader.result;
@@ -1290,8 +1348,9 @@ ${meta}${transformedInner}
       els.fileInput.value = '';
       els.sourceCanvas.width = 0;
       els.sourceCanvas.height = 0;
+      els.sourceCanvas.style.width = '';
+      els.sourceCanvas.style.height = '';
       els.dropzone.classList.remove('has-image');
-      els.generate.disabled = true;
       els.meta.innerHTML = '<div>No image loaded.</div>';
       clearOutput();
       setStatus('Reset complete.');
@@ -1326,9 +1385,9 @@ ${meta}${transformedInner}
     els.svgColor.addEventListener('input', regenerateIfReady);
     els.rotation.addEventListener('change', regenerateIfReady);
     els.mirror.addEventListener('change', regenerateIfReady);
-    els.generate.addEventListener('click', generate);
     els.download.addEventListener('click', downloadSvg);
     els.reset.addEventListener('click', resetApp);
+    window.addEventListener('resize', fitCanvasPreview);
 
     updateModeUi();
     updateColorUi();
