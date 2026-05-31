@@ -281,6 +281,26 @@
       outline: none;
     }
 
+    input[type="color"] {
+      width: 100%;
+      min-height: 43px;
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      border-radius: var(--radius-sm);
+      padding: 5px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 7px; }
+    input[type="color"]::-moz-color-swatch { border: 0; border-radius: 7px; }
+
+    input[type="color"]:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
     select {
       appearance: none;
       background-color: var(--input-bg);
@@ -289,7 +309,8 @@
     }
 
     select:focus,
-    input[type="number"]:focus {
+    input[type="number"]:focus,
+    input[type="color"]:focus {
       border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
@@ -549,6 +570,26 @@
       background: transparent;
     }
 
+    .svg-options {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.2fr) minmax(150px, 0.8fr) minmax(170px, 0.8fr);
+      gap: 12px;
+      padding: 16px 18px;
+      border-top: 1px solid var(--line-soft);
+      background: var(--surface);
+    }
+
+    .svg-option {
+      min-width: 0;
+    }
+
+    .color-control {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 52px;
+      gap: 10px;
+      align-items: center;
+    }
+
     .preview-footer {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -595,6 +636,7 @@
       .badge { justify-self: start; }
       .row,
       .actions,
+      .svg-options,
       .preview-actions { grid-template-columns: 1fr; }
       .toolbar,
       .panel-heading {
@@ -654,6 +696,43 @@
             </div>
           </div>
 
+          <div class="svg-options" aria-label="Generated SVG options">
+            <div class="svg-option">
+              <label for="colorMode">SVG Color</label>
+              <div class="color-control">
+                <div class="select-wrap">
+                  <select id="colorMode">
+                    <option value="original" selected>Original colors</option>
+                    <option value="custom">Custom color</option>
+                  </select>
+                </div>
+                <input id="svgColor" type="color" value="#7c5cff" aria-label="Custom SVG color" disabled />
+              </div>
+            </div>
+            <div class="svg-option">
+              <label for="rotation">Rotate</label>
+              <div class="select-wrap">
+                <select id="rotation">
+                  <option value="0" selected>0°</option>
+                  <option value="90">90° clockwise</option>
+                  <option value="180">180°</option>
+                  <option value="270">270° clockwise</option>
+                </select>
+              </div>
+            </div>
+            <div class="svg-option">
+              <label for="mirror">Mirror</label>
+              <div class="select-wrap">
+                <select id="mirror">
+                  <option value="none" selected>None</option>
+                  <option value="horizontal">Horizontal</option>
+                  <option value="vertical">Vertical</option>
+                  <option value="both">Horizontal + vertical</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div class="controls is-hidden" aria-hidden="true">
             <select id="mode" tabindex="-1">
               <option value="embed" selected>Exact visual SVG wrapper</option>
@@ -710,6 +789,10 @@
       scale: document.getElementById('scale'),
       maxColors: document.getElementById('maxColors'),
       includeMeta: document.getElementById('includeMeta'),
+      colorMode: document.getElementById('colorMode'),
+      svgColor: document.getElementById('svgColor'),
+      rotation: document.getElementById('rotation'),
+      mirror: document.getElementById('mirror'),
       generate: document.getElementById('generate'),
       reset: document.getElementById('reset'),
       download: document.getElementById('download'),
@@ -762,6 +845,96 @@
       return Math.min(100, Math.max(0.1, parsed));
     }
 
+    function normalizeHexColor(value) {
+      const color = String(value || '').trim();
+      return /^#[0-9a-f]{6}$/i.test(color) ? color : '#000000';
+    }
+
+    function hexToRgb(hex) {
+      const normalized = normalizeHexColor(hex).slice(1);
+      return [
+        Number.parseInt(normalized.slice(0, 2), 16),
+        Number.parseInt(normalized.slice(2, 4), 16),
+        Number.parseInt(normalized.slice(4, 6), 16)
+      ];
+    }
+
+    function usesCustomColor() {
+      return els.colorMode.value === 'custom';
+    }
+
+    function customColorAttrs(alpha = 255) {
+      const opacity = Math.max(0, Math.min(255, alpha)) / 255;
+      const fill = normalizeHexColor(els.svgColor.value);
+      return opacity >= 0.999 ? `fill="${fill}"` : `fill="${fill}" fill-opacity="${Number(opacity.toFixed(4))}"`;
+    }
+
+    function multiplyMatrix(left, right) {
+      return {
+        a: left.a * right.a + left.c * right.b,
+        b: left.b * right.a + left.d * right.b,
+        c: left.a * right.c + left.c * right.d,
+        d: left.b * right.c + left.d * right.d,
+        e: left.a * right.e + left.c * right.f + left.e,
+        f: left.b * right.e + left.d * right.f + left.f
+      };
+    }
+
+    function formatMatrixNumber(value) {
+      const rounded = Number(value.toFixed(6));
+      return Object.is(rounded, -0) ? 0 : rounded;
+    }
+
+    function isIdentityMatrix(matrix) {
+      return matrix.a === 1 && matrix.b === 0 && matrix.c === 0 && matrix.d === 1 && matrix.e === 0 && matrix.f === 0;
+    }
+
+    function getSvgGeometry() {
+      const width = state.width;
+      const height = state.height;
+      const mirror = els.mirror.value;
+      const rotation = Number(els.rotation.value);
+      const identity = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+
+      const mirrorMatrix = {
+        none: identity,
+        horizontal: { a: -1, b: 0, c: 0, d: 1, e: width, f: 0 },
+        vertical: { a: 1, b: 0, c: 0, d: -1, e: 0, f: height },
+        both: { a: -1, b: 0, c: 0, d: -1, e: width, f: height }
+      }[mirror] || identity;
+
+      const rotationMatrix = {
+        0: identity,
+        90: { a: 0, b: 1, c: -1, d: 0, e: height, f: 0 },
+        180: { a: -1, b: 0, c: 0, d: -1, e: width, f: height },
+        270: { a: 0, b: -1, c: 1, d: 0, e: 0, f: width }
+      }[rotation] || identity;
+
+      const matrix = multiplyMatrix(rotationMatrix, mirrorMatrix);
+      const outputWidth = rotation === 90 || rotation === 270 ? height : width;
+      const outputHeight = rotation === 90 || rotation === 270 ? width : height;
+      const transform = isIdentityMatrix(matrix)
+        ? ''
+        : `matrix(${[
+            matrix.a,
+            matrix.b,
+            matrix.c,
+            matrix.d,
+            matrix.e,
+            matrix.f
+          ].map(formatMatrixNumber).join(' ')})`;
+
+      return { width: outputWidth, height: outputHeight, transform };
+    }
+
+    function updateColorUi() {
+      els.svgColor.disabled = !usesCustomColor();
+    }
+
+    function regenerateIfReady() {
+      if (state.imageData && state.lastSvg) generate();
+    }
+
     function updateModeUi() {
       const mode = els.mode.value;
       els.modeHint.textContent = modeHints[mode];
@@ -790,7 +963,10 @@
 
     function colorToSvgAttrs(key, averageAlpha = null) {
       const [r, g, b, a] = parseRgbaKey(key);
-      const opacity = averageAlpha === null ? a / 255 : averageAlpha / 255;
+      const alpha = averageAlpha === null ? a : averageAlpha;
+      if (usesCustomColor()) return customColorAttrs(alpha);
+
+      const opacity = alpha / 255;
       const fill = `rgb(${r} ${g} ${b})`;
       return opacity >= 0.999 ? `fill="${fill}"` : `fill="${fill}" fill-opacity="${Number(opacity.toFixed(4))}"`;
     }
@@ -807,7 +983,22 @@
     }
 
     function generateEmbeddedSvg() {
-      const inner = `<image href="${state.dataUrl}" x="0" y="0" width="${state.width}" height="${state.height}" preserveAspectRatio="none"/>`;
+      let filter = '';
+      let filterAttr = '';
+
+      if (usesCustomColor()) {
+        const [r, g, b] = hexToRgb(els.svgColor.value);
+        filter = `  <defs>
+    <filter id="svgColorFilter" color-interpolation-filters="sRGB">
+      <feFlood flood-color="rgb(${r} ${g} ${b})" result="color"/>
+      <feComposite in="color" in2="SourceAlpha" operator="in"/>
+    </filter>
+  </defs>
+`;
+        filterAttr = ' filter="url(#svgColorFilter)"';
+      }
+
+      const inner = `${filter}  <image href="${state.dataUrl}" x="0" y="0" width="${state.width}" height="${state.height}" preserveAspectRatio="none"${filterAttr}/>`;
       return buildSvgShell(inner, { crisp: false });
     }
 
@@ -1119,11 +1310,19 @@
 
     els.mode.addEventListener('change', updateModeUi);
     els.alpha.addEventListener('input', () => { els.alphaValue.textContent = els.alpha.value; });
+    els.colorMode.addEventListener('change', () => {
+      updateColorUi();
+      regenerateIfReady();
+    });
+    els.svgColor.addEventListener('input', regenerateIfReady);
+    els.rotation.addEventListener('change', regenerateIfReady);
+    els.mirror.addEventListener('change', regenerateIfReady);
     els.generate.addEventListener('click', generate);
     els.download.addEventListener('click', downloadSvg);
     els.reset.addEventListener('click', resetApp);
 
     updateModeUi();
+    updateColorUi();
   </script>
 </body>
 </html>
