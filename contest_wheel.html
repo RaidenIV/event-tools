@@ -4,29 +4,36 @@
 <meta charset="UTF-8">
 <title>Contest Spinner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
     :root {
         --green: #228B22;
         --green-dark: #1d701d;
 
-        --accent: #0099ff;
-        --accent2: #00ffff;
+        /* DESIGN.md — Bitstream Logic palette */
+        --accent:  #acc7ff;   /* primary */
+        --accent2: #498fff;   /* primary-container */
         --top-ui-height: 48px;
 
-        /* Dark mode palette (matching code_block_gen.html) */
-        --bg: #0b0b0c;
-        --panel: #131316;
-        --panel-2: #1b1b20;
-        --text: #f2f2f4;
-        --muted: #a7a7ad;
-        --border: #2a2a2f;
-        --line: #2a2a2f;
-        --input-bg: #0f0f12;
-        --input-text: #f2f2f4;
-        --canvas-bg: #0b0b0c;
-        --shadow: 0 4px 14px rgba(0,0,0,0.45);
+        --bg:         #10131a;  /* surface / background */
+        --panel:      #1d2027;  /* surface-container */
+        --panel-2:    #272a31;  /* surface-container-high */
+        --text:       #e0e2ec;  /* on-surface */
+        --muted:      #c1c6d6;  /* on-surface-variant */
+        --border:     #414754;  /* outline-variant */
+        --line:       #414754;
+        --input-bg:   #181c23;  /* surface-container-low */
+        --input-text: #e0e2ec;
+        --canvas-bg:  #10131a;
+        --shadow: 0 4px 14px rgba(0,0,0,0.55);
+
+        /* DESIGN.md radii */
+        --radius-sm:  0.125rem;
+        --radius:     0.25rem;
+        --radius-md:  0.375rem;
+        --radius-lg:  0.5rem;   /* 8px — outer cards */
+        --radius-xl:  0.75rem;
     }
 
     
@@ -40,61 +47,62 @@
     }
 
     .nav-toggle {
-        background: rgba(26, 26, 26, 0.9);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
+        background: rgba(29, 32, 39, 0.92);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        width: var(--top-ui-height);
         height: var(--top-ui-height);
-        padding: 0 16px;
-        color: #ffffff;
-        font-size: 16px;
-        font-weight: 600;
+        padding: 0;
+        color: var(--text);
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 0;
-        transition: all 0.3s ease;
+        justify-content: center;
+        transition: border-color 0.2s ease, background 0.2s ease;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        font-family: 'Rajdhani', sans-serif;
-    }
-
-    html[data-theme="light"] .nav-toggle {
-        background: rgba(245, 245, 245, 0.92);
-        border: 1px solid rgba(0, 0, 0, 0.18);
-        color: rgba(0,0,0,0.88);
     }
 
     .nav-toggle:hover {
-        background: rgba(36, 36, 36, 0.9);
+        background: rgba(39, 42, 49, 0.95);
         border-color: var(--accent);
     }
 
-    html[data-theme="light"] .nav-toggle:hover {
-        background: rgba(235, 235, 235, 0.95);
-        border-color: var(--accent);
+    /* Hamburger icon lines */
+    .nav-toggle .hamburger {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        pointer-events: none;
+    }
+    .nav-toggle .hamburger span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background: var(--text);
+        border-radius: 2px;
+        transition: background 0.2s;
+    }
+    .nav-toggle:hover .hamburger span {
+        background: var(--accent);
     }
 
     .nav-menu {
         position: absolute;
-        top: 60px;
+        top: 56px;
         left: 0;
-        background: rgba(26, 26, 26, 0.95);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        padding: 8px;
+        background: rgba(29, 32, 39, 0.97);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 8px;
         min-width: 180px;
         opacity: 0;
         visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
+        transform: translateY(-8px);
+        transition: all 0.2s ease;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         overflow: hidden;
-    }
-
-    html[data-theme="light"] .nav-menu {
-        background: rgba(245, 245, 245, 0.96);
-        border: 1px solid rgba(0, 0, 0, 0.16);
     }
 
     .nav-dropdown.active .nav-menu {
@@ -107,34 +115,30 @@
     .nav-menu button.nav-item-btn {
         display: block;
         text-align: left;
-        padding: 12px 16px;
-        color: rgba(255, 255, 255, 0.8);
+        padding: 10px 16px;
+        color: var(--muted);
         text-decoration: none;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 500;
-        border-radius: 8px;
-        transition: all 0.3s ease;
+        border-radius: 4px;
+        transition: background 0.15s ease, color 0.15s ease;
         background: transparent;
         border: none;
         cursor: pointer;
-        font-family: 'Rajdhani', sans-serif;
-    }
-
-    html[data-theme="light"] .nav-menu a,
-    html[data-theme="light"] .nav-menu button.nav-item-btn {
-        color: rgba(0,0,0,0.75);
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
     }
 
     .nav-menu a:hover,
     .nav-menu button.nav-item-btn:hover {
-        background: rgba(0, 153, 255, 0.12);
+        background: rgba(172, 199, 255, 0.08);
         color: var(--accent);
     }
 
 /* Scope everything to avoid Squarespace collisions */
     #contest-wheel-app, #contest-wheel-app * {
         box-sizing: border-box;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: 'Inter', sans-serif;
     }
 
     /* Force full-page dark background (prevents white margins in local files + Squarespace) */
@@ -143,17 +147,10 @@
         color: var(--text) !important;
         margin: 0 !important;
         padding: 0 !important;
-        height: 100vh !important;
+        min-height: 100vh !important;
         width: 100% !important;
-        overflow: hidden !important;
-    }
-
-    @media (max-width: 900px) {
-        html, body {
-            height: auto !important;
-            overflow: auto !important;
-            min-height: 100vh !important;
-        }
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
     }
 
 
@@ -174,24 +171,14 @@
     }
 
     #contest-wheel-app {
-        background: var(--bg);
+        background: transparent;
         color: var(--text);
-        padding: 20px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.06);
+        padding: 80px 20px 20px 20px;
+        border-radius: 0;
+        border: none;
         max-width: 1400px;
-        margin: 20px auto;
+        margin: 0 auto;
         position: relative;
-        max-height: calc(100vh - 40px);
-        overflow: hidden;
-    }
-
-    @media (max-width: 900px) {
-        #contest-wheel-app {
-            max-height: none;
-            overflow: visible;
-            margin: 80px auto 20px auto;
-        }
     }
 
     #contest-wheel-app h1 {
@@ -254,7 +241,7 @@
     #contest-wheel-app .panel {
         background: var(--panel);
         padding: 16px;
-        border-radius: 14px;
+        border-radius: var(--radius-lg);
         box-shadow: var(--shadow);
         width: 100%;
         border: 1px solid var(--line);
@@ -274,9 +261,9 @@
         color: var(--input-text);
         height: 280px;
         padding: 10px;
-        border-radius: 10px;
+        border-radius: 6px;
         border: 1px solid var(--border);
-        font-family: 'Rajdhani', monospace;
+        font-family: 'Inter', monospace;
         font-size: 14px;
         resize: vertical;
         font-weight: 400;
@@ -294,7 +281,7 @@
         background: var(--input-bg);
         color: var(--input-text);
         padding: 10px;
-        border-radius: 10px;
+        border-radius: 6px;
         border: 1px solid var(--border);
         font-size: 14px;
         margin-bottom: 8px;
@@ -326,7 +313,7 @@
         padding: 10px 12px;
         font-size: 13px;
         font-weight: 700;
-        border-radius: 10px;
+        border-radius: 6px;
         border: none;
         cursor: pointer;
         transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
@@ -481,13 +468,13 @@
 
     #contest-wheel-app .winner-modal {
         background: var(--panel);
-        border-radius: 14px;
+        border-radius: var(--radius-lg);
         padding: 20px 24px;
         max-width: 320px;
         width: 90%;
         box-shadow: 0 10px 30px rgba(0,0,0,0.55);
         text-align: center;
-        border: 1px solid rgba(255,255,255,0.06);
+        border: 1px solid var(--border);
         color: var(--text);
     }
 
@@ -495,8 +482,8 @@
     #contest-wheel-app input[type="text"]:focus,
     #contest-wheel-app select:focus {
         outline: none;
-        border-color: rgba(0,153,255,0.65);
-        box-shadow: 0 0 0 3px rgba(0,153,255,0.18);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(172,199,255,0.18);
     }
 
     @media (max-width: 800px) {
@@ -509,8 +496,12 @@
 
 <!-- Navigation Dropdown -->
 <div class="nav-dropdown" id="navDropdown">
-  <button class="nav-toggle" id="navToggle">
-   Menu
+  <button class="nav-toggle" id="navToggle" aria-label="Open navigation menu">
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
   </button>
   <div class="nav-menu">
     <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
@@ -552,7 +543,7 @@
 
             <label>
                 Spin time:
-                <select id="spinTimeSelect" style="padding:3px 6px;border-radius:6px;border:1px solid #ccc;font-family:'Rajdhani';font-size:13px;">
+                <select id="spinTimeSelect" style="padding:3px 6px;border-radius:6px;border:1px solid #ccc;font-family:'Inter';font-size:13px;">
                     <option value="2500">Fast</option>
                     <option value="4000" selected>Normal</option>
                     <option value="6000">Slow</option>
@@ -768,11 +759,11 @@ function drawWheel() {
         ctx.stroke();
 
         ctx.fillStyle = "#a6adbb";
-        ctx.font = "16px Rajdhani";
+        ctx.font = "16px Inter";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("No entries", 0, -8);
-        ctx.font = "12px Rajdhani";
+        ctx.font = "12px Inter";
         ctx.fillText("Type names to update wheel", 0, 14);
         ctx.restore();
 
@@ -811,7 +802,7 @@ function drawWheel() {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#000000";
-        ctx.font = "bold 16px Rajdhani";
+        ctx.font = "bold 16px Inter";
 
         // Text closer to center so it's not on the edge
         ctx.translate(radius * 0.6, 0);
@@ -852,7 +843,7 @@ function drawWheel() {
         ctx.restore();
     } else {
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 22px Rajdhani";
+        ctx.font = "bold 22px Inter";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("XODIA", 0, 0);
