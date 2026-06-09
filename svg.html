@@ -1583,7 +1583,7 @@
                   <button class="secondary" id="resetLayerLineWeight" type="button" disabled>Original</button>
                 </div>
               </div>
-              <p class="hint">Line Weight overrides stroked elements in the selected uploaded SVG. Filled shapes are unchanged.</p>
+              <p class="hint">Line Weight changes stroked SVG paths and can thicken filled vector paths using their fill color.</p>
               <div class="row2">
                 <button class="secondary" id="fitSelected" type="button" disabled>Fit Selected</button>
                 <button class="secondary" id="centerSelected2" type="button" disabled style="display:none">Center</button>
@@ -1979,20 +1979,71 @@
       return Number.isFinite(value) && value > 0 ? clamp(value, 0.25, 80) : null;
     }
 
-    function escapeCssIdentifier(value) {
-      if (window.CSS && typeof CSS.escape === 'function') return CSS.escape(String(value));
-      return String(value).replace(/[^a-zA-Z0-9_-]/g, match => `\${match}`);
+    const LINE_WEIGHT_TARGET_SELECTOR = 'path,line,polyline,polygon,rect,circle,ellipse,text,tspan';
+    const LINE_WEIGHT_SKIP_SELECTOR = 'defs,clipPath,mask,pattern,linearGradient,radialGradient,marker,symbol';
+
+    function readInlineStyleValue(element, property) {
+      const style = element.getAttribute('style') || '';
+      const match = style.match(new RegExp(`(?:^|;)\s*${property}\s*:\s*([^;]+)`, 'i'));
+      return match ? match[1].replace(/!important/i, '').trim() : '';
     }
 
-    function getLayerLineWeightRules(layers, selectorForLayer) {
-      return layers
-        .map(layer => {
-          const lineWeight = getLayerLineWeight(layer);
-          if (!lineWeight) return '';
-          return `${selectorForLayer(layer)} * { stroke-width: ${formatNumber(lineWeight, 2)}px !important; }`;
-        })
-        .filter(Boolean)
-        .join('\n');
+    function readSvgPaint(element, property, { useComputed = false } = {}) {
+      const inlineValue = readInlineStyleValue(element, property);
+      if (inlineValue) return inlineValue;
+      const attrValue = element.getAttribute(property);
+      if (attrValue) return attrValue.trim();
+      if (useComputed && window.getComputedStyle) {
+        const computedValue = window.getComputedStyle(element).getPropertyValue(property).trim();
+        if (computedValue) return computedValue;
+      }
+      return '';
+    }
+
+    function isVisiblePaint(value) {
+      const normalized = String(value || '').trim().toLowerCase();
+      return Boolean(normalized && normalized !== 'none' && normalized !== 'transparent' && !/rgba?\([^)]*,\s*0\s*\)$/i.test(normalized));
+    }
+
+    function inferLayerStrokePaint(element, { useComputed = false } = {}) {
+      const stroke = readSvgPaint(element, 'stroke', { useComputed });
+      if (isVisiblePaint(stroke)) return stroke;
+      const fill = readSvgPaint(element, 'fill', { useComputed });
+      if (isVisiblePaint(fill)) return fill;
+      const color = readSvgPaint(element, 'color', { useComputed });
+      if (isVisiblePaint(color)) return color;
+      return '#ffffff';
+    }
+
+    function getLayerLineWeightTargets(root) {
+      const targets = [];
+      if (root.matches && root.matches(LINE_WEIGHT_TARGET_SELECTOR)) targets.push(root);
+      root.querySelectorAll(LINE_WEIGHT_TARGET_SELECTOR).forEach(target => targets.push(target));
+      return targets.filter(target => !target.closest(LINE_WEIGHT_SKIP_SELECTOR));
+    }
+
+    function applyLayerLineWeightToElement(root, layer, { useComputed = false } = {}) {
+      const lineWeight = getLayerLineWeight(layer);
+      if (!lineWeight) return;
+      const width = `${formatNumber(lineWeight, 2)}px`;
+      getLayerLineWeightTargets(root).forEach(target => {
+        const stroke = readSvgPaint(target, 'stroke', { useComputed });
+        if (!isVisiblePaint(stroke)) {
+          target.style.setProperty('stroke', inferLayerStrokePaint(target, { useComputed }), 'important');
+        }
+        target.style.setProperty('stroke-width', width, 'important');
+        target.style.setProperty('stroke-linecap', 'round', 'important');
+        target.style.setProperty('stroke-linejoin', 'round', 'important');
+        target.style.setProperty('vector-effect', 'non-scaling-stroke', 'important');
+      });
+    }
+
+    function getLayerInnerForExport(layer) {
+      if (!getLayerLineWeight(layer)) return layer.inner;
+      const wrapper = createElement('svg');
+      wrapper.innerHTML = layer.inner;
+      applyLayerLineWeightToElement(wrapper, layer);
+      return serializeChildren(wrapper);
     }
 
     function normalizeCrop(layer, crop = layer?.crop || {}) {
@@ -2248,24 +2299,6 @@
       if (added) setStatus(`${added} SVG layer${added === 1 ? '' : 's'} added.`, 'ok');
     }
 
-    function renderLayerLineWeightDefs() {
-      const defs = els.editorSvg.querySelector('defs');
-      if (!defs) return;
-      const rules = getLayerLineWeightRules(state.layers, layer => `g[data-layer-id="${layer.id}"]`);
-      let style = defs.querySelector('#layerLineWeightStyle');
-      if (!rules) {
-        if (style) style.remove();
-        return;
-      }
-      if (!style) {
-        style = createElement('style', { id: 'layerLineWeightStyle' });
-        defs.appendChild(style);
-      }
-      style.textContent = `
-${rules}
-`;
-    }
-
     function renderLayerCropDefs() {
       const defs = els.editorSvg.querySelector('defs');
       if (!defs) return;
@@ -2290,7 +2323,6 @@ ${rules}
 
     function renderLayers() {
       els.layerArt.replaceChildren();
-      renderLayerLineWeightDefs();
       renderLayerCropDefs();
       state.layers.forEach(layer => {
         const attrs = {
@@ -2304,6 +2336,7 @@ ${rules}
         const group = createElement('g', attrs);
         group.innerHTML = layer.inner;
         els.layerArt.appendChild(group);
+        applyLayerLineWeightToElement(group, layer, { useComputed: true });
       });
     }
 
@@ -2367,30 +2400,26 @@ ${rules}
       const layer = getActiveLayer();
       const enabled = Boolean(layer && layer.visible);
       const editable = enabled && !layer?.locked;
-      [els.layerX, els.layerY, els.layerRotation, els.layerScale, els.layerOpacity].forEach(input => { input.disabled = !editable; });
-      [els.layerLineWeight, els.layerLineWeightNumber, els.resetLayerLineWeight].forEach(input => { input.disabled = !editable; });
+      [els.layerX, els.layerY, els.layerRotation, els.layerScale, els.layerOpacity, els.layerLineWeight, els.layerLineWeightNumber].forEach(input => { input.disabled = !editable; });
       [els.cropLeft, els.cropTop, els.cropRight, els.cropBottom].forEach(input => { input.disabled = !editable; });
+      els.resetLayerLineWeight.disabled = !editable || !getLayerLineWeight(layer);
       els.applyCrop.disabled = !editable;
       els.resetCrop.disabled = !editable;
       els.fitSelected.disabled = !editable;
       els.centerSelected.disabled = !editable;
       els.exportSelected.disabled = !enabled;
-      if (!enabled) {
-        els.layerLineWeight.value = 1;
-        els.layerLineWeightNumber.value = '';
-        return;
-      }
-      const lineWeight = getLayerLineWeight(layer);
-      els.layerLineWeight.value = lineWeight ?? 1;
-      els.layerLineWeightNumber.value = lineWeight ? formatNumber(lineWeight, 2) : '';
-      els.resetLayerLineWeight.disabled = !editable || !lineWeight;
 
+      if (!enabled) return;
       const crop = normalizeCrop(layer);
       els.layerX.value = formatNumber(layer.x, 1);
       els.layerY.value = formatNumber(layer.y, 1);
       els.layerRotation.value = formatNumber(layer.rotation, 1);
       els.layerScale.value = formatNumber(layer.scale, 3);
       els.layerOpacity.value = formatNumber(layer.opacity, 2);
+      const lineWeight = getLayerLineWeight(layer);
+      els.layerLineWeight.value = lineWeight ?? 1;
+      els.layerLineWeightNumber.value = lineWeight ? formatNumber(lineWeight, 2) : '';
+      els.resetLayerLineWeight.disabled = !editable || !lineWeight;
       els.cropLeft.value = formatNumber(crop.left, 1);
       els.cropTop.value = formatNumber(crop.top, 1);
       els.cropRight.value = formatNumber(crop.right, 1);
@@ -2449,15 +2478,6 @@ ${rules}
       return state.strokes.map(stroke => `    <path d="${pointsToPath(stroke.points)}" fill="none" stroke="${escapeXml(stroke.color)}" stroke-width="${formatNumber(stroke.weight)}" stroke-linecap="${stroke.round ? 'round' : 'butt'}" stroke-linejoin="${stroke.round ? 'round' : 'miter'}"/>`).join('\n');
     }
 
-    function getExportLayerLineWeightDefs({ selectedOnly = false } = {}) {
-      const selectedLayer = getActiveLayer();
-      const sourceLayers = selectedOnly && selectedLayer ? [selectedLayer] : state.layers;
-      const rules = getLayerLineWeightRules(sourceLayers, layer => `#${escapeCssIdentifier(layer.id)}`);
-      return rules ? `    <style>
-${rules.split('\n').map(rule => `      ${rule}`).join('\n')}
-    </style>` : '';
-    }
-
     function buildLayerMarkup(layer, { selectedOnly = false } = {}) {
       if (!selectedOnly && !layer.visible && !els.includeHidden.checked) return '';
       const hiddenAttrs = layer.visible ? '' : ' style="display:none"';
@@ -2470,29 +2490,15 @@ ${rules.split('\n').map(rule => `      ${rule}`).join('\n')}
         cropDefs = `      <defs><clipPath id="${escapeXml(cropId)}" clipPathUnits="userSpaceOnUse"><rect x="${formatNumber(box.x)}" y="${formatNumber(box.y)}" width="${formatNumber(box.width)}" height="${formatNumber(box.height)}"/></clipPath></defs>\n`;
         cropAttr = ` clip-path="url(#${escapeXml(cropId)})"`;
       }
-      return `    <g id="${escapeXml(layer.id)}" data-name="${escapeXml(layer.name)}" transform="${getLayerTransform(layer)}"${opacityAttr}${hiddenAttrs}${cropAttr}>\n${cropDefs}${layer.inner}\n    </g>`;
+      const layerInner = getLayerInnerForExport(layer);
+      return `    <g id="${escapeXml(layer.id)}" data-name="${escapeXml(layer.name)}" transform="${getLayerTransform(layer)}"${opacityAttr}${hiddenAttrs}${cropAttr}>\n${cropDefs}${layerInner}\n    </g>`;
     }
 
     function buildSvg({ selectedOnly = false, forceOptimize = false } = {}) {
       const hasInvert = els.invert.checked;
-      const defsParts = [];
-      if (hasInvert) {
-        defsParts.push(`    <filter id="invert-colors" color-interpolation-filters="sRGB">
-      <feComponentTransfer>
-        <feFuncR type="table" tableValues="1 0"/>
-        <feFuncG type="table" tableValues="1 0"/>
-        <feFuncB type="table" tableValues="1 0"/>
-        <feFuncA type="identity"/>
-      </feComponentTransfer>
-    </filter>`);
-      }
-      const lineWeightDefs = getExportLayerLineWeightDefs({ selectedOnly });
-      if (lineWeightDefs) defsParts.push(lineWeightDefs);
-      const defs = defsParts.length ? `  <defs>
-${defsParts.join('
-')}
-  </defs>
-` : '';
+      const defs = hasInvert
+        ? `  <defs>\n    <filter id="invert-colors" color-interpolation-filters="sRGB">\n      <feComponentTransfer>\n        <feFuncR type="table" tableValues="1 0"/>\n        <feFuncG type="table" tableValues="1 0"/>\n        <feFuncB type="table" tableValues="1 0"/>\n        <feFuncA type="identity"/>\n      </feComponentTransfer>\n    </filter>\n  </defs>\n`
+        : '';
       const transform = getGlobalTransform();
       const filterAttr = hasInvert ? ' filter="url(#invert-colors)"' : '';
       const selectedLayer = getActiveLayer();
@@ -2963,6 +2969,7 @@ ${defsParts.join('
       const lineWeight = getLayerLineWeight(layer);
       els.layerLineWeight.value = lineWeight ?? 1;
       els.layerLineWeightNumber.value = lineWeight ? formatNumber(lineWeight, 2) : '';
+      els.resetLayerLineWeight.disabled = !lineWeight;
       scheduleRender();
     }
 
@@ -2972,6 +2979,7 @@ ${defsParts.join('
       layer.lineWeight = null;
       els.layerLineWeight.value = 1;
       els.layerLineWeightNumber.value = '';
+      els.resetLayerLineWeight.disabled = true;
       scheduleRender();
       setStatus('Selected SVG line weight reset to original.', 'ok');
     }
