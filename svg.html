@@ -998,14 +998,33 @@
 
     /* ── Mode switching ── */
     .mode-view {
-      display: none;
+      display: block;
+      grid-row: 2;
+      grid-column: 1;
       min-height: 0;
       height: 100%;
       overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition:
+        opacity 220ms ease,
+        transform 220ms ease,
+        visibility 0s linear 220ms;
+      will-change: opacity, transform;
+    }
+
+    .mode-view[hidden] {
+      display: none !important;
     }
 
     .mode-view.active {
-      display: block;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+      transition-delay: 0s, 0s, 0s;
     }
 
     .mode-view.active > .workspace,
@@ -1015,16 +1034,41 @@
     }
 
     .mode-switch {
-      display: inline-flex;
+      --mode-thumb-x: 0;
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: center;
       gap: 5px;
       padding: 4px;
       border: 1px solid var(--line);
       border-radius: var(--radius-sm);
       background: var(--input-bg);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .mode-switch::before {
+      content: "";
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: calc((100% - 13px) / 2);
+      border-radius: calc(var(--radius-sm) - 3px);
+      background: var(--accent);
+      transform: translateX(var(--mode-thumb-x));
+      transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), background 160ms ease;
+      z-index: 0;
+    }
+
+    .mode-switch.converter-active {
+      --mode-thumb-x: calc(100% + 5px);
     }
 
     .mode-switch-btn {
+      position: relative;
+      z-index: 1;
       min-height: 30px;
       padding: 6px 11px;
       border-color: transparent;
@@ -1034,16 +1078,30 @@
       font-weight: 800;
       letter-spacing: 0.04em;
       text-transform: uppercase;
+      transition: color 160ms ease, background 160ms ease;
     }
 
-    .mode-switch-btn:hover {
+    .mode-switch-btn:hover:not(.active) {
       color: var(--text);
       background: var(--surface-2);
     }
 
-    .mode-switch-btn.active {
+    .mode-switch-btn.active,
+    .mode-switch-btn.active:hover {
       color: #fff;
-      background: var(--accent);
+      background: transparent;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mode-view,
+      .mode-switch::before,
+      .mode-switch-btn {
+        transition: none;
+      }
+
+      .mode-view {
+        transform: none;
+      }
     }
 
     /* ── PNG → SVG Converter mode ── */
@@ -3069,20 +3127,45 @@
       const converterMode = document.getElementById('converterMode');
       const editorBtn = document.getElementById('editorModeBtn');
       const converterBtn = document.getElementById('converterModeBtn');
+      const modeSwitch = document.querySelector('.mode-switch');
+      let activeMode = editorMode.classList.contains('active') ? 'editor' : 'converter';
+      let modeHideTimer = null;
 
       function setMode(mode) {
+        if (mode === activeMode) return;
+
         const isConverter = mode === 'converter';
-        editorMode.classList.toggle('active', !isConverter);
-        converterMode.classList.toggle('active', isConverter);
-        editorMode.hidden = isConverter;
-        converterMode.hidden = !isConverter;
-        editorBtn.classList.toggle('active', !isConverter);
-        converterBtn.classList.toggle('active', isConverter);
-        editorBtn.setAttribute('aria-selected', String(!isConverter));
-        converterBtn.setAttribute('aria-selected', String(isConverter));
-        appTitle.textContent = isConverter ? 'PNG to SVG' : 'SVG Editor';
+        const nextView = isConverter ? converterMode : editorMode;
+        const previousView = isConverter ? editorMode : converterMode;
+
+        window.clearTimeout(modeHideTimer);
+        nextView.hidden = false;
+        previousView.hidden = false;
+        void nextView.offsetWidth;
+
+        requestAnimationFrame(() => {
+          editorMode.classList.toggle('active', !isConverter);
+          converterMode.classList.toggle('active', isConverter);
+          modeSwitch.classList.toggle('converter-active', isConverter);
+          editorBtn.classList.toggle('active', !isConverter);
+          converterBtn.classList.toggle('active', isConverter);
+          editorBtn.setAttribute('aria-selected', String(!isConverter));
+          converterBtn.setAttribute('aria-selected', String(isConverter));
+          editorMode.setAttribute('aria-hidden', String(isConverter));
+          converterMode.setAttribute('aria-hidden', String(!isConverter));
+          appTitle.textContent = isConverter ? 'PNG to SVG' : 'SVG Editor';
+        });
+
+        modeHideTimer = window.setTimeout(() => {
+          if (!previousView.classList.contains('active')) previousView.hidden = true;
+        }, 260);
+
+        activeMode = mode;
       }
 
+      editorMode.setAttribute('aria-hidden', 'false');
+      converterMode.setAttribute('aria-hidden', 'true');
+      modeSwitch.classList.toggle('converter-active', activeMode === 'converter');
       editorBtn.addEventListener('click', () => setMode('editor'));
       converterBtn.addEventListener('click', () => setMode('converter'));
     })();
