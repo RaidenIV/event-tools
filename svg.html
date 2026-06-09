@@ -1219,7 +1219,7 @@
 
     .converter-options {
       display: grid;
-      grid-template-columns: minmax(220px, 1.2fr) minmax(150px, 0.8fr) minmax(170px, 0.8fr);
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
       gap: 12px;
       padding: 12px 14px;
       border-top: 1px solid var(--line-soft);
@@ -1644,7 +1644,7 @@
           <div class="converter-toolbar">
             <div class="converter-heading">
               <span class="converter-heading-main">PNG to SVG Converter</span>
-              <span class="converter-heading-sub">Upload PNGs and generate SVG output</span>
+              <span class="converter-heading-sub">Upload PNGs and generate true vector SVG paths by default</span>
             </div>
             <div class="status converter-status" id="convStatus" aria-live="polite"></div>
           </div>
@@ -1674,6 +1674,18 @@
           </div>
 
           <div class="converter-options" aria-label="Generated SVG options">
+            <div class="converter-option">
+              <label for="convMode">SVG Output</label>
+              <div class="select-wrap">
+                <select id="convMode">
+                  <option value="trace" selected>True vector trace</option>
+                  <option value="pixel">Pixel-perfect vector paths</option>
+                  <option value="embed">Legacy PNG wrapper</option>
+                </select>
+              </div>
+              <div class="hint" id="convModeHint">Creates real SVG path data. No embedded PNG image tag.</div>
+            </div>
+
             <div class="converter-option">
               <label for="convColorMode">SVG Color</label>
               <div class="converter-color-control">
@@ -1713,20 +1725,14 @@
           </div>
 
           <div class="converter-hidden-controls" aria-hidden="true">
-            <select id="convMode" tabindex="-1">
-              <option value="embed" selected>Exact visual SVG wrapper</option>
-              <option value="pixel">Pixel-perfect vector paths</option>
-              <option value="trace">Flat-color region trace</option>
-            </select>
-            <span id="convModeHint">Exact visual fidelity. The PNG is embedded inside an SVG, so it is not a true editable vector.</span>
             <span id="convAlphaValue">0</span>
             <input id="convAlpha" type="range" min="0" max="255" value="0" tabindex="-1" />
             <div id="convQuantWrap">
               <select id="convQuant" tabindex="-1">
-                <option value="0" selected>Exact colors</option>
+                <option value="0">Exact colors</option>
                 <option value="64">64 levels per channel</option>
                 <option value="32">32 levels per channel</option>
-                <option value="16">16 levels per channel</option>
+                <option value="16" selected>16 levels per channel</option>
                 <option value="8">8 levels per channel</option>
                 <option value="4">4 levels per channel</option>
               </select>
@@ -3124,9 +3130,9 @@
           };
 
           const modeHints = {
-            embed: 'Exact visual fidelity. The PNG is embedded inside an SVG, so it is not a true editable vector.',
-            pixel: 'Exact pixel geometry. Every visible pixel becomes vector path data, grouped by color. Best for pixel art or small icons.',
-            trace: 'Best for simple icons/logos with transparency and flat colors. Converts color regions into SVG paths.'
+            trace: 'Creates real SVG path data from flat color regions. Best default for logos and icons.',
+            pixel: 'Creates real SVG path data for every visible pixel run. True vector output, but files can be large/blocky.',
+            embed: 'Legacy wrapper only. Embeds the PNG inside an SVG with an <image> tag. Not a true editable vector.'
           };
 
           function setStatus(message, type = '') {
@@ -3273,6 +3279,13 @@
             els.modeHint.textContent = modeHints[mode];
             els.quantWrap.style.display = mode === 'embed' || mode === 'pixel' ? 'none' : 'block';
             els.maxColors.disabled = mode !== 'trace';
+
+            if (!state.imageData) {
+              setStatus(mode === 'embed'
+                ? 'Legacy wrapper selected. Output will not be a true vector SVG.'
+                : 'Ready for true vector conversion.',
+                mode === 'embed' ? 'warn' : '');
+            }
           }
 
           function getPixel(data, width, x, y) {
@@ -3533,9 +3546,17 @@
                 if (mode === 'pixel') svg = generatePixelVectorSvg();
                 if (mode === 'trace') svg = generateTraceSvg();
 
+                if (mode !== 'embed' && /<image\b/i.test(svg)) {
+                  throw new Error('Vector mode failed because the output still contains an embedded image tag.');
+                }
+
                 renderSvg(svg);
                 const modeLabel = els.mode.options[els.mode.selectedIndex].textContent;
-                setStatus(`${modeLabel} generated successfully.`, 'ok');
+                if (mode === 'embed') {
+                  setStatus(`${modeLabel} generated. Warning: this is a PNG wrapper, not a true vector SVG.`, 'warn');
+                } else {
+                  setStatus(`${modeLabel} generated successfully. Output contains real SVG path data.`, 'ok');
+                }
               } catch (error) {
                 setStatus(error.message || 'Could not generate SVG.', 'bad');
               }
@@ -3558,7 +3579,8 @@
             const blob = new Blob([state.lastSvg], { type: 'image/svg+xml' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `${state.fileName || 'converted'}.svg`;
+            const suffix = els.mode.value === 'embed' ? 'svg-wrapper' : 'true-vector';
+            a.download = `${state.fileName || 'converted'}_${suffix}.svg`;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -3572,6 +3594,7 @@
               <div><strong>File:</strong> ${escapeXml(state.file?.name || 'PNG')}</div>
               <div><strong>Dimensions:</strong> ${state.width} × ${state.height}px</div>
               <div><strong>Pixels:</strong> ${pixelCount.toLocaleString()}</div>
+              <div><strong>Default output:</strong> True vector SVG paths</div>
             `;
           }
 
@@ -3649,7 +3672,10 @@
           });
           els.dropzone.addEventListener('drop', event => loadFile(event.dataTransfer.files[0]));
 
-          els.mode.addEventListener('change', updateModeUi);
+          els.mode.addEventListener('change', () => {
+            updateModeUi();
+            regenerateIfReady();
+          });
           els.alpha.addEventListener('input', () => { els.alphaValue.textContent = els.alpha.value; });
           els.colorMode.addEventListener('change', () => {
             updateColorUi();
