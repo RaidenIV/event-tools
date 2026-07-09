@@ -254,6 +254,7 @@ label:first-of-type { margin-top: 0; }
 }
 
 .form-field { min-width: 0; }
+.form-row.form-row-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .form-row .form-field > label { margin-top: 16px; }
 .form-section-label + .form-divider + .form-row .form-field > label { margin-top: 0; }
 .form-row .checkbox {
@@ -427,7 +428,8 @@ input:-webkit-autofill:focus {
     .page-wrapper { padding: 80px 16px 32px; }
     .app-card { padding: 20px 18px 24px; }
     .card-title { font-size: 18px; }
-    .form-row { grid-template-columns: 1fr; gap: 0; }
+    .form-row,
+    .form-row.form-row-three { grid-template-columns: 1fr; gap: 0; }
     .form-row .checkbox { margin-top: 14px; }
 }
 </style>
@@ -485,14 +487,20 @@ input:-webkit-autofill:focus {
         <label for="venueAddress">Venue Address</label>
         <input type="text" id="venueAddress" value="1151 N High St, Columbus, OH 43201">
 
-        <label for="venuePhone">Venue Phone</label>
-        <input type="text" id="venuePhone" value="(614) 291-8856">
-
-        <label for="venueCapacity">Venue Capacity</label>
-        <input type="number" id="venueCapacity" value="650">
-
-        <label for="venueTimes">Venue Times</label>
-        <input type="text" id="venueTimes" value="8-2am">
+        <div class="form-row form-row-three">
+            <div class="form-field">
+                <label for="venuePhone">Venue Phone</label>
+                <input type="text" id="venuePhone" value="(614) 291-8856">
+            </div>
+            <div class="form-field">
+                <label for="venueCapacity">Venue Capacity</label>
+                <input type="number" id="venueCapacity" value="650">
+            </div>
+            <div class="form-field">
+                <label for="venueTimes">Venue Hours</label>
+                <input type="text" id="venueTimes" value="8-2am">
+            </div>
+        </div>
 
         <div class="form-section-label" style="margin-top:20px;">Show Details</div>
         <hr class="form-divider">
@@ -695,7 +703,7 @@ input:-webkit-autofill:focus {
         yPos = sectionY('Venue Address: ',    venueData.address,  yPos);
         yPos = sectionY('Venue Phone: ',      venueData.phone,    yPos);
         yPos = sectionY('Venue Capacity: ',   venueData.capacity, yPos);
-        yPos = sectionY('Venue Times: ',      venueData.times,    yPos);
+        yPos = sectionY('Venue Hours: ',      venueData.times,    yPos);
         yPos = sectionY('Age Requirements: ', venueData.age,      yPos);
         yPos = sectionY('Ticket Price: ',     ticketPrice || '',  yPos);
         yPos = sectionY('Set Times: ',        setTime,            yPos);
