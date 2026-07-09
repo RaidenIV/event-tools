@@ -87,25 +87,37 @@ html, body {
 .nav-toggle:hover {
     background: rgba(39, 42, 49, 0.95);
     border-color: var(--accent);
+    color: var(--accent);
 }
 
-.nav-toggle .hamburger {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    pointer-events: none;
-}
-
-.nav-toggle .hamburger span {
-    display: block;
-    width: 20px;
+.nav-toggle-icon {
+    position: relative;
+    width: 18px;
     height: 2px;
-    background: var(--text);
+    background: currentColor;
     border-radius: 2px;
-    transition: background 0.2s;
+    pointer-events: none;
+    transition: 0.3s;
 }
 
-.nav-toggle:hover .hamburger span { background: var(--accent); }
+.nav-toggle-icon::before,
+.nav-toggle-icon::after {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    left: 0;
+    transition: 0.3s;
+}
+
+.nav-toggle-icon::before { top: -6px; }
+.nav-toggle-icon::after { top: 6px; }
+
+.nav-dropdown.active .nav-toggle-icon { background: transparent; }
+.nav-dropdown.active .nav-toggle-icon::before { top: 0; transform: rotate(45deg); }
+.nav-dropdown.active .nav-toggle-icon::after { top: 0; transform: rotate(-45deg); }
 
 .nav-menu {
     position: absolute;
@@ -233,6 +245,21 @@ label {
 }
 
 label:first-of-type { margin-top: 0; }
+
+.form-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    align-items: end;
+}
+
+.form-field { min-width: 0; }
+.form-row .form-field > label { margin-top: 16px; }
+.form-section-label + .form-divider + .form-row .form-field > label { margin-top: 0; }
+.form-row .checkbox {
+    min-height: 40px;
+    margin-top: 16px;
+}
 
 input[type="text"],
 input[type="date"],
@@ -400,6 +427,8 @@ input:-webkit-autofill:focus {
     .page-wrapper { padding: 80px 16px 32px; }
     .app-card { padding: 20px 18px 24px; }
     .card-title { font-size: 18px; }
+    .form-row { grid-template-columns: 1fr; gap: 0; }
+    .form-row .checkbox { margin-top: 14px; }
 }
 </style>
 </head>
@@ -408,9 +437,7 @@ input:-webkit-autofill:focus {
 <!-- Hamburger Navigation -->
 <div class="nav-dropdown" id="navDropdown">
     <button class="nav-toggle" id="navToggle" aria-label="Open navigation menu">
-        <div class="hamburger">
-            <span></span><span></span><span></span>
-        </div>
+        <span class="nav-toggle-icon"></span>
     </button>
     <div class="nav-menu">
         <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
@@ -438,27 +465,58 @@ input:-webkit-autofill:focus {
         <div class="form-section-label">Artist</div>
         <hr class="form-divider">
 
-        <label for="headliner">Headliner Name</label>
-        <input type="text" id="headliner" placeholder="e.g. AKIRAH" required>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="headliner">Headliner Name</label>
+                <input type="text" id="headliner" placeholder="e.g. AKIRAH" required>
+            </div>
+            <div class="form-field">
+                <label for="date">Date</label>
+                <input type="date" id="date" required>
+            </div>
+        </div>
 
-        <label for="date">Date</label>
-        <input type="date" id="date" required>
+        <div class="form-section-label" style="margin-top:20px;">Venue</div>
+        <hr class="form-divider">
+
+        <label for="venueName">Venue Name</label>
+        <input type="text" id="venueName" value="Skully's Music Diner">
+
+        <label for="venueAddress">Venue Address</label>
+        <input type="text" id="venueAddress" value="1151 N High St, Columbus, OH 43201">
+
+        <label for="venuePhone">Venue Phone</label>
+        <input type="text" id="venuePhone" value="(614) 291-8856">
+
+        <label for="venueCapacity">Venue Capacity</label>
+        <input type="number" id="venueCapacity" value="650">
+
+        <label for="venueTimes">Venue Times</label>
+        <input type="text" id="venueTimes" value="8-2am">
 
         <div class="form-section-label" style="margin-top:20px;">Show Details</div>
         <hr class="form-divider">
 
-        <label for="ticketPrice">Ticket Price</label>
-        <input type="text" id="ticketPrice" placeholder="e.g. 30">
+        <div class="form-row">
+            <div class="form-field">
+                <label for="ticketPrice">Ticket Price</label>
+                <input type="text" id="ticketPrice" placeholder="e.g. 30">
+            </div>
+            <div class="form-field">
+                <label for="setTime">Set Time</label>
+                <input type="text" id="setTime" placeholder="e.g. 12:30–1:30am">
+            </div>
+        </div>
 
-        <label for="setTime">Set Time</label>
-        <input type="text" id="setTime" placeholder="e.g. 12:30–1:30am">
-
-        <label for="offerAmount">Offer Amount</label>
-        <input type="text" id="offerAmount" placeholder="e.g. 2000">
-
-        <div class="checkbox">
-            <input type="checkbox" id="hgr">
-            <label for="hgr">Include + HGR</label>
+        <div class="form-row">
+            <div class="form-field">
+                <label for="offerAmount">Offer Amount</label>
+                <input type="text" id="offerAmount" placeholder="e.g. 2000">
+            </div>
+            <div class="checkbox">
+                <input type="checkbox" id="hgr">
+                <label for="hgr">Include + HGR</label>
+            </div>
         </div>
 
         <div class="form-section-label" style="margin-top:20px;">Standard Terms</div>
@@ -569,6 +627,11 @@ input:-webkit-autofill:focus {
         const headliner      = document.getElementById('headliner').value.trim();
         const rawDate        = document.getElementById('date').value.trim();
         const formattedDate  = formatDate(rawDate);
+        venueData.name       = document.getElementById('venueName').value.trim();
+        venueData.address    = document.getElementById('venueAddress').value.trim();
+        venueData.phone      = document.getElementById('venuePhone').value.trim();
+        venueData.capacity   = document.getElementById('venueCapacity').value.trim();
+        venueData.times      = document.getElementById('venueTimes').value.trim();
         let   ticketPrice    = document.getElementById('ticketPrice').value.trim();
         const setTime        = document.getElementById('setTime').value.trim();
         let   offerAmount    = document.getElementById('offerAmount').value.trim();
