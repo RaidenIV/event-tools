@@ -666,9 +666,9 @@ function parseDisplay(s){
 
 /* ======= PRESETS ======= */
 const presets = {
-    newstandard: { count:7, start:"20:00", end:"02:00", slotDurations:[45,45,45,45,45,60,60,15] },
-    legacy:      { count:7, start:"20:00", end:"02:00", slotDurations:[45,45,45,45,45,45,60,30] },
-    latestart:   { count:6, start:"21:00", end:"02:00", slotDurations:[45,45,45,45,45,60,15] }
+    newstandard: { count:7, start:"20:00", end:"02:00", slotDurations:[45,45,45,45,45,60,75] },
+    legacy:      { count:7, start:"20:00", end:"02:00", slotDurations:[45,45,45,45,45,45,90] },
+    latestart:   { count:6, start:"21:00", end:"02:00", slotDurations:[45,45,45,45,45,75] }
 };
 
 let currentPreset = null;
@@ -761,7 +761,7 @@ function calculate(){
         const p=presets[currentPreset];
         let cur=start;
         p.slotDurations.forEach((dur,i)=>{
-            rows.push({ label:i===p.slotDurations.length-1?"B2B":names[i]||`DJ ${i+1}`, start:cur, end:cur+dur, dur, isB2B:i===p.slotDurations.length-1 });
+            rows.push({ label:names[i]||`DJ ${i+1}`, start:cur, end:cur+dur, dur, isB2B:false });
             cur+=dur;
         });
     } else {
