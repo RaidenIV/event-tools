@@ -28,48 +28,64 @@
             
             background: var(--bg) !important;
             color: #ffffff !important;
-            padding: 10px 20px !important;
+            padding: 10px 20px 40px !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
             justify-content: flex-start !important;
             box-sizing: border-box !important;
             width: 100% !important;
+            min-height: 100vh !important;
+            min-height: 100dvh !important;
         }
 
-        /* DESKTOP: Fixed one-page layout */
-        @media (min-width: 900px) {
-            html, body {
-                overflow: hidden !important;
-                height: 100vh !important;
-            }
-            #event-tools-dashboard {
-                height: 100vh !important;
-                overflow: hidden !important;
-            }
+        /* Squarespace shell — natural document flow, every wrapper flush and
+           covered so the page scrolls normally with no trailing background */
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 100% !important;
+            background: #1a1a1a !important;
+            overflow-x: hidden !important;
         }
 
-        /* MOBILE: Refined scrolling to stop at last card */
+        #header { display: none !important; }
+        #footer-sections { display: none !important; }
+
+        #siteWrapper,
+        #page,
+        #sections,
+        main,
+        article,
+        .page-section,
+        .content-wrapper,
+        .section-background,
+        .sqs-layout,
+        .sqs-row,
+        .sqs-block,
+        .sqs-block-content {
+            margin: 0 !important;
+            padding: 0 !important;
+            padding-bottom: 0 !important;
+            background: #1a1a1a !important;
+            box-sizing: border-box !important;
+        }
+
+        #page,
+        .page-section {
+            min-height: 100dvh !important;
+        }
+
+        /* MOBILE: Additional overrides */
         @media (max-width: 899px) {
-            html, body, 
-            #page, .page-section, .content-wrapper, 
-            .sqs-layout, .sqs-block {
-                background-color: #1a1a1a !important;
-                margin-bottom: 0 !important;
-                padding-bottom: 0 !important;
-                height: auto !important; 
-            }
-
             #event-tools-dashboard {
                 min-height: 100vh !important;
-                height: auto !important; 
+                min-height: 100dvh !important;
+                height: auto !important;
                 padding-top: 60px !important;
-                padding-bottom: 20px !important; 
+                padding-bottom: 20px !important;
                 overflow-y: visible !important;
-            }
-
-            footer, #footer-sections {
-                display: none !important;
             }
         }
 
@@ -354,6 +370,64 @@
         .logo-card .brand-logo-svg * {
             fill: currentColor !important;
         }
+
+        /* 1440px: lock to 4 columns, preserve card shape */
+        @media (min-width: 1440px) {
+            .tools-container {
+                max-width: 1166px !important;
+            }
+            .tools-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 14px !important;
+            }
+        }
+
+        /* 1920x1200: full large-screen layout with 4-column tool grid */
+        @media (min-width: 1800px) {
+            #event-tools-dashboard {
+                padding: 14px 32px !important;
+            }
+            .tools-container {
+                max-width: 1373px !important;
+                margin-top: 12px !important;
+            }
+            .tools-header {
+                margin-bottom: 16px !important;
+            }
+            .tools-logo {
+                width: 112px !important;
+                margin-bottom: 8px !important;
+            }
+            .tools-title {
+                font-size: 3.2rem !important;
+            }
+            .tools-subtitle {
+                font-size: 0.95rem !important;
+                margin-bottom: 8px !important;
+            }
+            .tools-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 16px !important;
+            }
+            .tool-card {
+                height: 120px !important;
+                padding: 16px 18px !important;
+                border-radius: 18px !important;
+            }
+            .tool-icon {
+                width: 46px !important;
+                height: 46px !important;
+            }
+            .tool-title {
+                font-size: 1.28rem !important;
+            }
+            .tool-desc {
+                font-size: 0.88rem !important;
+            }
+            .logo-card {
+                height: 60px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -591,6 +665,20 @@
 </svg>
 </div>
 </a>
+<a class="tool-card" href="javascript:void(0)" onclick="goToTool('rolodex')">
+<div class="tool-icon">
+<svg aria-hidden="true" fill="currentColor" focusable="false" viewBox="0 -960 960 960" xmlns="http://www.w3.org/2000/svg"><path d="M480-278q-72 0-140 27.5T213-166q4 3 8 4.5t9 1.5h498q5 0 8.5-1.5t7.5-4.5q-57-57-124-84.5T480-278Zm-280 86q54-53 125.5-83.5T480-306q83 0 154.5 30.5T760-192v-496q0-12-10-22t-22-10H232q-12 0-22 10t-10 22v496Zm199-267q-33-33-33-81t33-81q33-33 81-33t81 33q33 33 33 81t-33 81q-33 33-81 33t-81-33Zm141.5-20.5Q566-505 566-540t-25.5-60.5Q515-626 480-626t-60.5 25.5Q394-575 394-540t25.5 60.5Q445-454 480-454t60.5-25.5ZM232-132q-26 0-43-17t-17-43v-496q0-26 17-43t43-17h80v-76q0-7 4.5-11.5T328-840q7 0 11.5 4.5T344-824v76h276v-78q0-6 4-10t10-4q6 0 10 4t4 10v78h80q26 0 43 17t17 43v496q0 26-17 43t-43 17H232Zm248-408Zm0 380h264-531 267Z"/></svg>
+</div>
+<div class="tool-content">
+<h3 class="tool-title">Rolodex</h3>
+<p class="tool-desc">Contact &amp; network tracking database</p>
+</div>
+<div class="tool-arrow">
+<svg fill="none" viewbox="0 0 24 24">
+<path d="M9 18l6-6-6-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+</a>
 <!-- XODIA Media Pipeline -->
 <a class="tool-card" href="https://www.dropbox.com/scl/fo/186e0ntwlpixey8l9mcgh/ADIYQWXrRZnhcb46jKqH7YA?rlkey=4fokexzut58kcmywi3pnnffj7&st=d23atw6p&dl=0" target="_blank" rel="noopener noreferrer">
 <div class="tool-icon">
@@ -667,6 +755,42 @@
 
         let lightMode = false;
 
+        function syncSquarespaceBackground() {
+            const pageBg = lightMode ? '#e8eaed' : '#1a1a1a';
+            const wrapperSelectors = [
+                'html', 'body', '#siteWrapper', '#page', '#sections',
+                'main', 'article', '.page-section', '.content-wrapper',
+                '.section-background', '.sqs-layout', '.sqs-row',
+                '.sqs-block', '.sqs-block-content'
+            ];
+
+            wrapperSelectors.forEach((selector) => {
+                document.querySelectorAll(selector).forEach((el) => {
+                    el.style.setProperty('background', pageBg, 'important');
+                    el.style.setProperty('margin-bottom', '0', 'important');
+                    el.style.setProperty('padding-bottom', '0', 'important');
+                });
+            });
+
+            const shrinkSelectors = [
+                '#page', '#sections', 'main', 'article', '.page-section',
+                '.content-wrapper', '.section-background', '.sqs-layout',
+                '.sqs-row', '.sqs-block', '.sqs-block-content'
+            ];
+
+            shrinkSelectors.forEach((selector) => {
+                document.querySelectorAll(selector).forEach((el) => {
+                    el.style.setProperty('min-height', '0', 'important');
+                });
+            });
+
+            dashboard.style.setProperty('min-height', 'auto', 'important');
+            dashboard.style.setProperty('height', 'auto', 'important');
+            dashboard.style.setProperty('padding-bottom', window.innerWidth <= 899 ? '10px' : '12px', 'important');
+        }
+
+        syncSquarespaceBackground();
+
         themeToggle.addEventListener('click', function () {
             lightMode = !lightMode;
             dashboard.classList.toggle('light-mode', lightMode);
@@ -674,17 +798,21 @@
             iconMoon.style.display  = lightMode ? 'none' : '';
             iconSun.style.display   = lightMode ? ''     : 'none';
             toolsLogo.src           = lightMode ? LOGO_LIGHT : LOGO_DARK;
+            syncSquarespaceBackground();
         });
 
         function goToTool(tool) {
             const base = "https://raideniv.github.io/event-tools/";
             const base2 = "https://budgetapp-production-c754.up.railway.app/";
             const base3 = "https://djdatabase-production.up.railway.app/";
+            const base4 = "https://rolodex-production-0e24.up.railway.app/";
+            const base5 = "https://guest-list-production.up.railway.app/";
+            const base6 = "https://upcoming-events-gen-production.up.railway.app/";
 
             const routes = {
                 'sheet': base + "google_sheet.html",
                 'master': base + "master_sheet.html",
-                'guest_list': base + "guest_list.html",
+                'guest_list': base5,
                 'pdf': base + "pdf_maker.html",
                 'budget': base2,
                 'invoice': base + "invoice_generator.html",
@@ -692,8 +820,9 @@
                 'contest': base + "contest_wheel.html",
                 'ros': base + "ros_generator.html",
                 'notes': base + "notes.html",
-                'code_block': base + "event_code_block.html",
+                'code_block': base6,
                 'database': base3,
+                'rolodex': base4,
                 'gallery': "/gallery",
                 'qr_code': base + "qr_code_generator.html"
             };
