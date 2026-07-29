@@ -17,6 +17,7 @@
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <style>
 /* ======= DESIGN.MD — BITSTREAM LOGIC TOKENS ======= */
@@ -316,6 +317,59 @@ input:-webkit-autofill:focus {
     caret-color: var(--text) !important;
 }
 
+/* ======= PDF IMPORT ======= */
+.pdf-import {
+    margin-bottom: 20px;
+}
+
+.pdf-import-input {
+    display: none;
+}
+
+.btn-import {
+    display: block;
+    width: 100%;
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 11px 13px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.btn-import:hover,
+.btn-import:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(172,199,255,0.08);
+    outline: none;
+}
+
+.btn-import:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.pdf-import-status {
+    min-height: 18px;
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.pdf-import-status[data-state="success"] {
+    color: #86d98b;
+}
+
+.pdf-import-status[data-state="error"] {
+    color: #ff8c8c;
+}
+
 /* ======= DEPOSIT PERCENTAGE TOGGLE ======= */
 .deposit-toggle-group {
     display: flex;
@@ -464,6 +518,15 @@ input:-webkit-autofill:focus {
 
     <form id="offerForm">
 
+        <div class="form-section-label">Import Existing Offer</div>
+        <hr class="form-divider">
+
+        <div class="pdf-import">
+            <input class="pdf-import-input" type="file" id="pdfUpload" accept="application/pdf,.pdf">
+            <button type="button" class="btn-import" id="pdfUploadButton">Upload Existing PDF</button>
+            <p class="pdf-import-status" id="pdfImportStatus" role="status" aria-live="polite"></p>
+        </div>
+
         <div class="form-section-label">Artist</div>
         <hr class="form-divider">
 
@@ -563,6 +626,193 @@ input:-webkit-autofill:focus {
     }
 
     const pdfLogoUrl = 'https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/7803d573-dd87-40ed-9570-0bc7c5ed8915/xodia_logo_black.png?format=750w';
+
+    const pdfUpload       = document.getElementById('pdfUpload');
+    const pdfUploadButton = document.getElementById('pdfUploadButton');
+    const pdfImportStatus = document.getElementById('pdfImportStatus');
+
+    const importFieldMap = {
+        'artist': 'headliner',
+        'date': 'date',
+        'venue name': 'venueName',
+        'venue address': 'venueAddress',
+        'venue phone': 'venuePhone',
+        'venue capacity': 'venueCapacity',
+        'venue hours': 'venueTimes',
+        'ticket price': 'ticketPrice',
+        'set times': 'setTime',
+        'offer': 'offerAmount',
+        'additional terms': 'additionalTerms',
+        'special requests': 'specialRequests'
+    };
+
+    const ignoredPdfLabels = new Set([
+        'hold',
+        'age requirements',
+        'promoter name',
+        'promoter address',
+        'promoter website',
+        'promoter phone',
+        'promoter email',
+        'promoter signatory',
+        'standard terms'
+    ]);
+
+    const normalizePdfLabel = (value) => value
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\s*:\s*$/, '')
+        .toLowerCase();
+
+    function setImportStatus(message, state = '') {
+        pdfImportStatus.textContent = message;
+        if (state) {
+            pdfImportStatus.dataset.state = state;
+        } else {
+            delete pdfImportStatus.dataset.state;
+        }
+    }
+
+    function parsePdfDate(value) {
+        const match = value.trim().match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+        if (!match) return value.trim();
+        const [, month, day, year] = match;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+
+    async function extractPdfLines(file) {
+        if (!window.pdfjsLib) throw new Error('PDF reader failed to load.');
+
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const data = new Uint8Array(await file.arrayBuffer());
+        const pdf = await window.pdfjsLib.getDocument({ data }).promise;
+        const lines = [];
+
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+            const page = await pdf.getPage(pageNumber);
+            const content = await page.getTextContent();
+            const groupedLines = [];
+
+            content.items.forEach(item => {
+                const text = String(item.str || '').trim();
+                if (!text) return;
+
+                const x = item.transform[4];
+                const y = item.transform[5];
+                let line = groupedLines.find(candidate => Math.abs(candidate.y - y) < 2);
+
+                if (!line) {
+                    line = { y, items: [] };
+                    groupedLines.push(line);
+                }
+
+                line.items.push({ x, text });
+            });
+
+            groupedLines
+                .sort((a, b) => b.y - a.y)
+                .forEach(line => {
+                    const lineText = line.items
+                        .sort((a, b) => a.x - b.x)
+                        .map(item => item.text)
+                        .join(' ')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+
+                    if (lineText) lines.push(lineText);
+                });
+        }
+
+        return lines;
+    }
+
+    function parseOfferPdf(lines) {
+        const values = Object.values(importFieldMap).reduce((result, inputId) => {
+            result[inputId] = '';
+            return result;
+        }, {});
+        const knownLabels = new Set([...Object.keys(importFieldMap), ...ignoredPdfLabels]);
+        let matchedFields = 0;
+
+        lines.forEach((line, index) => {
+            const label = normalizePdfLabel(line);
+            if (!knownLabels.has(label)) return;
+
+            const nextLine = lines[index + 1] || '';
+            const nextLabel = normalizePdfLabel(nextLine);
+            const value = knownLabels.has(nextLabel) ? '' : nextLine.trim();
+
+            if (importFieldMap[label]) {
+                values[importFieldMap[label]] = value;
+                matchedFields += 1;
+            }
+        });
+
+        const allText = lines.join(' ');
+        const depositMatch = allText.match(/Deposit amount not to exceed\s+(10|20|50)%/i);
+        values.depositPct = depositMatch ? depositMatch[1] : '20';
+
+        const importedOffer = values.offerAmount || '';
+        values.hgr = /(?:\+|\b)\s*HGR\b/i.test(importedOffer);
+        values.offerAmount = importedOffer
+            .replace(/\s*\+\s*HGR\b/gi, '')
+            .replace(/\s+HGR\b/gi, '')
+            .trim();
+
+        if (values.date) values.date = parsePdfDate(values.date);
+        values.matchedFields = matchedFields;
+        return values;
+    }
+
+    function populateOfferForm(values) {
+        let populatedCount = 0;
+
+        Object.entries(importFieldMap).forEach(([, inputId]) => {
+            if (!Object.prototype.hasOwnProperty.call(values, inputId)) return;
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.value = values[inputId];
+            populatedCount += 1;
+        });
+
+        document.getElementById('hgr').checked = Boolean(values.hgr);
+        const depositOption = document.querySelector(`input[name="depositPct"][value="${values.depositPct}"]`);
+        if (depositOption) depositOption.checked = true;
+
+        return populatedCount;
+    }
+
+    pdfUploadButton.addEventListener('click', () => pdfUpload.click());
+
+    pdfUpload.addEventListener('change', async function () {
+        const [file] = this.files;
+        if (!file) return;
+
+        pdfUploadButton.disabled = true;
+        pdfUploadButton.textContent = 'Reading PDF…';
+        setImportStatus('Extracting offer details…');
+
+        try {
+            const lines = await extractPdfLines(file);
+            const values = parseOfferPdf(lines);
+            populateOfferForm(values);
+
+            if (!values.headliner || !values.date || values.matchedFields < 2) {
+                throw new Error('This PDF does not match the generated talent offer format.');
+            }
+
+            setImportStatus(`${file.name} imported. Review or edit the populated fields before generating.`, 'success');
+        } catch (error) {
+            console.error(error);
+            setImportStatus(error.message || 'The PDF could not be imported.', 'error');
+        } finally {
+            pdfUploadButton.disabled = false;
+            pdfUploadButton.textContent = 'Upload Existing PDF';
+            pdfUpload.value = '';
+        }
+    });
 
     async function loadLogoDataUrlForPdf(url) {
         const res = await fetch(url, { mode: 'cors', cache: 'force-cache' });
