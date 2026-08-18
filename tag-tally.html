@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Tally</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <style>
+:root {
+  --bg: #0b0b0c;
+  --panel: #131316;
+  --text: #f2f2f4;
+  --muted: #a7a7ad;
+  --line: #2a2a2f;
+  --accent: #0099ff;
+  --success: #9fe6b8;
+  --warning: #ffd38a;
+  --danger: #fca5a5;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Rajdhani', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+body { padding: 20px; }
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding-top: 92px;
+}
+
+.main-card {
+  background: #0d0d0e;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.main-card > * { margin-bottom: 24px; }
+.main-card > *:last-child { margin-bottom: 0; }
+
+.main-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.main-logo { max-width: 150px; height: auto; flex-shrink: 0; }
+@media (max-width: 768px) { .main-logo { max-width: 100px; } }
+
+.header-left { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+h1 { font-size: 36px; font-weight: 700; margin: 0 0 6px; letter-spacing: 0.02em; }
+.subtitle { font-size: 16px; color: var(--muted); font-weight: 400; margin: 0; line-height: 1.5; }
+
+/* ---------- Nav ---------- */
+.nav-dropdown { position: fixed; top: 20px; left: 20px; z-index: 10000; }
+
+.nav-toggle {
+  background: linear-gradient(135deg, rgba(19,19,22,0.95) 0%, rgba(27,27,32,0.95) 100%);
+  border: 1px solid rgba(0,153,255,0.2);
+  border-radius: 14px;
+  height: 52px;
+  padding: 0 20px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Rajdhani', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  min-width: auto;
+  letter-spacing: 0.5px;
+}
+.nav-toggle::before { content: "\2630"; font-size: 18px; line-height: 1; }
+.nav-toggle:hover {
+  background: linear-gradient(135deg, rgba(0,153,255,0.15) 0%, rgba(0,136,238,0.15) 100%);
+  border-color: var(--accent);
+  box-shadow: 0 6px 30px rgba(0,153,255,0.2), 0 0 0 1px rgba(0,153,255,0.1) inset;
+  transform: translateY(-2px);
+}
+.nav-toggle:active { transform: translateY(0); }
+
+.nav-menu {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  background: linear-gradient(135deg, rgba(19,19,22,0.98) 0%, rgba(27,27,32,0.98) 100%);
+  border: 1px solid rgba(0,153,255,0.2);
+  border-radius: 16px;
+  padding: 8px;
+  min-width: 220px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset;
+}
+.nav-dropdown.active .nav-menu { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+.nav-menu a {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.nav-menu a:hover { background: rgba(0,153,255,0.12); color: var(--accent); }
+
+/* ---------- Cards ---------- */
+.search-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.info-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1024px) { .info-cards-row { grid-template-columns: 1fr; } }
+
+.section-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+.section-subtitle { font-size: 12px; color: var(--muted); margin: 0; }
+.card-header { margin-bottom: 16px; }
+
+/* ---------- Buttons ---------- */
+button {
+  border: 1px solid var(--line);
+  background: #1b1b20;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: 'Rajdhani', sans-serif;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+button:hover { background: #22222a; }
+button.primary { background: var(--accent); color: #fff; border: none; }
+button.primary:hover { background: #0088ee; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.controls { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ---------- Inputs ---------- */
+.search-input, textarea.search-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #0f0f12;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+  outline: none;
+  font-family: 'Rajdhani', sans-serif;
+}
+textarea.search-input {
+  min-height: 132px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,153,255,0.1); }
+
+.dropzone.drag { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,153,255,0.1); }
+
+/* ---------- Bookmarklet ---------- */
+.bookmarklet {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: grab;
+  transition: all 0.3s ease;
+}
+.bookmarklet:hover { background: #0088ee; transform: translateY(-1px); }
+.bookmarklet:active { cursor: grabbing; transform: translateY(0); }
+
+.steps-list { list-style: none; margin: 16px 0 0; padding: 0; }
+.steps-list li {
+  display: flex;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.steps-list li:last-child { border-bottom: none; }
+.steps-list .num {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+  width: 20px;
+  padding-top: 2px;
+}
+.steps-list b { color: var(--text); font-weight: 600; }
+
+/* ---------- Console ---------- */
+.mini-console {
+  background: #0b0b0c;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  overflow: auto;
+  height: 132px;
+  max-height: 132px;
+  margin-top: 16px;
+}
+.console-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.console-ts { color: rgba(255,255,255,0.45); margin-right: 8px; }
+.console-info { color: rgba(255,255,255,0.85); }
+.console-ok { color: var(--success); }
+.console-warn { color: var(--warning); }
+.console-red { color: var(--danger); }
+
+/* ---------- Stats ---------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.stat-box {
+  background: #0f0f12;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+}
+.stat-value { font-size: 30px; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 6px; font-weight: 500; }
+
+/* ---------- Winner ---------- */
+.winner-card {
+  background: linear-gradient(135deg, rgba(0,153,255,0.12) 0%, rgba(0,153,255,0.03) 100%);
+  border: 1px solid rgba(0,153,255,0.35);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.winner-label {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.winner-handle { font-size: 34px; font-weight: 700; margin: 4px 0 2px; line-height: 1.1; word-break: break-all; }
+.winner-detail { font-size: 15px; color: var(--muted); }
+
+/* ---------- Chart ---------- */
+.graph-container {
+  background: #0f0f12;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+}
+.chart-legend { display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap; }
+.chart-legend span { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.chart-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chart-wrap { position: relative; width: 100%; height: 560px; }
+canvas { width: 100% !important; }
+
+/* ---------- Table ---------- */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 0 12px 10px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+tbody td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+th.num, td.num { text-align: right; width: 90px; font-variant-numeric: tabular-nums; }
+td.rank { width: 46px; color: var(--muted); font-weight: 600; font-size: 13px; }
+td.handle { font-weight: 600; }
+tr.top-row td.handle { color: var(--accent); }
+.ratio-flag { color: var(--warning); }
+
+/* ---------- Empty state ---------- */
+.empty-state {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 60px 20px;
+  text-align: center;
+}
+.empty-state-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; }
+.empty-state-text { font-size: 20px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+.empty-state-hint { font-size: 13px; color: var(--muted); }
+
+.status-message { font-size: 13px; margin-top: 12px; min-height: 18px; }
+.status-message.success { color: var(--success); }
+.status-message.warning { color: var(--warning); }
+.status-message.error { color: var(--danger); }
+
+.footnote { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.footnote b { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="nav-dropdown" id="navDropdown">
+    <button class="nav-toggle" id="navToggle" type="button">Menu</button>
+    <div class="nav-menu">
+      <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
+      <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
+      <a href="https://www.xodiamediagroup.com/contact" target="_top" rel="noopener">Contact Us</a>
+      <a href="https://tools-dashboard-production-1c7c.up.railway.app/" target="_top" rel="noopener">Tools</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="main-card">
+      <div class="main-card-header">
+        <div class="header-left">
+          <h1>Tag Tally</h1>
+          <p class="subtitle">Counts tagged accounts in Instagram comments &mdash; by mentions and by how many different people tagged them</p>
+        </div>
+        <img
+          src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w"
+          alt="Xodia Media Group"
+          class="main-logo">
+      </div>
+
+      <div class="info-cards-row">
+        <div class="search-card">
+          <div class="card-header">
+            <h2 class="section-title">Collector</h2>
+            <p class="section-subtitle">Grabs the comments from a post</p>
+          </div>
+          <a class="bookmarklet" id="bookmarklet" href="#">Collect IG Tags</a>
+          <ol class="steps-list">
+            <li><span class="num">01</span><span><b>Drag that button to your bookmarks bar.</b> One time only.</span></li>
+            <li><span class="num">02</span><span>Open the Instagram post while logged in. If comments aren't showing, click the comment count first.</span></li>
+            <li><span class="num">03</span><span>Click the bookmark and wait. It loads every comment and opens every reply thread.</span></li>
+            <li><span class="num">04</span><span>Copy the result and paste it here.</span></li>
+          </ol>
+        </div>
+
+        <div class="search-card dropzone" id="dropzone">
+          <div class="card-header">
+            <h2 class="section-title">Import</h2>
+            <p class="section-subtitle">Paste collected data, or drop a saved Instagram page</p>
+          </div>
+          <textarea id="input" class="search-input" placeholder="Paste collected data here..."></textarea>
+          <div class="controls" style="margin-top:12px">
+            <button id="run" class="primary" type="button">Count Tags</button>
+            <button id="clear" type="button">Clear</button>
+          </div>
+          <div class="status-message" id="msg"></div>
+          <div class="mini-console" id="miniConsole" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">&#9678;</div>
+        <div class="empty-state-text">No results yet</div>
+        <div class="empty-state-hint">Run the collector on a post, then paste the data above</div>
+      </div>
+
+      <div id="results" style="display:none">
+        <div class="winner-card" id="winnerCard" style="margin-bottom:24px"></div>
+
+        <div class="stats-grid" id="stats" style="margin-bottom:24px"></div>
+
+        <div class="search-card" style="margin-bottom:24px">
+          <div class="card-header">
+            <h2 class="section-title">Top 15 Tagged Accounts</h2>
+            <p class="section-subtitle">Raw mentions vs unique commenters</p>
+          </div>
+          <div class="graph-container">
+            <div class="chart-legend">
+              <span><i style="background:#0099ff"></i>Raw mentions</span>
+              <span><i style="background:#ff7a2f"></i>Unique commenters</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="search-card">
+          <div class="card-header">
+            <h2 class="section-title">Full Results</h2>
+            <p class="section-subtitle">Every tagged account, ranked by unique commenters</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Account</th>
+                  <th class="num">Raw</th>
+                  <th class="num">Unique</th>
+                  <th class="num">Per Person</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="controls" style="margin-top:16px">
+            <button id="csv" type="button">Download CSV</button>
+            <button id="copy" type="button">Copy CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="footnote">
+        <b>Raw</b> counts every mention. <b>Unique</b> counts how many different people tagged that account &mdash;
+        one vote each, however many times they commented. A high per-person ratio means a small group tagging repeatedly.
+      </p>
+    </div>
+  </div>
+
+<script>
+function XODIA_COLLECTOR() {
+  var DELAY = 1200, MAX = 900, PATIENCE = 8, CLIMB = 12;
+  var RESERVED = ['p','reel','reels','explore','direct','stories','accounts','about',
+    'developer','legal','privacy','terms','api','tv','igtv','challenge','emails',
+    'session','ajax','graphql','web','oauth','your_activity'];
+
+  function handleOf(a){
+    var h = a.getAttribute('href'); if(!h) return null;
+    var p = h.replace(/^https?:\/\/(www\.)?instagram\.com/i,'').split('?')[0];
+    var m = /^\/([A-Za-z0-9._]+)\/$/.exec(p); if(!m) return null;
+    var u = m[1].toLowerCase();
+    return RESERVED.indexOf(u) >= 0 ? null : u;
+  }
+  function isMention(a){ return a.textContent.trim().charAt(0) === '@'; }
+  function links(){
+    var scope = ROOT || document;
+    return [].slice.call(scope.querySelectorAll('a[href]')).filter(handleOf);
+  }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  function moreBtns(){
+    var s = [].slice.call(document.querySelectorAll('svg[aria-label]'))
+      .filter(function(x){ return /load more comments/i.test(x.getAttribute('aria-label')); })
+      .map(function(x){ return x.closest('button,div[role="button"]'); }).filter(Boolean);
+    if (s.length) return s;
+    return [].slice.call(document.querySelectorAll('button,div[role="button"]'))
+      .filter(function(b){ return /^load more comments$/i.test(b.textContent.trim()); });
+  }
+  function replyBtns(){
+    return [].slice.call(document.querySelectorAll('span,div,button'))
+      .filter(function(e){
+        return e.children.length === 0 &&
+               /^view (all )?\d+ repl|^view replies/i.test(e.textContent.trim());
+      })
+      .map(function(e){ return e.closest('button,div[role="button"],span') || e; });
+  }
+
+  var box = document.createElement('div');
+  box.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483000;width:390px;'+
+    'background:#111317;color:#e7eef6;border:1px solid #232a33;border-radius:9px;padding:15px 17px;'+
+    'font:14px/1.5 Rajdhani,system-ui,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.6)';
+  document.body.appendChild(box);
+  function say(html){ box.innerHTML = html; }
+  say('<b style="color:#0099ff;letter-spacing:.1em">COLLECTING</b><br>Starting…');
+
+  function count(){ return links().length; }
+  function tagCount(){ return links().filter(isMention).length; }
+
+  // The comment list always sits in the same scroll pane as the "Add a comment"
+  // box. Anchoring there beats guessing from link positions — the tail of the
+  // page is the "More posts" grid, not comments.
+  var ROOT = null;
+
+  function composer(){
+    var t = document.querySelector('textarea[aria-label*="omment" i], textarea[placeholder*="omment" i]');
+    if (t) return t;
+    var els = document.querySelectorAll('textarea,span,div');
+    for (var i = 0; i < els.length; i++){
+      if (els[i].children.length === 0 && /^add a comment/i.test(els[i].textContent.trim())) return els[i];
+    }
+    return null;
+  }
+
+  function commentPanes(){
+    var c = composer();
+    if (!c) return [];
+    var el = c.parentElement;
+    for (var i = 0; i < 16 && el; i++){
+      var cands = [].slice.call(el.querySelectorAll('div,ul,section'))
+        .filter(function(x){ return x.clientHeight > 120 && x.scrollHeight > x.clientHeight + 80; });
+      if (cands.length){ ROOT = el; return cands; }
+      el = el.parentElement;
+    }
+    ROOT = c.parentElement;
+    return [];
+  }
+
+  function nudge(){
+    var panes = commentPanes();
+    if (panes.length){
+      panes.forEach(function(e){
+        e.scrollTop = Math.min(e.scrollTop + e.clientHeight * 0.85, e.scrollHeight);
+        e.dispatchEvent(new Event('scroll', { bubbles: true }));
+      });
+    } else {
+      var se = document.scrollingElement || document.documentElement;
+      se.scrollTop = Math.min(se.scrollTop + window.innerHeight * 0.85, se.scrollHeight);
+      window.dispatchEvent(new Event('scroll'));
+    }
+    return panes.length;
+  }
+
+  function status(label, detail){
+    say('<b style="color:#0099ff;letter-spacing:.1em">COLLECTING</b><br>' + label +
+        '<br><span style="color:#8496a8">' + detail + '</span>' +
+        '<br><span style="color:#4d5b6a;font-size:12px">Leave this tab open and in the foreground.</span>');
+  }
+
+  // Phase 1: scroll + click until nothing new arrives for PATIENCE rounds.
+  async function loadAll(){
+    var stale = 0, last = -1, targets = 0;
+    for (var i = 0; i < MAX; i++){
+      // several small scrolls beat one jump — lazy-loaders fire on the sentinel
+      for (var k = 0; k < 3; k++){ targets = nudge(); await sleep(220); }
+      var b = moreBtns();
+      if (b.length) b[0].click();
+
+      await sleep(DELAY);
+
+      var c = count();
+      if (c > last) { stale = 0; last = c; } else { stale++; }
+      status('Loading comments…',
+             c + ' loaded · ' + tagCount() + ' with tags' +
+             '<br>' + targets + ' scroll pane(s) · idle ' + stale + '/' + PATIENCE);
+      if (stale >= PATIENCE && !moreBtns().length) break;
+    }
+  }
+
+  // Phase 2: open every reply thread, re-checking as new ones appear.
+  async function expandReplies(){
+    var stale = 0;
+    for (var i = 0; i < MAX; i++){
+      var b = replyBtns();
+      if (!b.length) { if (++stale >= PATIENCE) break; }
+      else { stale = 0; b[0].click(); }
+      await sleep(DELAY);
+      status('Opening reply threads…', b.length + ' remaining · ' + tagCount() + ' tags found');
+    }
+  }
+
+  function blockFor(a){
+    var el = a.parentElement;
+    for (var i = 0; i < CLIMB && el; i++){
+      var au = [].slice.call(el.querySelectorAll('a[href]'))
+        .filter(function(x){ return handleOf(x) && !isMention(x); });
+      if (au.length) return { el: el, author: handleOf(au[0]) };
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  function collect(){
+    var seen = [], out = [];
+    links().filter(isMention).forEach(function(a){
+      var f = blockFor(a);
+      if (!f || seen.indexOf(f.el) >= 0) return;
+      seen.push(f.el);
+      var all = [].slice.call(f.el.querySelectorAll('a[href]'))
+        .filter(function(x){ return handleOf(x) && isMention(x); }).map(handleOf);
+      out.push({ author: f.author, mentions: all });
+    });
+    return out;
+  }
+
+  (async function(){
+    commentPanes();
+    if (!composer()){
+      say('<b style="color:#ff5c5c;letter-spacing:.1em">NO COMMENTS FOUND</b><br>' +
+          '<span style="color:#8496a8">This page isn\'t showing a comment list. Click the comment count on the post to open comments, then run the collector again.</span>');
+      return;
+    }
+    await loadAll();
+    await expandReplies();
+    var data = { url: location.href, collected: new Date().toISOString(), comments: collect() };
+    var json = JSON.stringify(data);
+    var warn = data.comments.length < 40
+      ? '<div style="margin-top:8px;padding:8px 10px;border-left:2px solid #ff7a2f;color:#ffb083;font-size:13px">' +
+        'That looks low for a busy post. Scroll the comments yourself for a few seconds, then run the collector again.</div>'
+      : '';
+    say('<b style="color:#38d39f;letter-spacing:.1em">DONE</b><br>' +
+        data.comments.length + ' comments with tags · ' + count() + ' loaded.' + warn +
+        '<textarea id="xtt-out" readonly style="width:100%;height:88px;margin-top:9px;background:#0d0f13;' +
+        'color:#8496a8;border:1px solid #232a33;border-radius:5px;padding:8px;font:11px/1.4 monospace"></textarea>' +
+        '<button id="xtt-copy" style="margin-top:8px;width:100%;background:#0099ff;color:#04121e;border:0;' +
+        'border-radius:5px;padding:9px;font:700 12px Rajdhani,sans-serif;letter-spacing:.09em;cursor:pointer">' +
+        'COPY TO CLIPBOARD</button>');
+    var ta = document.getElementById('xtt-out');
+    ta.value = json;
+    document.getElementById('xtt-copy').onclick = function(){
+      ta.select();
+      try { document.execCommand('copy'); } catch(e){}
+      if (navigator.clipboard) navigator.clipboard.writeText(json).catch(function(){});
+      this.textContent = 'COPIED — PASTE INTO TAG TALLY';
+    };
+  })();
+}
+
+/* ==================================================================
+   Parsing — accepts collector JSON or a saved Instagram .html page
+   ================================================================== */
+var RESERVED = ['p','reel','reels','explore','direct','stories','accounts','about',
+  'developer','legal','privacy','terms','api','tv','igtv','challenge','emails',
+  'session','ajax','graphql','web','oauth','your_activity'];
+
+function handleFromHref(href){
+  if (!href) return null;
+  var p = href.replace(/^https?:\/\/(www\.)?instagram\.com/i,'').split('?')[0];
+  var m = /^\/([A-Za-z0-9._]+)\/$/.exec(p);
+  if (!m) return null;
+  var u = m[1].toLowerCase();
+  return RESERVED.indexOf(u) >= 0 ? null : u;
+}
+
+function parseSavedHtml(html){
+  var doc = new DOMParser().parseFromString(html, 'text/html');
+  var isMention = function(a){ return a.textContent.trim().charAt(0) === '@'; };
+  var handleOf  = function(a){ return handleFromHref(a.getAttribute('href')); };
+  var anchors = [].slice.call(doc.querySelectorAll('a[href]'))
+    .filter(function(a){ return handleOf(a) && isMention(a); });
+
+  var seen = [], out = [];
+  anchors.forEach(function(a){
+    var el = a.parentElement, found = null;
+    for (var i = 0; i < 12 && el; i++){
+      var au = [].slice.call(el.querySelectorAll('a[href]'))
+        .filter(function(x){ return handleOf(x) && !isMention(x); });
+      if (au.length) { found = { el: el, author: handleOf(au[0]) }; break; }
+      el = el.parentElement;
+    }
+    if (!found || seen.indexOf(found.el) >= 0) return;
+    seen.push(found.el);
+    var all = [].slice.call(found.el.querySelectorAll('a[href]'))
+      .filter(function(x){ return handleOf(x) && isMention(x); }).map(handleOf);
+    out.push({ author: found.author, mentions: all });
+  });
+  return out;
+}
+
+function tally(comments){
+  var raw = {}, pairs = {}, authors = {};
+  comments.forEach(function(c){
+    if (!c.author) return;
+    authors[c.author] = 1;
+    var distinct = {};
+    (c.mentions || []).forEach(function(m){
+      if (m === c.author) return;
+      raw[m] = (raw[m] || 0) + 1;
+      distinct[m] = 1;
+    });
+    Object.keys(distinct).forEach(function(m){ pairs[c.author + '|' + m] = 1; });
+  });
+  var uniq = {};
+  Object.keys(pairs).forEach(function(k){
+    var t = k.split('|')[1];
+    uniq[t] = (uniq[t] || 0) + 1;
+  });
+  var rows = Object.keys(uniq).map(function(h){
+    return { handle: h, unique: uniq[h], raw: raw[h] || 0 };
+  }).sort(function(a,b){ return b.unique - a.unique || b.raw - a.raw; });
+
+  var total = 0;
+  Object.keys(raw).forEach(function(k){ total += raw[k]; });
+  return {
+    rows: rows,
+    blocks: comments.length,
+    commenters: Object.keys(authors).length,
+    mentions: total,
+    pairs: Object.keys(pairs).length
+  };
+}
+
+
+
+/* ---------- console ---------- */
+function ts(){
+  var d = new Date();
+  return d.toTimeString().slice(0,8);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+  });
+}
+function logLine(message, kind){
+  var el = document.getElementById('miniConsole');
+  var div = document.createElement('div');
+  div.className = 'console-line console-' + (kind || 'info');
+  div.innerHTML = '<span class="console-ts">' + ts() + '</span>' + escapeHtml(message);
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+/* ---------- bookmarklet ---------- */
+document.getElementById('bookmarklet').href =
+  'javascript:(' + encodeURIComponent(XODIA_COLLECTOR.toString()) + ')();void 0';
+
+/* ---------- render ---------- */
+var chart = null, lastRows = [];
+
+function render(res){
+  lastRows = res.rows;
+  var top = res.rows[0];
+
+  document.getElementById('winnerCard').innerHTML =
+    '<div class="winner-label">Most Tagged</div>' +
+    '<div class="winner-handle">@' + escapeHtml(top.handle) + '</div>' +
+    '<div class="winner-detail">Tagged by ' + top.unique + ' different ' +
+    (top.unique === 1 ? 'person' : 'people') + ' across ' + top.raw +
+    ' mention' + (top.raw === 1 ? '' : 's') + '</div>';
+
+  var stats = [
+    [res.blocks, 'Comments With Tags'],
+    [res.commenters, 'People Tagging'],
+    [res.mentions, 'Total Mentions'],
+    [res.rows.length, 'Accounts Tagged']
+  ];
+  document.getElementById('stats').innerHTML = stats.map(function(s){
+    return '<div class="stat-box"><div class="stat-value">' + s[0] +
+           '</div><div class="stat-label">' + s[1] + '</div></div>';
+  }).join('');
+
+  document.getElementById('tbody').innerHTML = res.rows.map(function(r, i){
+    var ratio = r.unique ? (r.raw / r.unique) : 0;
+    var flag = ratio >= 2 ? ' class="num ratio-flag"' : ' class="num"';
+    return '<tr' + (i === 0 ? ' class="top-row"' : '') + '>' +
+      '<td class="rank">' + (i + 1) + '</td>' +
+      '<td class="handle">@' + escapeHtml(r.handle) + '</td>' +
+      '<td class="num">' + r.raw + '</td>' +
+      '<td class="num">' + r.unique + '</td>' +
+      '<td' + flag + '>' + (r.unique ? ratio.toFixed(1) : '-') + '</td></tr>';
+  }).join('');
+
+  var t15 = res.rows.slice(0, 15);
+  if (chart) chart.destroy();
+  if (window.Chart){
+    chart = new Chart(document.getElementById('chart'), {
+      type: 'bar',
+      data: {
+        labels: t15.map(function(r){ return r.handle; }),
+        datasets: [
+          { label: 'Raw mentions', data: t15.map(function(r){ return r.raw; }),
+            backgroundColor: '#0099ff', borderRadius: 4, barThickness: 12 },
+          { label: 'Unique commenters', data: t15.map(function(r){ return r.unique; }),
+            backgroundColor: '#ff7a2f', borderRadius: 4, barThickness: 12 }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, grid: { color: '#2a2a2f' },
+               ticks: { color: '#a7a7ad', font: { family: 'Rajdhani', size: 12 } } },
+          y: { grid: { display: false },
+               ticks: { color: '#a7a7ad', font: { family: 'Rajdhani', size: 13 } } }
+        }
+      }
+    });
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  var el = document.getElementById('results');
+  el.style.display = 'block';
+  if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function toCsv(){
+  return 'handle,raw_mentions,unique_commenters\n' +
+    lastRows.map(function(r){ return r.handle + ',' + r.raw + ',' + r.unique; }).join('\n');
+}
+
+function setMsg(text, cls){
+  var m = document.getElementById('msg');
+  m.textContent = text;
+  m.className = 'status-message' + (cls ? ' ' + cls : '');
+}
+
+/* ---------- wiring ---------- */
+document.getElementById('navToggle').onclick = function(e){
+  e.stopPropagation();
+  document.getElementById('navDropdown').classList.toggle('active');
+};
+document.addEventListener('click', function(){
+  document.getElementById('navDropdown').classList.remove('active');
+});
+
+document.getElementById('run').onclick = function(){
+  var v = document.getElementById('input').value.trim();
+  if (!v){ setMsg('Paste the collected data first, or drop a saved page.', 'error');
+           logLine('Nothing to count.', 'warn'); return; }
+  setMsg('Counting...');
+  logLine('Reading input (' + v.length.toLocaleString() + ' chars)...');
+  setTimeout(function(){
+    try {
+      var comments;
+      if (v.charAt(0) === '{' || v.charAt(0) === '['){
+        var data = JSON.parse(v);
+        comments = Array.isArray(data) ? data : data.comments;
+        if (!comments) throw new Error('No comments in that data.');
+        logLine('Collector data detected.', 'ok');
+      } else {
+        logLine('Saved page detected - parsing HTML...');
+        comments = parseSavedHtml(v);
+      }
+      var res = tally(comments);
+      if (!res.rows.length){
+        setMsg('No tagged accounts found in that data.', 'error');
+        logLine('No tagged accounts found.', 'red');
+        return;
+      }
+      logLine(res.blocks + ' comments with tags from ' + res.commenters + ' people.', 'ok');
+      logLine('Top: @' + res.rows[0].handle + ' (' + res.rows[0].unique + ' unique).', 'ok');
+      setMsg('Counted ' + res.blocks + ' comments from ' + res.commenters + ' people.', 'success');
+      try { render(res); }
+      catch (re){ logLine('Render error: ' + re.message, 'red'); console.error(re); }
+    } catch (e){
+      setMsg('Could not read that: ' + e.message, 'error');
+      logLine('Failed: ' + e.message, 'red');
+    }
+  }, 20);
+};
+
+document.getElementById('clear').onclick = function(){
+  document.getElementById('input').value = '';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'block';
+  document.getElementById('miniConsole').innerHTML = '';
+  setMsg('');
+};
+
+document.getElementById('csv').onclick = function(){
+  var blob = new Blob([toCsv()], { type: 'text/csv' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tag-tally.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  logLine('CSV downloaded.', 'ok');
+};
+
+document.getElementById('copy').onclick = function(){
+  var btn = this;
+  navigator.clipboard.writeText(toCsv()).then(function(){
+    btn.textContent = 'Copied';
+    logLine('CSV copied to clipboard.', 'ok');
+    setTimeout(function(){ btn.textContent = 'Copy CSV'; }, 1600);
+  });
+};
+
+var dz = document.getElementById('dropzone');
+['dragenter','dragover'].forEach(function(ev){
+  dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.add('drag'); });
+});
+['dragleave','drop'].forEach(function(ev){
+  dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.remove('drag'); });
+});
+dz.addEventListener('drop', function(e){
+  var f = e.dataTransfer.files[0];
+  if (!f) return;
+  logLine('Reading ' + f.name + '...');
+  var fr = new FileReader();
+  fr.onload = function(){
+    document.getElementById('input').value = fr.result;
+    setMsg('Loaded ' + f.name + '. Click Count Tags.', 'success');
+    logLine('Loaded ' + f.name + ' (' + Math.round(fr.result.length/1024) + ' KB).', 'ok');
+  };
+  fr.readAsText(f);
+});
+
+logLine('Ready.', 'ok');
+
+</script>
+</body>
+</html>
