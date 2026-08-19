@@ -346,7 +346,7 @@ tr.top-row td.handle { color: var(--accent); }
 </head>
 <body>
   <div class="nav-dropdown" id="navDropdown">
-    <button class="nav-toggle" id="navToggle" type="button"></button>
+    <button class="nav-toggle" id="navToggle" type="button">Menu</button>
     <div class="nav-menu">
       <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
       <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
@@ -525,7 +525,7 @@ function XODIA_COLLECTOR() {
   // header stays put; only the body is redrawn, so the close button survives
   var head = document.createElement('div');
   head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px';
-  head.innerHTML = '<span style="font-weight:700;letter-spacing:.1em;font-size:12px;color:#8496a8">TAG TALLY</span>';
+  head.innerHTML = '<span style="font-weight:700;letter-spacing:.1em;font-size:12px;color:#8496a8">INSTAGRAM COMMENT ANALYZER</span>';
 
   var closeBtn = document.createElement('button');
   closeBtn.textContent = '\u00d7';
@@ -683,7 +683,7 @@ function XODIA_COLLECTOR() {
       ta.select();
       try { document.execCommand('copy'); } catch(e){}
       if (navigator.clipboard) navigator.clipboard.writeText(json).catch(function(){});
-      this.textContent = 'COPIED — PASTE INTO TAG TALLY';
+      this.textContent = 'COPIED — PASTE INTO CONTEST ANALYTICS';
     };
   })();
 }
@@ -954,7 +954,7 @@ document.getElementById('csv').onclick = function(){
   var blob = new Blob([toCsv()], { type: 'text/csv' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'tag-tally.csv';
+  a.download = 'contest-analytics.csv';
   a.click();
   URL.revokeObjectURL(a.href);
   logLine('CSV downloaded.', 'ok');
