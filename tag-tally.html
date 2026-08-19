@@ -377,9 +377,8 @@ tr.top-row td.handle { color: var(--accent); }
           <a class="bookmarklet" id="bookmarklet" href="#">Collect IG Tags</a>
           <ol class="steps-list">
             <li><span class="num">01</span><span><b>Drag that button to your bookmarks bar.</b> One time only.</span></li>
-            <li><span class="num">02</span><span>Open the Instagram post while logged in (click the "..." then "Go to post" from the profile grid). If comments aren't showing, click the comment count first.</span></li>
-            <li><span class="num">03</span><span>Click the bookmark and wait. It loads every comment and opens every reply thread (this process can take several minutes depending on the amount of comments).</span></li>
-            <li><span class="num">!</span><span>YOU MUST REMAIN ON THE PAGE WITH THE POST AS THE DISPLAYED TAB IN THE BROWSER FOR THIS TO WORK!</span></li>
+            <li><span class="num">02</span><span>Open the Instagram post while logged in. If comments aren't showing, click the comment count first.</span></li>
+            <li><span class="num">03</span><span>Click the bookmark and wait. It loads every comment and opens every reply thread.</span></li>
             <li><span class="num">04</span><span>Copy the result and paste it here.</span></li>
           </ol>
         </div>
@@ -421,6 +420,27 @@ tr.top-row td.handle { color: var(--accent); }
               <span><i style="background:#ff7a2f"></i>Unique commenters</span>
             </div>
             <div class="chart-wrap"><canvas id="chart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="search-card" style="margin-bottom:24px">
+          <div class="card-header">
+            <h2 class="section-title">Top 10 Commenters</h2>
+            <p class="section-subtitle">Who tagged the most accounts</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Commenter</th>
+                  <th class="num">Comments</th>
+                  <th class="num">Accounts</th>
+                  <th class="num">Mentions</th>
+                </tr>
+              </thead>
+              <tbody id="peopleBody"></tbody>
+            </table>
           </div>
         </div>
 
@@ -495,12 +515,34 @@ function XODIA_COLLECTOR() {
       .map(function(e){ return e.closest('button,div[role="button"],span') || e; });
   }
 
+  var ABORT = false;
+
   var box = document.createElement('div');
   box.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483000;width:390px;'+
     'background:#111317;color:#e7eef6;border:1px solid #232a33;border-radius:9px;padding:15px 17px;'+
     'font:14px/1.5 Rajdhani,system-ui,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.6)';
+
+  // header stays put; only the body is redrawn, so the close button survives
+  var head = document.createElement('div');
+  head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px';
+  head.innerHTML = '<span style="font-weight:700;letter-spacing:.1em;font-size:12px;color:#8496a8">TAG TALLY</span>';
+
+  var closeBtn = document.createElement('button');
+  closeBtn.textContent = '\u00d7';
+  closeBtn.title = 'Stop and close';
+  closeBtn.style.cssText = 'background:none;border:0;color:#8496a8;font:400 22px/1 sans-serif;' +
+    'cursor:pointer;padding:0 2px;line-height:1';
+  closeBtn.onmouseenter = function(){ this.style.color = '#ff5c5c'; };
+  closeBtn.onmouseleave = function(){ this.style.color = '#8496a8'; };
+  closeBtn.onclick = function(){ ABORT = true; box.remove(); };
+  head.appendChild(closeBtn);
+
+  var body = document.createElement('div');
+  box.appendChild(head);
+  box.appendChild(body);
   document.body.appendChild(box);
-  function say(html){ box.innerHTML = html; }
+
+  function say(html){ body.innerHTML = html; }
   say('<b style="color:#0099ff;letter-spacing:.1em">COLLECTING</b><br>Starting…');
 
   function count(){ return links().length; }
@@ -559,7 +601,7 @@ function XODIA_COLLECTOR() {
   // Phase 1: scroll + click until nothing new arrives for PATIENCE rounds.
   async function loadAll(){
     var stale = 0, last = -1, targets = 0;
-    for (var i = 0; i < MAX; i++){
+    for (var i = 0; i < MAX && !ABORT; i++){
       // several small scrolls beat one jump — lazy-loaders fire on the sentinel
       for (var k = 0; k < 3; k++){ targets = nudge(); await sleep(220); }
       var b = moreBtns();
@@ -579,7 +621,7 @@ function XODIA_COLLECTOR() {
   // Phase 2: open every reply thread, re-checking as new ones appear.
   async function expandReplies(){
     var stale = 0;
-    for (var i = 0; i < MAX; i++){
+    for (var i = 0; i < MAX && !ABORT; i++){
       var b = replyBtns();
       if (!b.length) { if (++stale >= PATIENCE) break; }
       else { stale = 0; b[0].click(); }
@@ -621,6 +663,7 @@ function XODIA_COLLECTOR() {
     }
     await loadAll();
     await expandReplies();
+    if (ABORT) return;
     var data = { url: location.href, collected: new Date().toISOString(), comments: collect() };
     var json = JSON.stringify(data);
     var warn = data.comments.length < 40
@@ -690,14 +733,19 @@ function tally(comments){
   var raw = {}, pairs = {}, authors = {};
   comments.forEach(function(c){
     if (!c.author) return;
-    authors[c.author] = 1;
+    if (!authors[c.author]) authors[c.author] = { comments: 0, tagged: {}, mentions: 0 };
+    authors[c.author].comments++;
     var distinct = {};
     (c.mentions || []).forEach(function(m){
       if (m === c.author) return;
       raw[m] = (raw[m] || 0) + 1;
+      authors[c.author].mentions++;
       distinct[m] = 1;
     });
-    Object.keys(distinct).forEach(function(m){ pairs[c.author + '|' + m] = 1; });
+    Object.keys(distinct).forEach(function(m){
+      pairs[c.author + '|' + m] = 1;
+      authors[c.author].tagged[m] = 1;
+    });
   });
   var uniq = {};
   Object.keys(pairs).forEach(function(k){
@@ -708,10 +756,24 @@ function tally(comments){
     return { handle: h, unique: uniq[h], raw: raw[h] || 0 };
   }).sort(function(a,b){ return b.unique - a.unique || b.raw - a.raw; });
 
+  // most active commenters, ranked by how many different accounts they tagged
+  var people = Object.keys(authors).map(function(a){
+    return {
+      handle: a,
+      comments: authors[a].comments,
+      accounts: Object.keys(authors[a].tagged).length,
+      mentions: authors[a].mentions
+    };
+  }).filter(function(p){ return p.accounts > 0; })
+    .sort(function(a,b){
+      return b.accounts - a.accounts || b.comments - a.comments || b.mentions - a.mentions;
+    });
+
   var total = 0;
   Object.keys(raw).forEach(function(k){ total += raw[k]; });
   return {
     rows: rows,
+    people: people,
     blocks: comments.length,
     commenters: Object.keys(authors).length,
     mentions: total,
@@ -778,6 +840,15 @@ function render(res){
       '<td class="num">' + r.raw + '</td>' +
       '<td class="num">' + r.unique + '</td>' +
       '<td' + flag + '>' + (r.unique ? ratio.toFixed(1) : '-') + '</td></tr>';
+  }).join('');
+
+  document.getElementById('peopleBody').innerHTML = res.people.slice(0, 10).map(function(p, i){
+    return '<tr' + (i === 0 ? ' class="top-row"' : '') + '>' +
+      '<td class="rank">' + (i + 1) + '</td>' +
+      '<td class="handle">@' + escapeHtml(p.handle) + '</td>' +
+      '<td class="num">' + p.comments + '</td>' +
+      '<td class="num">' + p.accounts + '</td>' +
+      '<td class="num">' + p.mentions + '</td></tr>';
   }).join('');
 
   var t15 = res.rows.slice(0, 15);
