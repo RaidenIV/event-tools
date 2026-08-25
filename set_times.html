@@ -464,6 +464,37 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     box-shadow: 0 0 0 3px rgba(172,199,255,0.18);
 }
 
+.time-lock-btn {
+    width: 34px;
+    height: 34px;
+    padding: 5px;
+    margin-left: auto;
+    flex: 0 0 34px;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+}
+
+.time-lock-btn:hover {
+    border-color: var(--accent);
+    background: rgba(172,199,255,0.06);
+}
+
+.time-lock-btn img {
+    width: 20px;
+    height: 20px;
+    display: block;
+    pointer-events: none;
+}
+
+.result-row.is-locked input.inline[data-type="start"],
+.result-row.is-locked input.inline[data-type="end"] {
+    opacity: 0.72;
+    cursor: default;
+}
+
 /* ======= PREVIEW ======= */
 .preview-label {
     font-size: 11px;
@@ -724,15 +755,24 @@ function buildDJInputs(){
 function syncTimes(idx, type, value){
     let rows = resultsEl._rows;
     if(!rows) return;
+    let row = rows[idx];
+    if(!row || row.locked) return;
+
     let t = parseDisplay(value);
     if(t==null) return;
-    let row = rows[idx];
+
     if(type==="start"){
         row.start=t; row.dur=row.end-row.start;
-        if(idx>0){ rows[idx-1].end=t; rows[idx-1].dur=rows[idx-1].end-rows[idx-1].start; }
+        if(idx>0 && !rows[idx-1].locked){
+            rows[idx-1].end=t;
+            rows[idx-1].dur=rows[idx-1].end-rows[idx-1].start;
+        }
     } else if(type==="end"){
         row.end=t; row.dur=row.end-row.start;
-        if(idx<rows.length-1){ rows[idx+1].start=t; rows[idx+1].dur=rows[idx+1].end-rows[idx+1].start; }
+        if(idx<rows.length-1 && !rows[idx+1].locked){
+            rows[idx+1].start=t;
+            rows[idx+1].dur=rows[idx+1].end-rows[idx+1].start;
+        }
     }
     renderTimesOnly();
     updatePreview();
@@ -744,13 +784,20 @@ function renderTimesOnly(){
     if(!rows) return;
     [...resultsEl.querySelectorAll("input.inline")].forEach(inp=>{
         let idx=+inp.dataset.idx, type=inp.dataset.type, row=rows[idx];
-        if(type==="start") inp.value=minToDisplay(row.start);
-        else if(type==="end") inp.value=minToDisplay(row.end);
+        if(!row) return;
+        if(type==="start"){
+            inp.value=minToDisplay(row.start);
+            inp.disabled=!!row.locked;
+        } else if(type==="end"){
+            inp.value=minToDisplay(row.end);
+            inp.disabled=!!row.locked;
+        }
     });
 }
 
 /* ======= CALCULATE ======= */
 function calculate(){
+    const previousRows = resultsEl._rows || [];
     let names=[...container.querySelectorAll("input.name")].map(i=>i.value.trim()||"DJ");
     let start=hhmmToMin(startEl.value);
     let end=hhmmToMin(endEl.value);
@@ -761,7 +808,7 @@ function calculate(){
         const p=presets[currentPreset];
         let cur=start;
         p.slotDurations.forEach((dur,i)=>{
-            rows.push({ label:names[i]||`DJ ${i+1}`, start:cur, end:cur+dur, dur, isB2B:false });
+            rows.push({ label:names[i]||`DJ ${i+1}`, start:cur, end:cur+dur, dur, isB2B:false, locked:false });
             cur+=dur;
         });
     } else {
@@ -771,11 +818,21 @@ function calculate(){
         if(per<5) per=5;
         let used=per*count, leftover=total-used, cur=start;
         names.forEach(name=>{
-            rows.push({ label:name, start:cur, end:cur+per, dur:per, isB2B:false });
+            rows.push({ label:name, start:cur, end:cur+per, dur:per, isB2B:false, locked:false });
             cur+=per;
         });
-        if(leftover>0) rows.push({ label:"B2B", start:cur, end:cur+leftover, dur:leftover, isB2B:true });
+        if(leftover>0) rows.push({ label:"B2B", start:cur, end:cur+leftover, dur:leftover, isB2B:true, locked:false });
     }
+
+    rows.forEach((row,i)=>{
+        const previous = previousRows[i];
+        if(previous && previous.locked){
+            row.start = previous.start;
+            row.end = previous.end;
+            row.dur = previous.end - previous.start;
+            row.locked = true;
+        }
+    });
 
     render(rows);
 }
@@ -784,8 +841,10 @@ function calculate(){
 function render(rows){
     resultsEl.innerHTML="";
     rows.forEach((r,i)=>{
+        if(typeof r.locked !== "boolean") r.locked=false;
+
         let div=document.createElement("div");
-        div.className="result-row";
+        div.className=`result-row${r.locked ? " is-locked" : ""}`;
 
         let nameBlock=document.createElement("div");
         nameBlock.style.fontWeight="600";
@@ -810,17 +869,43 @@ function render(rows){
         let s=document.createElement("input");
         s.className="inline"; s.dataset.idx=i; s.dataset.type="start";
         s.value=minToDisplay(r.start);
+        s.disabled=r.locked;
 
         let e=document.createElement("input");
         e.className="inline"; e.dataset.idx=i; e.dataset.type="end";
         e.value=minToDisplay(r.end);
+        e.disabled=r.locked;
 
         s.oninput=()=>syncTimes(i,'start',s.value);
         e.oninput=()=>syncTimes(i,'end',e.value);
 
+        let lockBtn=document.createElement("button");
+        lockBtn.type="button";
+        lockBtn.className="time-lock-btn";
+        lockBtn.setAttribute("aria-pressed",String(r.locked));
+        lockBtn.setAttribute("aria-label",r.locked ? "Unlock set time" : "Lock set time");
+        lockBtn.title=r.locked ? "Unlock set time" : "Lock set time";
+
+        let lockIcon=document.createElement("img");
+        lockIcon.src=r.locked ? "locked.svg" : "open.svg";
+        lockIcon.alt="";
+        lockBtn.appendChild(lockIcon);
+
+        lockBtn.onclick=()=>{
+            r.locked=!r.locked;
+            div.classList.toggle("is-locked",r.locked);
+            s.disabled=r.locked;
+            e.disabled=r.locked;
+            lockIcon.src=r.locked ? "locked.svg" : "open.svg";
+            lockBtn.setAttribute("aria-pressed",String(r.locked));
+            lockBtn.setAttribute("aria-label",r.locked ? "Unlock set time" : "Lock set time");
+            lockBtn.title=r.locked ? "Unlock set time" : "Lock set time";
+        };
+
         timeRow.appendChild(s);
         timeRow.appendChild(document.createTextNode(" – "));
         timeRow.appendChild(e);
+        timeRow.appendChild(lockBtn);
 
         div.appendChild(nameBlock);
         div.appendChild(timeRow);
